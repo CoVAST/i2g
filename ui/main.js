@@ -15,10 +15,10 @@ define(function(require) {
         temporalArea = require('./temporal-area');
 
     return function() {
-        var relationship = require('./layout/relationship')(),
-            relationViews = relationship.views;
-        var geospatial = require('./layout/geospatial')(),
-            geoViews = geospatial.views;
+        var relationshipLayout = require('./layout/relationship')(),
+            relationViews = relationshipLayout.views;
+        var geospatialLayout = require('./layout/geospatial')(),
+            geoViews = geospatialLayout.views;
 
         var relatedPeople = new L.LayerGroup();
         var subjectLocations = new L.LayerGroup();
@@ -29,6 +29,7 @@ define(function(require) {
         var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
             streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
 
+        // set map center at SF
         var map = L.map('map', {
             center: [37.830348, -122.386052],
             zoom: 12,
@@ -50,12 +51,11 @@ define(function(require) {
             console.log(map.getBounds());
         })
 
+        // add marker on map
         var markCount = 0;
         map.on('dblclick', function(e){
             var marker = new L.marker(e.latlng).addTo(map);
             markCount += 1;
-            if(markCount > 3)
-                marker.bindPopup("<b>Subject may be found here on Sunday 3-6pm. </b>").openPopup();
         });
 
         ajax.getAll([
@@ -94,19 +94,16 @@ define(function(require) {
                 $by: 'user',
                 count: {'location': '$count'}
             })(data.geo)
-            console.log( activityTotal);
+            // console.log(activityTotal);
 
             subjects.forEach(function(s, i){
-                relationship.subjects.append({
+                relationshipLayout.subjects.append({
                     header: 'Subject ' + i,
                     icon: 'big spy',
                     text: subjects[i].connection + ' connections, ' + activityTotal[i].count + ' activtiies'
                 })
-            })
-
-            relationship.subjects.get(0).className = 'selected item';
-            relationship.views.relationship.append('<svg width="'+ relationship.views.relationship.innerWidth +'" height="'+ relationship.views.relationship.innerHeight + '" id="relation-graph"></svg')
-            relationship.views.activiity.append('<svg width="'+ relationship.views.activiity.innerWidth +'" height="'+ relationship.views.activiity.innerHeight + '" id="activity-plot"></svg')
+            });
+            relationshipLayout.subjects.get(0).className = 'selected item';
 
             var selectedSubjectID = 0, selectedPeople = [];
             var selectedSubject = pipeline()
@@ -143,7 +140,7 @@ define(function(require) {
                 links: data.relationship.filter(function(d){return nodeIDs.indexOf(d.source) != -1 && nodeIDs.indexOf(d.target)!=-1;})
             }
 
-            relationship.selections.append({
+            relationshipLayout.selections.append({
                 header: 'Subject ' + selectedSubjectID + ' (' + activityTotal[selectedSubjectID].count + ' activtiies)',
                 icon: 'spy'
             })
@@ -152,7 +149,9 @@ define(function(require) {
             var activityCounts = activityTotal.map(function(d){return d.count});
 
             relationGraph({
-                container: '#relation-graph',
+                container: '#panel-relationship-body',
+                width: relationshipLayout.views.relationship.innerWidth,
+                height: relationshipLayout.views.relationship.innerHeight,
                 domain: [d3.min(activityCounts), d3.max(activityCounts)],
                 graph: graph,
                 onselect: function(d) {
@@ -160,7 +159,7 @@ define(function(require) {
                         this.style.fill = 'purple';
                         if(selectedPeople.indexOf(d.id) == -1){
                             selectedPeople.push(d.id);
-                            relationship.selections.append({
+                            relationshipLayout.selections.append({
                                 header: 'Related Person ' + d.id + ' (' + activityTotal[d.id].count + ' activtiies)',
                                 icon: 'user purple'
                             })
@@ -200,7 +199,7 @@ define(function(require) {
                 }
             })
 
-            relationship.explore = function() {
+            relationshipLayout.explore = function() {
                 if(selectedPeople.length == 0) return;
                 $("#button-relationship").removeClass('active')
                 $("#button-geospatial").addClass('active')
@@ -355,12 +354,12 @@ define(function(require) {
             (data.geo);
 
             temporalArea({
-                container: '#activity-plot',
-                data: monthlyActivities
+                container: '#panel-activity-body',
+                data: monthlyActivities,
+                width: relationshipLayout.views.activiity.innerWidth,
+                height: relationshipLayout.views.activiity.innerHeight
             })
 
-
-            // console.log(monthlyActivities );
         })
 
     }

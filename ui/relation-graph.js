@@ -4,15 +4,15 @@ define(function(){
             container = options.container || "body",
             domain = options.domain || [0, 1],
             graph = options.graph || {},
+            width = options.width,
+            height = options.height,
             onselect = options.onselect || function() {};
 
-        var svg = d3.select(container),
-            width = +svg.attr("width"),
-            height = +svg.attr("height");
+        var svg = d3.select(container).append('svg:svg');
+        svg.attr("width", width).attr("height", height);
 
         var selectionColor = d3.scaleOrdinal(d3.schemeCategory20),
             nodeColor = d3.scaleOrdinal(['teal', 'grey', 'purple']);
-
 
         var size = d3.scaleLinear()
         .domain(domain)

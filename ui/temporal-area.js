@@ -2,12 +2,14 @@ define(function(){
     return function(arg) {
         var options = arg || {},
             container = options.container || "body",
+            width = options.width,
+            height = options.height,
             data = options.data || {};
 
-        var svg = d3.select(container),
+        var svg = d3.select(container).append('svg:svg').attr("width", width).attr("height", height),
             margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = +svg.attr("width") - margin.left - margin.right,
-            height = +svg.attr("height") - margin.top - margin.bottom,
+            width = width - margin.left - margin.right,
+            height = height- margin.top - margin.bottom,
             g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         var x = d3.scaleTime()

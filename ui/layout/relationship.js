@@ -108,8 +108,7 @@ define(function(require){
 
             }
         });
-
-
+        
         appLayout.views = views;
         appLayout.subjects = subjects;
         appLayout.selections = selections;
