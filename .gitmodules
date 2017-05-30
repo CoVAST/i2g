@@ -1,0 +1,3 @@
+[submodule "vastui"]
+	path = vastui
+	url = https://github.com/jpkli/vastui

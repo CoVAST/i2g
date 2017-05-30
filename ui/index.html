@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <!-- <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico"> -->
+    <style>
+    body {
+        overflow: hidden;
+    }
+    img {
+      max-width: 100% !important;
+    }
+    a.active {
+        border-bottom: 4px solid teal;
+    }
+
+    .selected.item  {
+        border: 3px solid teal;
+    }
+
+    .selected.item > div, .selected.item > i {
+        color: #000;
+    }
+    .links line {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+
+    .nodes circle {
+      stroke: #fff;
+      stroke-width: 1.5px;
+    }
+    </style>
+    <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' /> -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
+  integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
+  crossorigin=""/>
+    <title>Collaborative Analysis of Spatiotemporal Data</title>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
+    <!-- <script src='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script> -->
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"
+  integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
+  crossorigin=""></script>
+    <script src="/semantic/dist/semantic.min.js"></script>
+  </head>
+  <body>
+      <div class="ui top menu page-menu" id="page-header" style="margin:0;">
+        <div class="item">
+          <h2 style="color: teal;">CoVAST</h2>
+        </div>
+        <a id="button-relationship" href="#page-relationship" class="item active"><i class="users large teal icon"></i>Relational Identification</a>
+        <a id="button-geospatial" href="#page-geospatial" class="item"><i class="marker large teal icon"></i>Geospatial Exploration</a>
+        <a class="item"><i class="universal access large teal icon"></i>Collaborative Analysis</a>
+        <div class="right menu">
+            <div class="ui pointing dropdown link item">
+            <img class="ui right avatar image" src="/images/chris.jpg">
+              <span class="text">Kelvin</span>
+              <i class="dropdown icon"></i>
+              <div class="menu" style="z-index: 999;">
+                  <a class="item">Profile</a>
+                  <a class="item">Logout</a>
+              </div>
+            </div>
+            <a class="ui item">
+                <i class="sidebar icon"></i>
+            </a>
+        </div>
+      </div>
+      <div id="page-main">
+          <div class="ui content sticky fixed" id="page-relationship"></div>
+          <div class="ui content sticky fixed" id="page-geospatial"></div>
+      </div>
+
+    <script src="npm/requirejs/require.js"></script>
+    <script>
+
+        require(["main"], function(main) {
+
+            $("#page-relationship").css("height", $("body").height() - $('#page-header').height());
+            $("#page-geospatial").css("height", $("body").height() - $('#page-header').height());
+            // $('#page-geospatial').transition('fly up', {duration: '1.5s'});
+            //     $('#page-geospatial').transition('fly up');
+            // $('#page-relationship').transition('fly up');
+            $(".page-menu > a.item").click(function(){
+                $(".page-menu > a.item.active").each(function(menuID){
+                    $(this.getAttribute('href')).transition('fade left');;
+                    $(this).removeClass('active')
+                })
+                $(this).addClass('active');
+                $(this.getAttribute("href") ).transition('fade left');
+            })
+
+            main();
+            $('#page-geospatial').hide();
+            $('.ui.dropdown').dropdown();
+            // $('.ui.modal').modal({closable: false}).modal('show');
+        })
+
+    </script>
+
+  </body>
+</html>
