@@ -62,8 +62,8 @@ define(function(require) {
         });
 
         ajax.getAll([
-            {url: '/data/test-relationship.csv', dataType: 'text'},
-            {url: '/data/test-geo280k.csv', dataType: 'text'}
+            {url: '/data/test-relationship-small.csv', dataType: 'text'},
+            {url: '/data/test-geo280k-small.csv', dataType: 'text'}
         ]).then(function(text){
             var data = {};
 
@@ -135,7 +135,9 @@ define(function(require) {
             })
 
             var nodes = [{id: selectedSubjectID, group: 0, value: activityTotal[selectedSubjectID].count}];
-            nodes = nodes.concat(selectedSubject.map(function(d,i){return {id: d.target, group: 1, value: activityTotal[d.target].count};}));
+            nodes = nodes.concat(selectedSubject.map(function(d,i){
+                return {id: d.target, group: 1, value: activityTotal[d.target].count || 0};
+            }));
 
             var nodeIDs = nodes.map(function(d){return d.id;})
             var graph = {
