@@ -61,12 +61,12 @@
         <div class="right menu">
             <div class="ui pointing dropdown link item">
             <img class="ui right avatar image" src="/images/chris.jpg">
-              <span class="text">Kelvin</span>
-              <i class="dropdown icon"></i>
-              <div class="menu" style="z-index: 999;">
-                  <a class="item">Profile</a>
-                  <a class="item">Logout</a>
-              </div>
+              <span id="panel-user-name" class="text">Kelvin</span>
+              <!-- <i class="dropdown icon"></i> -->
+              <!-- <div class="menu" style="z-index: 999;"> -->
+                  <!-- <a class="item">Profile</a> -->
+                  <!-- <a id="logout-action" class="item">Logout</a> -->
+              <!-- </div> -->
             </div>
             <a class="ui item">
                 <i class="sidebar icon"></i>
@@ -74,8 +74,25 @@
         </div>
       </div>
       <div id="page-main">
-          <div class="ui content sticky fixed" id="page-relationship"></div>
-          <div class="ui content sticky fixed" id="page-geospatial"></div>
+        <div class="ui content sticky fixed" id="page-relationship"></div>
+        <div class="ui content sticky fixed" id="page-geospatial"></div>
+      </div>
+
+      <div class="ui small modal">
+        <div class="header">
+          Collaborative Visual Analytic System
+        </div>
+        <div class="content">
+          <div class="ui form">
+            <div class="field">
+              <label>Analyst Name</label>
+              <input id="login-modal-name" type="text" name="name" placeholder="Stephy">
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <div id="login" class="ui green button">Login</div>
+        </div>
       </div>
 
     <script src="npm/requirejs/require.js"></script>
@@ -100,7 +117,20 @@
             main();
             $('#page-geospatial').hide();
             $('.ui.dropdown').dropdown();
-            // $('.ui.modal').modal({closable: false}).modal('show');
+
+            let hideModalAndSetUserName = function() {
+                $('.ui.modal').modal('hide');
+                let el = $('#login-modal-name');
+                let name = el.val() || el.attr('placeholder');
+                $('#panel-user-name').html(name);
+            }
+            $('#login-modal-name').keypress(function(e) {
+                if (e.which == 13)
+                    hideModalAndSetUserName();
+            })
+            $('#login').click(hideModalAndSetUserName);
+            $('.ui.modal').modal({closable: false}).modal('show');
+            // $('#logout-action').
         })
 
     </script>

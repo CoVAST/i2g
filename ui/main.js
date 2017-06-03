@@ -22,9 +22,12 @@ define(function(require) {
 
         var relatedPeople = new L.LayerGroup();
         var subjectLocations = new L.LayerGroup();
-        var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> ' +
+        var mbAttr = 'Map data &copy; ' +
+                '<a href="http://openstreetmap.org">OpenStreetMap</a> ' +
                 '© <a href="http://mapbox.com">Mapbox</a>',
-            mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoianBsaTEyMjEiLCJhIjoiY2oyM3B4NTcxMDAwbTMzc2M5eGltbzY0MyJ9.HD8mo8i8kawQNmrbZbYo-g';
+            mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?acc' +
+                    'ess_token=pk.eyJ1IjoianBsaTEyMjEiLCJhIjoiY2oyM3B4NTcxMDA' +
+                    'wbTMzc2M5eGltbzY0MyJ9.HD8mo8i8kawQNmrbZbYo-g';
 
         var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
             streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
