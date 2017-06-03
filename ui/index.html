@@ -62,13 +62,16 @@
         <a id="button-geospatial" href="#page-geospatial" class="item">
           <i class="marker large teal icon"></i>Geolocation
         </a>
+        <a id="button-text" href="#page-text" class="item">
+          <i class="font large teal icon"></i>Text
+        </a>
         <a id="button-collaboration" href="#page-collaboration" class="item">
           <i class="universal access large teal icon"></i>Collaboration
         </a>
         <div class="right menu">
             <div class="ui pointing dropdown link item">
             <img class="ui right avatar image" src="/images/chris.jpg">
-              <span id="panel-user-name" class="text">Kelvin</span>
+              <span id="panel-user-name" class="text"></span>
               <!-- <i class="dropdown icon"></i> -->
               <!-- <div class="menu" style="z-index: 999;"> -->
                   <!-- <a class="item">Profile</a> -->
@@ -81,8 +84,10 @@
         </div>
       </div>
       <div id="page-main">
-        <div class="ui content sticky fixed" id="page-relationship"></div>
-        <div class="ui content sticky fixed" id="page-geospatial"></div>
+        <div class="ui content sticky fixed cv-page cv-page-active"
+            id="page-relationship"></div>
+        <div class="ui content sticky fixed cv-page" id="page-geospatial"></div>
+        <div class="ui content sticky fixed cv-page" id="page-text"></div>
       </div>
 
       <div class="ui small modal">
@@ -93,7 +98,8 @@
           <div class="ui form">
             <div class="field">
               <label>Analyst Name</label>
-              <input id="login-modal-name" type="text" name="name" placeholder="Stephy">
+              <input id="login-modal-name" type="text" name="name"
+                  placeholder="Stephy">
             </div>
           </div>
         </div>
@@ -107,22 +113,21 @@
 
         require(["main"], function(main) {
 
-            $("#page-relationship").css("height", $("body").height() - $('#page-header').height());
-            $("#page-geospatial").css("height", $("body").height() - $('#page-header').height());
-            // $('#page-geospatial').transition('fly up', {duration: '1.5s'});
-            //     $('#page-geospatial').transition('fly up');
-            // $('#page-relationship').transition('fly up');
+            $(".cv-page")
+                .css("height", $("body").height() - $('#page-header')
+                .height());
+
             $(".page-menu > a.item").click(function(){
                 $(".page-menu > a.item.active").each(function(menuID){
-                    $(this.getAttribute('href')).transition('fade left');;
+                    $(this.getAttribute('href')).transition('fade left');
                     $(this).removeClass('active')
                 })
                 $(this).addClass('active');
-                $(this.getAttribute("href") ).transition('fade left');
+                $(this.getAttribute('href')).transition('fade left');
             })
 
             main();
-            $('#page-geospatial').hide();
+            $('.cv-page').not('.cv-page-active').hide();
             $('.ui.dropdown').dropdown();
 
             let hideModalAndSetUserName = function() {
