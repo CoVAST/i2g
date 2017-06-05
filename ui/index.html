@@ -55,18 +55,28 @@
         <div class="item">
           <h2 style="color: teal;">CoVAST</h2>
         </div>
-        <a id="button-relationship" href="#page-relationship" class="item active"><i class="users large teal icon"></i>Relational Identification</a>
-        <a id="button-geospatial" href="#page-geospatial" class="item"><i class="marker large teal icon"></i>Geospatial Exploration</a>
-        <a class="item"><i class="universal access large teal icon"></i>Collaborative Analysis</a>
+        <a id="button-relationship" href="#page-relationship"
+            class="item active">
+          <i class="users large teal icon"></i>Relationship
+        </a>
+        <a id="button-geospatial" href="#page-geospatial" class="item">
+          <i class="marker large teal icon"></i>Geolocation
+        </a>
+        <a id="button-text" href="#page-text" class="item">
+          <i class="font large teal icon"></i>Text
+        </a>
+        <a id="button-collaboration" href="#page-collaboration" class="item">
+          <i class="universal access large teal icon"></i>Collaboration
+        </a>
         <div class="right menu">
             <div class="ui pointing dropdown link item">
             <img class="ui right avatar image" src="/images/chris.jpg">
-              <span class="text">Kelvin</span>
-              <i class="dropdown icon"></i>
-              <div class="menu" style="z-index: 999;">
-                  <a class="item">Profile</a>
-                  <a class="item">Logout</a>
-              </div>
+              <span id="panel-user-name" class="text"></span>
+              <!-- <i class="dropdown icon"></i> -->
+              <!-- <div class="menu" style="z-index: 999;"> -->
+                  <!-- <a class="item">Profile</a> -->
+                  <!-- <a id="logout-action" class="item">Logout</a> -->
+              <!-- </div> -->
             </div>
             <a class="ui item">
                 <i class="sidebar icon"></i>
@@ -74,8 +84,28 @@
         </div>
       </div>
       <div id="page-main">
-          <div class="ui content sticky fixed" id="page-relationship"></div>
-          <div class="ui content sticky fixed" id="page-geospatial"></div>
+        <div class="ui content sticky fixed cv-page cv-page-active"
+            id="page-relationship"></div>
+        <div class="ui content sticky fixed cv-page" id="page-geospatial"></div>
+        <div class="ui content sticky fixed cv-page" id="page-text"></div>
+      </div>
+
+      <div class="ui small modal">
+        <div class="header">
+          Collaborative Visual Analytic System
+        </div>
+        <div class="content">
+          <div class="ui form">
+            <div class="field">
+              <label>Analyst Name</label>
+              <input id="login-modal-name" type="text" name="name"
+                  placeholder="Stephy">
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <div id="login" class="ui green button">Login</div>
+        </div>
       </div>
 
     <script src="npm/requirejs/require.js"></script>
@@ -83,24 +113,36 @@
 
         require(["main"], function(main) {
 
-            $("#page-relationship").css("height", $("body").height() - $('#page-header').height());
-            $("#page-geospatial").css("height", $("body").height() - $('#page-header').height());
-            // $('#page-geospatial').transition('fly up', {duration: '1.5s'});
-            //     $('#page-geospatial').transition('fly up');
-            // $('#page-relationship').transition('fly up');
+            $(".cv-page")
+                .css("height", $("body").height() - $('#page-header')
+                .height());
+
             $(".page-menu > a.item").click(function(){
                 $(".page-menu > a.item.active").each(function(menuID){
-                    $(this.getAttribute('href')).transition('fade left');;
+                    $(this.getAttribute('href')).transition('fade left');
                     $(this).removeClass('active')
                 })
                 $(this).addClass('active');
-                $(this.getAttribute("href") ).transition('fade left');
+                $(this.getAttribute('href')).transition('fade left');
             })
 
             main();
-            $('#page-geospatial').hide();
+            $('.cv-page').not('.cv-page-active').hide();
             $('.ui.dropdown').dropdown();
-            // $('.ui.modal').modal({closable: false}).modal('show');
+
+            let hideModalAndSetUserName = function() {
+                $('.ui.modal').modal('hide');
+                let el = $('#login-modal-name');
+                let name = el.val() || el.attr('placeholder');
+                $('#panel-user-name').html(name);
+            }
+            $('#login-modal-name').keypress(function(e) {
+                if (e.which == 13)
+                    hideModalAndSetUserName();
+            })
+            $('#login').click(hideModalAndSetUserName);
+            $('.ui.modal').modal({closable: false}).modal('show');
+            // $('#logout-action').
         })
 
     </script>
