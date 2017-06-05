@@ -26,25 +26,16 @@ define(function(require) {
                 '© <a href="http://mapbox.com">Mapbox</a>',
             mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoianBsaTEyMjEiLCJhIjoiY2oyM3B4NTcxMDAwbTMzc2M5eGltbzY0MyJ9.HD8mo8i8kawQNmrbZbYo-g';
 
-        var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
-            streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
-
+        var grayscale  = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
+            streets = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr}),
+            baseLayers = {"Grayscale": grayscale,"Streets": streets},
+            overlays = {"Subject Locations": subjectLocations, "Related People": relatedPeople};
         // set map center at SF
         var map = L.map('map', {
             center: [37.830348, -122.386052],
             zoom: 12,
             layers: [grayscale, subjectLocations, relatedPeople]
         });
-
-        var baseLayers = {
-            "Grayscale": grayscale,
-            "Streets": streets
-        };
-
-        var overlays = {
-            "Subject Locations": subjectLocations,
-            "Related People": relatedPeople
-        };
 
         L.control.layers(baseLayers, overlays).addTo(map);
         map.on("zoomend", function(){

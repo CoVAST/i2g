@@ -88,7 +88,6 @@ define(function(require){
             types: ['divided']
         })
 
-
         var resetButton = new Button({
             container: views.control.body,
             text: ' Clear List ',
@@ -105,15 +104,13 @@ define(function(require){
                 if(typeof appLayout.explore == 'function') {
                     appLayout.explore();
                 }
-
             }
         });
-        
+
         appLayout.views = views;
         appLayout.subjects = subjects;
         appLayout.selections = selections;
         return appLayout;
-
     }
 
 })

@@ -7,20 +7,19 @@ define(function(require){
     return function() {
         var appLayout = new Layout({
             margin: 10,
-            container: 'page-geospatial',
+            container: 'page-temporal',
             cols: [
                 {
-                    width: 0.5,
+                    width: 0.7,
                     rows: [
-                        {id: 'map-view', height: 0.7},
-                        {id: 'timeline-view', height: 0.3},
+                        {id: 'ontotime-view', height: 0.7},
+                        {id: 'temporal-view', height: 0.3},
                     ]
                 },
                 {
-                    width: 0.5,
+                    width: 0.3,
                     rows: [
-                        {id: 'ontogeo-view', height: 0.7},
-                        {id: 'detail-view', height: 0.3}
+                        {id: 'stats-view'}
                     ]
                 },
             ]
@@ -28,24 +27,24 @@ define(function(require){
 
         var views = {};
 
-        views.detail = new Panel({
-            container: appLayout.cell('detail-view'),
-            id: "panel-detail",
-            title: "Metrics / Statistics",
+        views.stats = new Panel({
+            container: appLayout.cell('stats-view'),
+            id: "panel-stats",
+            title: "Temporal Statistics",
             // style: {backgroundColor: '#222'},
             header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
 
         views.timeline = new Panel({
-            container: appLayout.cell('timeline-view'),
-            id: "panel-timeline",
-            title: "Timeline View",
+            container: appLayout.cell('temporal-view'),
+            id: "panel-temporal",
+            title: "Temporal Overview",
             header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
 
-        views.map = new Panel({
-            container: appLayout.cell('map-view'),
-            id: "map",
+        views.ontotime = new Panel({
+            container: appLayout.cell('ontotime-view'),
+            id: "panel-ontotime",
         });
 
         appLayout.views = views;

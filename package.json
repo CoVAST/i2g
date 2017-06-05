@@ -6,6 +6,7 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
+    "p4.js": "^0.1.0",
     "requirejs": "^2.3.3"
   },
   "devDependencies": {},
