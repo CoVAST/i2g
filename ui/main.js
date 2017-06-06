@@ -355,7 +355,6 @@ define(function(require) {
                 width: relationshipLayout.views.activiity.innerWidth,
                 height: relationshipLayout.views.activiity.innerHeight
             })
-
         })
 
     }
