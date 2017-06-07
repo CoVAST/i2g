@@ -1,9 +1,0 @@
-[submodule "vastui"]
-    path = vastui
-    url = https://github.com/jpkli/vastui
-[submodule "i2v"]
-	path = i2v
-	url = git@sphere.cs.ucdavis.edu:kelli/i2v.git
-[submodule "p4"]
-	path = p4
-	url = git@sphere.cs.ucdavis.edu:kelli/p4.git

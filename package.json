@@ -5,9 +5,12 @@
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.17.2",
+    "davi": "^0.1.1",
     "express": "^4.15.3",
-    "p4.js": "=<0.2.0",
+    "i2v": "^0.2.1",
+    "leaflet": "^1.0.3",
     "leaflet-contextmenu": "^1.4.0",
+    "p4.js": "^0.1.2",
     "requirejs": "^2.3.3"
   },
   "devDependencies": {},
