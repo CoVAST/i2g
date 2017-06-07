@@ -45,6 +45,8 @@ define(function(require) {
         // important locations
         var isAddingImportantRect = false;
         var tempImportantRect = null;
+        var isAddingImportantPolygon = false;
+        var tempImportantPolygon = null;
         var importantGeoColor = 'red';
         importantGeos = [];
         var removeImportantGeo = (geo) => {
@@ -78,6 +80,46 @@ define(function(require) {
                 callback: removeImportantGeo.bind(this, geo)
             })
             importantGeos.push(geo);
+        }
+        var prepareAddImportantPolygon = (e) => {
+            map._container.style.cursor = 'crosshair';
+            map.doubleClickZoom.disable();
+            isAddingImportantPolygon = true;
+        }
+        var addingImportantPolygon = (e) => {
+            if (!tempImportantPolygon) {
+                tempImportantPolygon = {
+                    type: 'polygon',
+                    coordinates: [e.latlng],
+                    leaflet: L.polygon([e.latlng], {
+                        color: importantGeoColor,
+                        opacity: 0.8,
+                        weight: 1,
+                        fillColor: importantGeoColor,
+                        fillOpacity: 0.5,
+                        contextmenu: true,
+                        contextmenuItems: [{
+                            separator: true,
+                            index: 0
+                        }]
+                    }).addTo(importantLocations)
+                }
+                tempImportantPolygon.leaflet.addContextMenuItem({
+                    text: "Remove",
+                    index: 0,
+                    callback:
+                        removeImportantGeo.bind(this, tempImportantPolygon)
+                })
+            }
+            tempImportantPolygon.coordinates.push(e.latlng);
+            tempImportantPolygon.leaflet.addLatLng(e.latlng);
+        }
+        var doneAddImportantPolygon = (e) => {
+            importantGeos.push(tempImportantPolygon);
+            tempImportantPolygon = null;
+            map._container.style.cursor = '';
+            map.doubleClickZoom.enable();
+            isAddingImportantPolygon = false;
         }
         var prepareAddImportantRect = (e) => {
             console.log('prepareAddImportantRect');
@@ -140,12 +182,14 @@ define(function(require) {
                 text: 'Add location',
                 callback: addImportantLocation
             }, {
-                text: 'Add area',
+                text: 'Add rectangle',
                 callback: prepareAddImportantRect
+            }, {
+                text: 'Add polygon',
+                callback: prepareAddImportantPolygon
             }]
         });
         gMap = map;
-        // map.doubleClickZoom.disable();
 
         L.control.layers(baseLayers, overlays).addTo(map);
         map.on("zoomend", function(){
@@ -181,7 +225,17 @@ define(function(require) {
 
         map.on('click', function(e) {
             console.log('click');
-            e.originalEvent.preventDefault();
+            if (isAddingImportantPolygon) {
+                addingImportantPolygon(e);
+                L.DomEvent.stop(e);
+            }
+        })
+
+        map.on('dblclick', function(e) {
+            if (isAddingImportantPolygon) {
+                doneAddImportantPolygon(e);
+                L.DomEvent.stop(e);
+            }
         })
 
         // map.on('contextmenu', function() {

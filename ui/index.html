@@ -132,18 +132,27 @@
             $('.cv-page').not('.cv-page-active').hide();
             $('.ui.dropdown').dropdown();
 
+            let setUserName = function(name) {
+                $('#panel-user-name').html(name);
+                sessionStorage.setItem('username', name);
+            }
             let hideModalAndSetUserName = function() {
                 $('.ui.modal').modal('hide');
                 let el = $('#login-modal-name');
                 let name = el.val() || el.attr('placeholder');
-                $('#panel-user-name').html(name);
+                setUserName(name);
             }
             $('#login-modal-name').keypress(function(e) {
                 if (e.which == 13)
                     hideModalAndSetUserName();
             })
             $('#login').click(hideModalAndSetUserName);
-            $('.ui.modal').modal({closable: false}).modal('show');
+            let username = sessionStorage.getItem('username');
+            if (!username) {
+                $('.ui.modal').modal({closable: false}).modal('show');
+            } else {
+                setUserName(username);
+            }
             // $('#logout-action').
         })
 
