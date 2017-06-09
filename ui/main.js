@@ -22,6 +22,8 @@ define(function(require) {
             relationViews = relationshipLayout.views;
         var geospatialLayout = require('./layout/geospatial')(),
             geoViews = geospatialLayout.views;
+        var textLayout = require('./layout/textlayout')(),
+            textViews = textLayout.views;
 
         var gmap = geoMap();
         ajax.getAll([

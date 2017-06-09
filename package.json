@@ -4,6 +4,7 @@
   "description": "Collaborative visual analytics system",
   "main": "server.js",
   "dependencies": {
+    "babyparse": "^0.4.6",
     "body-parser": "^1.17.2",
     "davi": "^0.1.1",
     "express": "^4.15.3",
@@ -11,9 +12,11 @@
     "jquery": "^3.2.1",
     "leaflet": "^1.0.3",
     "leaflet-contextmenu": "^1.4.0",
+    "nodejieba": "^2.2.5",
     "p4.js": "^0.1.2",
     "requirejs": "^2.3.3",
-    "svg-icon": "^0.8.1"
+    "ramda": "^0.24.1",
+    "requirejs": "^2.3.3"
   },
   "devDependencies": {},
   "scripts": {
