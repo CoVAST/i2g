@@ -9,9 +9,11 @@ define(function(require) {
         cstore = require('p4/cquery/cstore'),
         colors = require('i2v/colors'),
         lineChart = require('i2v/charts/lineChart'),
+        scatterPlot = require('./temporal-plot'),
         format = require('i2v/format')('.2s');
 
     var relationGraph = require('./relation-graph'),
+        ontoGraph = require('./ontology-graph'),
         temporalArea = require('./temporal-area'),
         geoMap = require('./geomap');
 
@@ -128,6 +130,7 @@ define(function(require) {
 
             // console.log(selectedSubject, graph);
             var activityCounts = activityTotal.map(function(d){return d.count});
+            var allGeoLocations;
 
             relationGraph({
                 container: '#panel-relationship-body',
@@ -148,7 +151,7 @@ define(function(require) {
                         }
                     }
 
-                    var locations = pipeline()
+                    allGeoLocations = pipeline()
                     .derive(function(d){
                         d.month = d.time.getMonth();
                         d.day = d.time.getDay();
@@ -156,8 +159,8 @@ define(function(require) {
                     })
                     .match({
                         user: {$in: selectedPeople},
-                        long: {$inRange: [-123, -120]},
-                        day: 6,
+                        // long: {$inRange: [-123, -120]},
+                        // day: 6,
                     })
                     .group({
                         $by: 'location',
@@ -168,7 +171,7 @@ define(function(require) {
                     })
                     (data.geo);
 
-                    locations.forEach(function(loc){
+                    allGeoLocations.forEach(function(loc){
                         L.circle([loc.lat, loc.long], {
                             color: 'none',
                             fillColor: 'purple',
@@ -177,7 +180,6 @@ define(function(require) {
                             radius: 150
                         }).addTo(gmap.relatedPeople);
                     })
-                    console.log(locations);
                 }
             })
 
@@ -200,9 +202,8 @@ define(function(require) {
                 (data.geo);
 
                 var tData = new Array(selectedPeople.length+1);
-                selectedPeople.concat(
-                        [selectedSubjectID]).forEach(
-                            function(s, i){
+                selectedPeople = selectedPeople.concat([selectedSubjectID]);
+                selectedPeople.forEach(function(s, i){
                     tData[i] = monthlyActivities
                         .filter(function(a) {
                             return a.user == s;
@@ -210,66 +211,113 @@ define(function(require) {
                             return b.month - a.month;
                         });
                 })
-                new lineChart({
-                    container: geoViews.detail.body,
-                    height: 250,
-                    padding: {left: 100, right: 20, top: 30, bottom: 50},
-                    data: tData,
-                    formatX: function(d) { return d;},
-                    // series: selectedPeople.concat([selectedSubjectID]),
-                    zero: true,
-                    vmap: {
-                        x: 'month',
-                        y: 'count',
-                        color: 'user',
-                        colorMap: function(d) {
-                            return (d == selectedSubjectID) ? 'teal' : 'purple';
-                        }
-                        // color: 'user',
-                    }
+
+                graph.nodes.forEach((d)=>(d.type="people"));
+
+                var selectedGraph = {
+                    nodes: graph.nodes.filter(function(d){return selectedPeople.indexOf(d.id) != -1;}),
+                    links: graph.links.filter(function(d){return selectedPeople.indexOf(d.target.id) != -1;})
+                }
+
+                var infoGraph = ontoGraph({
+                    container: '#panel-ontograph-body',
+                    width: geoViews.ontograph.innerWidth,
+                    height: geoViews.ontograph.innerHeight,
+                    domain: [d3.min(activityCounts), d3.max(activityCounts)],
+                    graph: selectedGraph
                 })
+
+                gmap.onadd(function(d){
+                    var c = d.coordinates,
+                        cMinLat = Math.min(c[0].lat, c[1].lat),
+                        cMaxLat = Math.max(c[0].lat, c[1].lat),
+                        cMinLong = Math.min(c[0].lng, c[1].lng),
+                        cMaxLong = Math.max(c[0].lng, c[1].lng);
+
+                    var selectedLocations = allGeoLocations.filter(function(a){
+
+                        return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
+                    })
+
+
+                    infoGraph.append({
+                        nodes: {id: "Location 0", type: "geo", pos: [0,0], value: selectedLocations.length},
+                        links: []
+                    });
+                })
+
+
+                // var splot1 = new scatterPlot({
+                //     container: geoViews.timeline.body,
+                //     height: geoViews.timeline.innerHeight,
+                //     width: geoViews.timeline.innerWidth / 2,
+                //     padding: {left: 50, right: 10, top: 30, bottom: 50},
+                //     data:  monthlyActivities,
+                //     formatX: function(d) { return d;},
+                //     // series: selectedPeople.concat([selectedSubjectID]),
+                //     // zero: true,
+                //     vmap: {
+                //         x: 'month',
+                //         y: 'user',
+                //         size: 'count',
+                //         color: 'group',
+                //         // colorMap: function(d) {
+                //         //     return (d == selectedSubjectID) ? 'teal' : 'purple';
+                //         // }
+                //         // color: 'user',
+                //     }
+                // })
+                //
+                // splot1.div.style.marginLeft =  geoViews.timeline.innerWidth / 2 + 'px';
 
                 var hourActivities = pipeline()
                 .match({
                     user: {$in: selectedPeople.concat([selectedSubjectID])},
                 })
+
+                .derive(function(d){
+                    if(d.hour < 4)
+                        d.hours = '0 - 4';
+                    else if(d.hour < 8)
+                        d.hours = '4 - 8';
+                    else if(d.hour < 12)
+                        d.hours = '8 - 12';
+                    else if(d.hour < 16)
+                        d.hours = '12 - 16';
+                    else if(d.hour < 20)
+                        d.hours = '16 - 20';
+                    else
+                        d.hours = '20 - 24';
+                })
                 .group({
-                    $by: ['hour', 'user'],
+                    $by: ['hours', 'user'],
                     count: {'location': '$count'}
                 })
+                .sortBy({hours: 1})
                 (data.geo);
 
-                var tData = new Array(selectedPeople.length+1);
-                selectedPeople.concat(
-                        [selectedSubjectID]).forEach(
-                            function(s, i){
-                    tData[i] = hourActivities
-                        .filter(function(a) {
-                            return a.user == s;
-                        }).sort(function(a, b){
-                            return b.hour - a.hour;
-                        });
-                })
-
-                new lineChart({
-                    container: geoViews.detail.body,
-                    height: 250,
-                    padding: {left: 100, right: 20, top: 30, bottom: 50},
-                    data: tData,
+                var splot1 = new scatterPlot({
+                    container: geoViews.timeline.body,
+                    height: geoViews.timeline.innerHeight,
+                    width: geoViews.timeline.innerWidth / 2,
+                    padding: {left: 30, right: 50, top: 30, bottom: 50},
+                    data:  hourActivities,
+                    align: 'right',
                     formatX: function(d) { return d;},
-                    // series: selectedPeople.concat([selectedSubjectID]),
-                    zero: true,
+                    title: 'Daily Activities',
+                    colors: function(d) {
+                        return (d == selectedSubjectID) ? 'teal' : 'purple';
+                    },
                     vmap: {
-                        x: 'hour',
-                        y: 'count',
+                        x: 'hours',
+                        y: 'user',
+                        size: 'count',
                         color: 'user',
-                        colorMap: function(d) {
-                            return (d == selectedSubjectID) ? 'teal' : 'purple';
-                        }
-                        // color: 'user',
                     }
                 })
 
+                splot1.div.style.marginLeft =  geoViews.timeline.innerWidth / 2 + 'px';
+                splot1.div.style.float = 'right';
                 var dayActivities = pipeline()
                 .match({
                     user: {$in: selectedPeople.concat([selectedSubjectID])},
@@ -280,78 +328,91 @@ define(function(require) {
                 })
                 (data.geo);
 
-                var tData = new Array(selectedPeople.length+1);
-                selectedPeople.concat([selectedSubjectID]).forEach(
-                        function(s, i){
-                    tData[i] = dayActivities.filter(function(a) {
-                        return a.user == s;
-                    }).sort(function(a, b){
-                        return b.day - a.day;
-                    });
-                })
+                var dayOfWeek_short = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'],
+                    dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-                new lineChart({
-                    container: geoViews.detail.body,
-                    height: 250,
-                    padding: {left: 100, right: 20, top: 30, bottom: 50},
-                    data: tData,
-                    formatX: function(d) { return d;},
-                    // series: selectedPeople.concat([selectedSubjectID]),
-                    zero: true,
-                    vmap: {
-                        x: 'day',
-                        y: 'count',
-                        color: 'user',
-                        colorMap: function(d) {
-                            return (d == selectedSubjectID) ? 'teal' : 'purple';
-                        }
-                        // color: 'user',
-                    }
-                })
-
-                var activities = pipeline()
-                .match({
-                    user: {$in: selectedPeople.concat([selectedSubjectID])},
-                })
-                .group({
-                    $by:  ['user', 'year', 'month'],
-                    time: '$min',
-                    count: {'location': '$count'}
-                })
-                (data.geo);
-
-                var tData = new Array(selectedPeople.length+1);
-                selectedPeople.concat([selectedSubjectID]).forEach(
-                        function(s, i){
-                    tData[i] = activities
-                        .filter(function(a) {
-                            return a.user == s;
-                        }).sort(function(a, b){
-                            return b.time - a.time;
-                        });
-                })
-                console.log(activities);
-                new lineChart({
+                var splot1 = new scatterPlot({
                     container: geoViews.timeline.body,
                     height: geoViews.timeline.innerHeight,
-                    width: geoViews.timeline.innerWidth,
-                    padding: {left: 100, right: 50, top: 30, bottom: 50},
-                    data: tData,
-                    formatX: function(d) {
-                        return d.getFullYear() + '/' + d.getMonth();
-                    },
-                    // series: selectedPeople.concat([selectedSubjectID]),
-                    zero: true,
-                    vmap: {
-                        x: 'time',
-                        y: 'count',
-                        color: 'user',
-                        colorMap: function(d) {
-                            return (d == selectedSubjectID) ? 'teal' : 'purple';
+                    width: geoViews.timeline.innerWidth / 2,
+                    padding: {left: 50, right: 30, top: 30, bottom: 50},
+                    data:  dayActivities,
+                    onselect: function(d) {
+                        var newNodeId = dayOfWeek[d];
+        ;
+                        var links = dayActivities.filter(function(a){
+                            return a.day == d;
+                        });
+                        var newNode = {
+                            id: newNodeId,
+                            type: 'time',
+                            pos: [0, geoViews.ontograph.innerHeight],
+                            value: links.reduce((a,b)=>a.count+b.count)
                         }
-                        // color: 'user',
+
+                        infoGraph.append({
+                            nodes: newNode,
+                            links: links
+                        });
+                    },
+                    formatX: function(d) { return dayOfWeek_short[d];},
+                    title: 'Weekly Activities',
+                    colors: function(d) {
+                        console.log(d, selectedSubjectID);
+                        return (d == selectedSubjectID) ? 'teal' : 'purple';
+                    },
+
+                    vmap: {
+                        x: 'day',
+                        y: 'user',
+                        size: 'count',
+                        color: 'user',
                     }
                 })
+                //
+                // var activities = pipeline()
+                // .match({
+                //     user: {$in: selectedPeople.concat([selectedSubjectID])},
+                // })
+                // .group({
+                //     $by:  ['user', 'year', 'month'],
+                //     time: '$min',
+                //     count: {'location': '$count'}
+                // })
+                // (data.geo);
+                //
+                // var tData = new Array(selectedPeople.length+1);
+                // selectedPeople.concat([selectedSubjectID]).forEach(
+                //         function(s, i){
+                //     tData[i] = activities
+                //         .filter(function(a) {
+                //             return a.user == s;
+                //         }).sort(function(a, b){
+                //             return b.time - a.time;
+                //         });
+                // })
+                // console.log(activities);
+                // new lineChart({
+                //     container: geoViews.timeline.body,
+                //     height: geoViews.timeline.innerHeight,
+                //     width: geoViews.timeline.innerWidth,
+                //     padding: {left: 100, right: 50, top: 30, bottom: 50},
+                //     data: tData,
+                //     formatX: function(d) {
+                //         return d.getFullYear() + '/' + d.getMonth();
+                //     },
+                //     // series: selectedPeople.concat([selectedSubjectID]),
+                //     zero: true,
+                //     vmap: {
+                //         x: 'time',
+                //         y: 'count',
+                //         color: 'user',
+                //         colorMap: function(d) {
+                //             return (d == selectedSubjectID) ? 'teal' : 'purple';
+                //         }
+                //         // color: 'user',
+                //     }
+                // })
             }
 
             var monthlyActivities = pipeline()

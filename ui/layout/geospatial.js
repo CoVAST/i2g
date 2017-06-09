@@ -19,7 +19,7 @@ define(function(require){
                 {
                     width: 0.5,
                     rows: [
-                        {id: 'ontogeo-view', height: 0.7},
+                        {id: 'ontograph-view', height: 0.7},
                         {id: 'detail-view', height: 0.3}
                     ]
                 },
@@ -46,6 +46,15 @@ define(function(require){
         views.map = new Panel({
             container: appLayout.cell('map-view'),
             id: "map",
+            title: "Locations",
+            header: {height: 35, style: {backgroundColor: '#FFF'}}
+        });
+
+        views.ontograph = new Panel({
+            container: appLayout.cell('ontograph-view'),
+            id: "panel-ontograph",
+            title: "Concept Map",
+            header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
 
         appLayout.views = views;
