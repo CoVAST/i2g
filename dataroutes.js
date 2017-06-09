@@ -1,12 +1,38 @@
 var Baby = require('babyparse');
 var R = require('ramda');
 var fs = require('fs');
+var path = require('path');
 var nodejieba = require('nodejieba');
 
+let wordToRecordId = {};
+fs.readFile(path.join(__dirname, '/data/chinavis/words.json'), (err, str) => {
+    wordToRecordId = JSON.parse(str);
+});
+
+let records = [];
+fs.readFile('./data/chinavis/records.json', (err, str) => {
+    records = JSON.parse(str);
+})
+
 exports.setup = function(app) {
-    // app.get('/chinavis/wordcounts', function(req, res) {
-    //     res.sendFile('./data/chinavis/wordcounts.json');
-    // })
+    app.get('/chinavis/records/:word', (req, res) => {
+        let ids = wordToRecordId[req.params.word] || [];
+        let requested = R.map(id => records[id], ids);
+        let uniques = {}
+        R.forEach(record => {
+            if (!uniques[record.content]) {
+                uniques[record.content] = [];
+            }
+            let copy = R.clone(record);
+            delete copy.content;
+            uniques[record.content].push(copy);
+        }, requested);
+        const convert =
+                R.compose(R.map(R.zipObj(['content', 'metas'])), R.toPairs);
+        let array = convert(uniques);
+        // console.log(array.length);
+        res.send(array.slice(0, 500));
+    })
 }
 
 exports.init = function() {
