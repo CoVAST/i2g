@@ -28,17 +28,18 @@ define(function() {
 
         var simulation = d3.forceSimulation(nodes)
             .force("charge", d3.forceManyBody().strength(-1000))
-            .force("link", d3.forceLink(links).distance(200))
+            .force("link", d3.forceLink(links).distance(200).strength(1).iterations(20))
             .force("center", d3.forceCenter(width / 2, height / 2))
             .on("tick", ticked)
             // .force("x", d3.forceX())
             // .force("y", d3.forceY())
             .alphaTarget(0.3)
+            .stop()
         //
         ;
 
         var g = svg.append("g"),
-            link = g.append("g").attr("stroke", "#000").selectAll(".link"),
+            link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
             node = g.append("g").attr("stroke", "#fff").selectAll(".node");
 
 
@@ -78,6 +79,9 @@ define(function() {
                 .attr("stroke-width", (d)=>linkSize(d.value))
                 .merge(link);
 
+            link.append('title')
+                .text((d)=>(d.value))
+
             // Update and restart the simulation.
             simulation.nodes(nodes);
             simulation.force("link").links(links);
@@ -112,7 +116,8 @@ define(function() {
             var newNode = {
                 x: pos[0],
                 y: pos[1],
-                value: 10,
+                value: sn.value || 10,
+                type: sn.type || 'event',
                 id: id
             };
             nodes.push(newNode);
@@ -142,7 +147,7 @@ define(function() {
         }
 
         function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            // if (!d3.event.active) simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
             d.fy = d.y;
         }
@@ -155,7 +160,7 @@ define(function() {
         }
 
         function dragended(d) {
-            if (!d3.event.active) simulation.alphaTarget(0);
+            // if (!d3.event.active) simulation.alphaTarget(0);
             //   this.style.fill = selectionColor(d.id);
             onselect.call(this, d);
             //   d.fx = null;

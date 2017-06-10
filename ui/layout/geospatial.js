@@ -31,7 +31,7 @@ define(function(require){
         views.detail = new Panel({
             container: appLayout.cell('detail-view'),
             id: "panel-detail",
-            title: "Metrics / Statistics",
+            title: "History and Provenance",
             // style: {backgroundColor: '#222'},
             header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
@@ -39,7 +39,7 @@ define(function(require){
         views.timeline = new Panel({
             container: appLayout.cell('timeline-view'),
             id: "panel-timeline",
-            title: "Timeline View",
+            title: "Time Domain",
             header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
 

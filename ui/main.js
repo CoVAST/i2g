@@ -27,8 +27,8 @@ define(function(require) {
 
         var gmap = geoMap();
         ajax.getAll([
-            {url: '/data/test-relationship-small.csv', dataType: 'text'},
-            {url: '/data/test-geo280k-small.csv', dataType: 'text'}
+            {url: '/data/test-relationship.csv', dataType: 'text'},
+            {url: '/data/test-geo280k.csv', dataType: 'text'}
         ]).then(function(text){
             var data = {};
 
@@ -124,6 +124,8 @@ define(function(require) {
                 })
             }
 
+
+
             relationshipLayout.selections.append({
                 header: 'Subject ' + selectedSubjectID + ' (' +
                         activityTotal[selectedSubjectID].count + ' activtiies)',
@@ -165,7 +167,7 @@ define(function(require) {
                         // day: 6,
                     })
                     .group({
-                        $by: 'location',
+                        $by: ['location', 'user'],
                         long: '$first',
                         lat: '$first',
                         count: '$count',
@@ -218,7 +220,7 @@ define(function(require) {
 
                 var selectedGraph = {
                     nodes: graph.nodes.filter(function(d){return selectedPeople.indexOf(d.id) != -1;}),
-                    links: graph.links.filter(function(d){return selectedPeople.indexOf(d.target.id) != -1;})
+                    links: graph.links.filter(function(d){return selectedPeople.indexOf(d.target.id) != -1 && selectedPeople.indexOf(d.source.id) != -1;})
                 }
 
                 var infoGraph = ontoGraph({
@@ -237,14 +239,21 @@ define(function(require) {
                         cMaxLong = Math.max(c[0].lng, c[1].lng);
 
                     var selectedLocations = allGeoLocations.filter(function(a){
-
                         return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
                     })
+                    console.log(selectedLocations);
+                    var links = pipeline()
+                    .group({
+                        $by: ['user'],
+                        count: {'location': '$count'}
+                    })
+                    (selectedLocations);
 
+                    console.log(links);
 
                     infoGraph.append({
                         nodes: {id: "Location 0", type: "geo", pos: [0,0], value: selectedLocations.length},
-                        links: []
+                        links: links
                     });
                 })
 
@@ -310,6 +319,25 @@ define(function(require) {
                     colors: function(d) {
                         return (d == selectedSubjectID) ? 'teal' : 'purple';
                     },
+                    onselect: function(d) {
+                        var newNodeId = d;
+
+                        var links = hourActivities.filter(function(a){
+                            return a.hours == d;
+                        });
+
+                        var newNode = {
+                            id: 'Hours: ' + newNodeId,
+                            type: 'time',
+                            pos: [0, geoViews.ontograph.innerHeight],
+                            value: links.map((d)=>d.count).reduce((a,b)=>a+b)
+                        }
+
+                        infoGraph.append({
+                            nodes: newNode,
+                            links: links
+                        });
+                    },
                     vmap: {
                         x: 'hours',
                         y: 'user',
@@ -341,15 +369,15 @@ define(function(require) {
                     data:  dayActivities,
                     onselect: function(d) {
                         var newNodeId = dayOfWeek[d];
-        ;
                         var links = dayActivities.filter(function(a){
                             return a.day == d;
                         });
+
                         var newNode = {
                             id: newNodeId,
                             type: 'time',
                             pos: [0, geoViews.ontograph.innerHeight],
-                            value: links.reduce((a,b)=>a.count+b.count)
+                            value: links.map((d)=>d.count).reduce((a,b)=>a+b)
                         }
 
                         infoGraph.append({

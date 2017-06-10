@@ -179,7 +179,8 @@ define(function(require){
                     .style("stroke", 'red')
 
                 selected[dataId] = true;
-                onSelect(xDomains[xi]);
+                console.log(xi, dataId, xDomains);
+                onSelect(xDomains[dataId]);
             } else {
 
                 selectBox[dataId].remove();
