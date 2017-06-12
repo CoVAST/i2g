@@ -1,5 +1,7 @@
 define(function(){
-    return function geoLocation() {
+    return function geoLocation(options) {
+        var options = options || {};
+        var onAdd = options.onadd || function() {};
         var relatedPeople = new L.LayerGroup();
         var subjectLocations = new L.LayerGroup();
         var importantLocations = new L.LayerGroup();
@@ -60,6 +62,8 @@ define(function(){
                 callback: removeImportantGeo.bind(this, geo)
             })
             importantGeos.push(geo);
+
+            onAdd.call(this, geo);
         }
         var prepareAddImportantPolygon = (e) => {
             map._container.style.cursor = 'crosshair';
@@ -95,6 +99,7 @@ define(function(){
             tempImportantPolygon.leaflet.addLatLng(e.latlng);
         }
         var doneAddImportantPolygon = (e) => {
+            onAdd.call(this, tempImportantPolygon);
             importantGeos.push(tempImportantPolygon);
             tempImportantPolygon = null;
             map._container.style.cursor = '';
@@ -141,13 +146,14 @@ define(function(){
         var doneAddImportantRect = (e) => {
             console.log('doneAddImportantRect');
             tempImportantRect.coordinates[1] = e.latlng;
+            onAdd.call(this, tempImportantRect);
             importantGeos.push(tempImportantRect);
             tempImportantRect = null;
             map._container.style.cursor = '';
             isAddingImportantRect = false;
         }
         // set map center at SF
-        var map = L.map('map', {
+        var map = L.map('map-body', {
             center: [37.830348, -122.386052],
             zoom: 12,
             layers: [
@@ -232,7 +238,8 @@ define(function(){
         return {
             relatedPeople: relatedPeople,
             subjectLocations: subjectLocations,
-            importantLocations: importantLocations
+            importantLocations: importantLocations,
+            onadd: function(cb) { onAdd = cb;}
         }
     }
 })

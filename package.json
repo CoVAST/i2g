@@ -9,10 +9,12 @@
     "davi": "^0.1.1",
     "express": "^4.15.3",
     "i2v": "^0.2.1",
+    "jquery": "^3.2.1",
     "leaflet": "^1.0.3",
     "leaflet-contextmenu": "^1.4.0",
     "nodejieba": "^2.2.5",
     "p4.js": "^0.1.2",
+    "requirejs": "^2.3.3",
     "ramda": "^0.24.1",
     "requirejs": "^2.3.3"
   },
