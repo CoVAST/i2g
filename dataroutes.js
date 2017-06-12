@@ -4,17 +4,17 @@ var fs = require('fs');
 var path = require('path');
 var nodejieba = require('nodejieba');
 
-let wordToRecordId = {};
-fs.readFile(path.join(__dirname, '/data/chinavis/words.json'), (err, str) => {
-    wordToRecordId = JSON.parse(str);
-});
-
-let records = [];
-fs.readFile('./data/chinavis/records.json', (err, str) => {
-    records = JSON.parse(str);
-})
-
 exports.setup = function(app) {
+    let wordToRecordId = {};
+    fs.readFile('./data/chinavis/words.json', (err, str) => {
+        wordToRecordId = JSON.parse(str);
+    });
+
+    let records = [];
+    fs.readFile('./data/chinavis/records.json', (err, str) => {
+        records = JSON.parse(str);
+    })
+
     app.get('/chinavis/records/:word', (req, res) => {
         let ids = wordToRecordId[req.params.word] || [];
         let requested = R.map(id => records[id], ids);
