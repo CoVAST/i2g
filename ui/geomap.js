@@ -39,7 +39,7 @@ define(function(){
             }
         }
         var addImportantLocation = (e) => {
-            console.log('addImportantLocation');
+            //console.log('addImportantLocation');
             var geo = {
                 type: 'point',
                 coordinates: e.latlng,
@@ -107,12 +107,12 @@ define(function(){
             isAddingImportantPolygon = false;
         }
         var prepareAddImportantRect = (e) => {
-            console.log('prepareAddImportantRect');
+            //console.log('prepareAddImportantRect');
             map._container.style.cursor = 'crosshair';
             isAddingImportantRect = true;
         }
         var startAddImportantRect = (e) => {
-            console.log('startAddImportantRect');
+            //console.log('startAddImportantRect');
             tempImportantRect = {
                 type: 'rect',
                 coordinates: [e.latlng, e.latlng],
@@ -144,7 +144,7 @@ define(function(){
                     tempImportantRect.coordinates);
         }
         var doneAddImportantRect = (e) => {
-            console.log('doneAddImportantRect');
+            //console.log('doneAddImportantRect');
             tempImportantRect.coordinates[1] = e.latlng;
             onAdd.call(this, tempImportantRect);
             importantGeos.push(tempImportantRect);
@@ -179,11 +179,11 @@ define(function(){
 
         L.control.layers(baseLayers, overlays).addTo(map);
         map.on("zoomend", function(){
-            console.log(map.getBounds());
+            //console.log(map.getBounds());
         })
 
         map.on('mousedown', function(e) {
-            console.log('mousedown');
+            //console.log('mousedown');
             if (isAddingImportantRect) {
                 startAddImportantRect(e);
                 map.dragging.disable();
@@ -193,7 +193,7 @@ define(function(){
 
         var contextmenu = L.popup();
         map.on('mouseup', function(e) {
-            console.log('mouseup');
+            //console.log('mouseup');
             if (isAddingImportantRect) {
                 doneAddImportantRect(e);
                 map.dragging.enable();
@@ -202,7 +202,7 @@ define(function(){
         })
 
         map.on('mousemove', function(e) {
-            console.log('mousemove');
+            //console.log('mousemove');
             if (isAddingImportantRect) {
                 addingImportantRect(e);
                 L.DomEvent.stop(e);
@@ -210,7 +210,7 @@ define(function(){
         })
 
         map.on('click', function(e) {
-            console.log('click');
+            //console.log('click');
             if (isAddingImportantPolygon) {
                 addingImportantPolygon(e);
                 L.DomEvent.stop(e);
