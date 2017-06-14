@@ -5,8 +5,7 @@ define(function(require) {
 
     var pipeline = require('p4/core/pipeline');
 
-    var ontoGraph = require('./ontology-graph'),
-        temporalArea = require('./temporal-area');
+    var ontoGraph = require('./ontology-graph');
 
     return function() {
 
@@ -43,7 +42,18 @@ define(function(require) {
             height: graphPanel.innerHeight,
             domain: [0, 1],
             graph: {nodes: [], links: []}
-        })
+        });
+
+        graphPanel.header.append(new Button({
+            label: 'Add Node',
+            size: '0.6em'
+        }))
+
+        graphPanel.header.append(new Button({
+            label: 'Push',
+            types: ['teal'],
+            size: '0.6em'
+        }))
 
 
         $('#panel-igraph').transition('fade left');
@@ -80,7 +90,7 @@ define(function(require) {
                                 newLinks = [];
 
                             areas.forEach(function(area){
-        
+
                                 filter.lat = {$inRange: area.box.lat};
                                 filter.long = {$inRange: area.box.lng};
                                 filter.$or = datetimes;
@@ -161,8 +171,6 @@ define(function(require) {
 
         // var textLayout = require('./layout/textlayout')(),
         //     textViews = textLayout.views;
-
-
 
             // var nodes = [
             //     {
