@@ -2,10 +2,11 @@ define(function(){
     return function geoLocation(options) {
         var options = options || {};
         var onAdd = options.onadd || function() {};
-        var relatedPeople = new L.LayerGroup();
-        var subjectLocations = new L.LayerGroup();
+        var relatedLocations = new L.LayerGroup();
+        var primaryLocations = new L.LayerGroup();
         var importantLocations = new L.LayerGroup();
         gImportantLocations = importantLocations;
+
         var mbAttr = 'Map data &copy; ' +
                 '<a href="http://openstreetmap.org">OpenStreetMap</a> ' +
                 '© <a href="http://mapbox.com">Mapbox</a>',
@@ -20,8 +21,8 @@ define(function(){
                     mbUrl, {id: 'mapbox.streets',   attribution: mbAttr}),
             baseLayers = {"Grayscale": grayscale, "Streets": streets},
             overlays = {
-                "Subject Locations": subjectLocations,
-                "Related People": relatedPeople,
+                "Primary Locations": primaryLocations,
+                "Related People": relatedLocations,
                 "Important Locations": importantLocations
             };
         // important locations
@@ -158,8 +159,8 @@ define(function(){
             zoom: 12,
             layers: [
                 grayscale,
-                subjectLocations,
-                relatedPeople,
+                primaryLocations,
+                relatedLocations,
                 importantLocations
             ],
             contextmenu: true,
@@ -224,6 +225,28 @@ define(function(){
             }
         })
 
+        function addLocations(locs, params) {
+            var c = params.color || 'steelblue',
+                a = params.alpah || 0.5,
+                r = params.size || 200;
+
+            return locs.map(function(loc){
+                return L.circle([loc.lat, loc.long], {
+                    color: 'none',
+                    fillColor: c,
+                    // weight: 1,
+                    fillOpacity: a,
+                    radius: r
+                }).addTo(primaryLocations);
+            })
+        }
+
+        function removeLocations(locs) {
+            locs.forEach(function(loc){
+                primaryLocations.removeLayer(loc);
+            })
+        }
+
         // map.on('contextmenu', function() {
         //     console.log('contextmenu');
         // })
@@ -236,10 +259,12 @@ define(function(){
         // });
 
         return {
-            relatedPeople: relatedPeople,
-            subjectLocations: subjectLocations,
+            relatedLocations: relatedLocations,
+            primaryLocations: primaryLocations,
             importantLocations: importantLocations,
-            onadd: function(cb) { onAdd = cb;}
+            onadd: function(cb) { onAdd = cb;},
+            addLocations: addLocations,
+            removeLocations: removeLocations
         }
     }
 })

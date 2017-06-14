@@ -1,8 +1,7 @@
 define(function(require){
     var Layout = require('vastui/layout'),
         Panel = require('vastui/panel'),
-        Button = require('vastui/button'),
-        ProgressBar = require('vastui/progress');
+        Button = require('vastui/button');
 
     return function() {
         var appLayout = new Layout({
@@ -10,46 +9,87 @@ define(function(require){
             container: 'page-main',
             cols: [
                 {
-                    width: 0.7,
-                    rows: [
-                        {id: 'map-view', height: 0.7},
-                        {id: 'timeline-view', height: 0.3},
-                    ]
+                    width: 0.5,
+                    id: 'page-left'
                 },
                 {
-                    width: 0.3,
-                    rows: [
-                        {id: 'detail-view'}
-                    ]
+                    width: 0.5,
+                    id: 'page-right'
                 },
             ]
         });
 
         var views = {};
 
-        views.detail = new Panel({
-            container: appLayout.cell('detail-view'),
-            id: "panel-detail",
-            title: "Detail View",
-            // style: {backgroundColor: '#222'},
-            header: {height: 35, style: {backgroundColor: '#FFF'}}
+        views.left = new Panel({
+            container: appLayout.cell('page-left'),
+            id: "page-left-view",
+            // title: "Detail View",
+            // header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
 
-        views.timeline = new Panel({
-            container: appLayout.cell('timeline-view'),
-            id: "panel-timeline",
-            title: "Timeline View",
-            header: {height: 35, style: {backgroundColor: '#FFF'}}
-        });
-
-        views.map= new Panel({
-            container: appLayout.cell('map-view'),
-            id: "map",
+        views.right = new Panel({
+            container: appLayout.cell('page-right'),
+            id: "page-right-view",
+            // title: "Info Graph",
+            // header: {height: 40, style: {backgroundColor: '#FFF'}}
         });
 
         appLayout.views = views;
+
+
+        // layouts.people = new Layout({
+        //     margin: 10,
+        //     id: 'view-people',
+        //     container: "domain-vis",
+        //     cols: [
+        //         {
+        //             width: 0.5,
+        //             id: 'view-people-subject'
+        //         },
+        //         {
+        //             width: 0.5,
+        //             id: 'view-people-related'
+        //         },
+        //     ]
+        // })
+
+        // layouts.datetime = new Layout({
+        //     margin: 10,
+        //     id: 'view-datetime',
+        //     container: "domain-vis",
+        //     rows: [
+        //         {
+        //             width: 0.7,
+        //             id: 'view-datetime-stats'
+        //         },
+        //         {
+        //             width: 0.3,
+        //             id: 'view-datetime-plot'
+        //         },
+        //     ]
+        // })
+
+        // layouts.location = new Layout({
+        //     margin: 10,
+        //     container: "domain-vis",
+        //     rows: [
+        //         {
+        //             width: 0.7,
+        //             id: 'view-locaiton-map'
+        //         },
+        //         {
+        //             width: 0.3,
+        //             id: 'view-location-datetime'
+        //         },
+        //     ]
+        // })
+
+        // layouts.provenance = new Layout({
+        //     margin: 10,
+        //     container: "domain-vis"
+        // })
+
         return appLayout;
-
     }
-
 })

@@ -19,9 +19,9 @@
         border-bottom: 4px solid teal;
     }
 
-    .selected.item  {
+    /*.selected.item  {
         border: 3px solid teal;
-    }
+    }*/
 
     .selected.item > div, .selected.item > i {
         color: #000;
@@ -29,12 +29,6 @@
     .links line {
       stroke: #999;
       stroke-opacity: 0.6;
-    }
-
-    .nodes circle {
-      stroke: #fff;
-      stroke-width: 1.5px;
-      background: url("images/user.svg")  no-repeat;
     }
 
     </style>
@@ -56,17 +50,14 @@
         <div class="item">
           <h2 style="color: teal;">COVA</h2>
         </div>
-        <a id="button-relationship" href="#page-relationship"
+        <a  href="#panel-selection"
             class="item active">
-          <i class="users large teal icon"></i>Relationship
+          <i class="users large teal icon"></i>Selection
         </a>
-        <a id="button-geospatial" href="#page-geospatial" class="item">
-          <i class="marker large teal icon"></i>Geolocation
+        <a  href="#panel-igraph" class="item">
+          <i class="marker large teal icon"></i>Analysis
         </a>
-        <a id="button-text" href="#page-text" class="item">
-          <i class="font large teal icon"></i>Text
-        </a>
-        <a id="button-collaboration" href="#page-collaboration" class="item">
+        <a href="#page-collaboration" class="item">
           <i class="universal access large teal icon"></i>Collaboration
         </a>
         <div class="right menu">
@@ -85,11 +76,10 @@
         </div>
       </div>
       <div id="page-main">
-        <div class="ui content sticky fixed cv-page cv-page-active"
-            id="page-relationship"></div>
-        <div class="ui content sticky fixed cv-page"
-            id="page-geospatial"></div>
+        <div class="ui content sticky fixed cv-page cv-page-active" id="page-relationship"></div>
+        <div class="ui content sticky fixed cv-page" id="page-geospatial"></div>
         <div class="ui content sticky fixed cv-page" id="page-text"></div>
+        <div class="ui content sticky fixed cv-page" id="page-collaboration"></div>
       </div>
 
       <div class="ui small modal">
@@ -115,7 +105,7 @@
 
         require(["main"], function(main) {
 
-            $(".cv-page")
+            $("#page-main")
                 .css("height", $("body").height() - $('#page-header')
                 .height());
 
