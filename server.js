@@ -17,13 +17,13 @@ app.use("/npm", express.static('node_modules'));
 
 // ivastack libs
 var srcDir = {
-    vui: './node_modules/davi/src',
+    davi: './davi/src',
     i2v: './node_modules/i2v/src',
     p4: './node_modules/p4.js/src',
 }
 
 
-app.use("/vastui", express.static(srcDir.vui));
+app.use("/vastui", express.static(srcDir.davi));
 app.use("/semantic", express.static('./semantic'));
 app.use("/i2v", express.static(srcDir.i2v));
 app.use("/p4",  express.static(srcDir.p4));

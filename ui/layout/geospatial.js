@@ -7,7 +7,7 @@ define(function(require){
     return function() {
         var appLayout = new Layout({
             margin: 10,
-            container: 'page-geospatial',
+            container: 'page-right-view-body',
             cols: [
                 {
                     width: 0.5,
