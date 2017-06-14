@@ -14,8 +14,44 @@ exports.setupRoutes = function(app) {
             let pathname = './data/chinavis/' + date + '.json';
             fs.readFile(pathname, (err, str) => {
                 _cache[date] = JSON.parse(str);
+                _cache[date].messages = R.filter(
+                        msgObj => msgObj.content, _cache[date].messages);
                 callback(_cache[date]);
             });
+        }
+        let paramsToMessages = (parameters) => {
+            let obj = _cache[parameters.date];
+            let dateMsgs = obj.messages;
+            console.log(parameters);
+            let msgs = R.filter(message => {
+                let containsWords =
+                        R.isEmpty(parameters.words) ||
+                        R.all(bool => bool)(
+                            R.map(
+                                word => R.contains(word, message.content),
+                                parameters.words));
+                let containsSenders =
+                        R.isEmpty(parameters.senders) ||
+                        R.all(bool => bool)(
+                            R.map(
+                                sender => R.equals(
+                                    sender, message.phone),
+                                    parameters.senders));
+                return R.and(containsWords, containsSenders);
+            }, dateMsgs);
+            let uniques = {}
+            R.forEach(record => {
+                if (!uniques[record.content]) {
+                    uniques[record.content] = [];
+                }
+                let copy = R.clone(record);
+                delete copy.content;
+                uniques[record.content].push(copy);
+            }, msgs);
+            const convert =
+                    R.compose(
+                            R.map(R.zipObj(['content', 'metas'])), R.toPairs);
+            return convert(uniques);
         }
 
         return {
@@ -48,7 +84,13 @@ exports.setupRoutes = function(app) {
                 });
             },
             messages: (parameters, callback) => {
-                console.log(parameters);
+                if (R.contains(parameters.date, R.keys(_cache))) {
+                    callback(paramsToMessages(parameters));
+                    return;
+                }
+                readDate(parameters.date, obj => {
+                    callback(paramsToMessages(parameters));
+                });
             }
         }
     })();
