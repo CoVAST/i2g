@@ -27,8 +27,8 @@ define(function(require) {
 
         var gmap = geoMap();
         ajax.getAll([
-            {url: '/data/test-relationship.csv', dataType: 'text'},
-            {url: '/data/test-geo280k.csv', dataType: 'text'}
+            {url: '/data/test-relationship-small.csv', dataType: 'text'},
+            {url: '/data/test-geo280k-small.csv', dataType: 'text'}
         ]).then(function(text){
             var data = {};
 
