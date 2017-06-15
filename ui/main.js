@@ -74,8 +74,8 @@ define(function(require) {
 
         $('#panel-igraph').transition('fade left');
 
-        // var selection = require('./selection-chinavis')({
-        var selection = require('./selection')({
+
+        var selection = require('/selection')({
             onselect: function(pid, locs) {
 
                 // console.log(locs);
