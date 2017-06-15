@@ -14,9 +14,9 @@
     "leaflet-contextmenu": "^1.4.0",
     "nodejieba": "^2.2.5",
     "p4.js": "^0.1.2",
-    "requirejs": "^2.3.3",
     "ramda": "^0.24.1",
-    "requirejs": "^2.3.3"
+    "requirejs": "^2.3.3",
+    "socket.io": "^2.0.3"
   },
   "devDependencies": {},
   "scripts": {

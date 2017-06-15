@@ -32,7 +32,6 @@ app.use("/p4",  express.static(srcDir.p4));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-//require('./dataroutes.js').setup(app);
 var users = [],
     largeDisplay = null;
 
@@ -69,6 +68,9 @@ io.on('connection', function (socket) {
     //     username: socket.username,
     // });
 });
+
+require('./dataroutes.js').setupRoutes(app);
+
 
 server.listen(port, host, function(){
     console.log("server started, listening", host, port);

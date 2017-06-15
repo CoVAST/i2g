@@ -74,8 +74,11 @@ define(function(require) {
 
         $('#panel-igraph').transition('fade left');
 
+        // var selection = require('./selection-chinavis')({
         var selection = require('./selection')({
             onselect: function(pid, locs) {
+
+                // console.log(locs);
 
                 // Add locations
                 people.push(pid);
@@ -87,14 +90,13 @@ define(function(require) {
                         links: []
                     });
                 } else {
-                    console.log('remove locations');
-                    console.log(locations[pid]);
                     map.removeLocations(locationMarks[pid]);
                     delete locations[pid];
                     delete locationMarks[pid];
                 }
 
                 var allLocs = getAllLocations();
+                // console.log(allLocs);
 
                 if(allLocs.length){
 

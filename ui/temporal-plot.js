@@ -68,12 +68,16 @@ define(function(require){
 
         if(vmap.size) {
             var sizeDomain = stats.domains(this.data, [vmap.size])[vmap.size];
+
             if(sizeDomain[1] !== sizeDomain [0])
+
+            if (sizeDomain[0] !== sizeDomain[1]) {
                 size = scale({
                     type: 'linear',
                     domain: sizeDomain,
                     range: [2, this.$height / yDomains.length /2]
                 });
+            }
         }
 
         if(axisOptions.hasOwnProperty('x')) {
