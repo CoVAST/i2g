@@ -3,11 +3,12 @@ define(function(require) {
     var Panel = require('vastui/panel.js'),
         Button = require('vastui/button');
 
-    var pipeline = require('p4/core/pipeline');
+    var arrays = require('p4/core/arrays'),
+        pipeline = require('p4/core/pipeline');
 
     var ontoGraph = require('./ontology-graph');
 
-    return function() {
+    return function(webSocket) {
 
         var ui = require('./layout/layout')();
 
@@ -45,14 +46,29 @@ define(function(require) {
         });
 
         graphPanel.header.append(new Button({
-            label: 'Add Node',
+            label: '+Node',
+            types: ['blue'],
             size: '0.6em'
         }))
 
         graphPanel.header.append(new Button({
-            label: 'Push',
-            types: ['teal'],
+            label: '+Edge',
+            types: ['blue'],
             size: '0.6em'
+        }))
+
+        graphPanel.header.append(new Button({
+            label: 'Share',
+            types: ['teal'],
+            size: '0.6em',
+            onclick: function() {
+                var graph = {
+                    nodes: igraph.getNodes(),
+                    links: igraph.getLinks()
+                };
+                console.log('push graph to server');
+                webSocket.emit('push', graph);
+            }
         }))
 
 
@@ -63,18 +79,19 @@ define(function(require) {
 
                 // Add locations
                 people.push(pid);
-                if(!locations.hasOwnProperty(pid) || locations[pid] === null){
+                if(!locations.hasOwnProperty(pid)){
                     locations[pid] = locs;
-                    locationMarks [pid] = map.addLocations(locs, {color: 'purple'});
+                    locationMarks[pid] = map.addLocations(locs, {color: 'purple'});
                     igraph.append({
                         nodes: {id: pid, type: "people", pos: [100,100], value: 0},
                         links: []
                     });
                 } else {
                     console.log('remove locations');
-                    map.removeLocations(locations[pid]);
-                    locations[pid] = null;
-                    locationMarks[pid] = null;
+                    console.log(locations[pid]);
+                    map.removeLocations(locationMarks[pid]);
+                    delete locations[pid];
+                    delete locationMarks[pid];
                 }
 
                 var allLocs = getAllLocations();
@@ -112,14 +129,45 @@ define(function(require) {
                                             source: res.user,
                                             target: res[key],
                                             value: res.value,
+                                            dest: res.area
                                         });
                                         newLinks.push({
                                             source: res[key],
                                             target: res.area,
                                             value: res.value,
+                                            dest: res.area
                                         });
-                                    })
+                                    });
                                 })
+
+                                var matchedPeople = arrays.unique(matches.map((d)=>d.user));
+                                var otherPeople = arrays.diff(people,matchedPeople);
+
+                                if(otherPeople.length) {
+                                    var extraReults = pipeline()
+                                    .match({
+                                        user: {$in: otherPeople}
+                                    })
+                                    .group({
+                                        $by: ['user'],
+                                        value: '$count'
+                                    })
+                                    .derive(function(d){
+                                        d.area = area.label;
+                                    })
+                                    (allLocs);
+
+                                    extraReults.forEach(function(res){
+                                        newLinks.push({
+                                            source: res.user,
+                                            target: res.area,
+                                            value: res.value,
+                                            dest: res.area
+                                        });
+                                    });
+                                }
+                                console.log(extraReults, newLinks);
+
                             });
 
                             igraph.update({
@@ -147,7 +195,7 @@ define(function(require) {
             var selectedLocations = getAllLocations().filter(function(a){
                 return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
             })
-            console.log(selectedLocations);
+            // console.log(selectedLocations);
             var links = pipeline()
             .group({
                 $by: ['user'],

@@ -59,7 +59,7 @@ define(function(require){
                 })
                 .group({
                   $by: ['day', 'user'],
-                  count: {'location': '$count'}
+                  count: '$count'
                 })
                 .sortBy({day: 1})
                 (data);
@@ -104,17 +104,17 @@ define(function(require){
             })
             .derive(function(d){
                 if(d.hour < 4)
-                    d.hours = '0 - 4';
+                    d.hours = '0 - 4am';
                 else if(d.hour < 8)
-                    d.hours = '4 - 8';
+                    d.hours = '4 - 8am';
                 else if(d.hour < 12)
-                    d.hours = '8 - 12';
+                    d.hours = '8 - 12pm';
                 else if(d.hour < 16)
-                    d.hours = '12 - 16';
+                    d.hours = '12 - 16pm';
                 else if(d.hour < 20)
-                    d.hours = '16 - 20';
+                    d.hours = '16 - 20pm';
                 else
-                    d.hours = '20 - 24';
+                    d.hours = '20 - 24pm';
             })
             .group({
                 $by: ['hours', 'user'],

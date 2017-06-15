@@ -35,7 +35,7 @@
     <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' /> -->
     <link rel="stylesheet" href="/npm/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="/npm/leaflet-contextmenu/dist/leaflet.contextmenu.css"/>
-    <title>Collaborative Analysis of Spatiotemporal Data</title>
+    <title>CoVA | Collaborative Visual Analytics</title>
     <!-- <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script> -->
     <script src="/npm/jquery/dist/jquery.min.js"></script>
     <script src="http://d3js.org/d3.v4.min.js"></script>
@@ -44,11 +44,12 @@
     <script src="/npm/leaflet/dist/leaflet.js"></script>
     <script src="/npm/leaflet-contextmenu/dist/leaflet.contextmenu.js"></script>
     <script src="/semantic/dist/semantic.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
       <div class="ui top menu page-menu" id="page-header" style="margin:0;">
         <div class="item">
-          <h2 style="color: teal;">COVA</h2>
+          <h2 style="color: teal;">CoVA</h2>
         </div>
         <a  href="#panel-selection"
             class="item active">
@@ -102,7 +103,7 @@
 
     <script src="npm/requirejs/require.js"></script>
     <script>
-
+        var webSocket = io();
         require(["main"], function(main) {
 
             $("#page-main")
@@ -118,13 +119,20 @@
                 $(this.getAttribute('href')).transition('fade left');
             })
 
-            main();
+            main(webSocket);
             $('.cv-page').not('.cv-page-active').hide();
             $('.ui.dropdown').dropdown();
 
             let setUserName = function(name) {
-                $('#panel-user-name').html(name);
-                sessionStorage.setItem('username', name);
+                webSocket.emit('add user',{name: name});
+
+                webSocket.on('login', function(msg){
+                    console.log(msg);
+                    console.log('logged in');
+                    $('#panel-user-name').html(name);
+                    sessionStorage.setItem('username', name);
+                })
+
             }
             let hideModalAndSetUserName = function() {
                 $('.ui.modal').modal('hide');

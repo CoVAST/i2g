@@ -28,10 +28,29 @@ define(function(require) {
               .attr("orient", "auto")
             .append("svg:path")
             //   .attr("stroke", "red")
-              .attr("stroke", "red")
+              .attr("stroke", "none")
+              .attr("fill", "purple")
               .attr("d", "M0,-5L10,0L0,5");
 
-        var nodeColor = d3.scaleOrdinal(d3.schemeCategory10);
+        var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
+
+        var nodeTypeColor = {
+            location: 'red',
+            people: 'purple',
+            time: 'green',
+            date: 'green',
+            day: 'green',
+            datetime: 'green'
+        }
+        var nodeColor = function(d) {
+            // if(d.type == 'location') {
+            //     return linkColor(d.id);
+            // }
+            if(nodeTypeColor.hasOwnProperty(d.type))
+                return nodeTypeColor[d.type];
+            else
+                return 'black';
+        }
 
         var nodeSize = d3.scalePow()
             .exponent(0.20)
@@ -108,6 +127,7 @@ define(function(require) {
             link = link.enter()
                 .append("path")
                 .attr("stroke-width", (d)=>linkSize(d.value))
+                // .attr("stroke", (d)=>linkColor(d.dest))
                 .attr("marker-mid", "url(#end)")
                 .merge(link);
 
@@ -119,9 +139,7 @@ define(function(require) {
             simulation.force("link").links(links).iterations(10);
             simulation.alphaTarget(0.1).restart();
 
-            link.data(links, function(){
 
-            })
 
         }
 
@@ -198,7 +216,27 @@ define(function(require) {
             restart();
         }
 
-        svg.on('dblclick', addNode);
+        function remake(graph) {
+            nodes = graph.nodes;
+            nodeHash = {};
+            nodes.forEach(function(n){
+                nodeHash[n.id] = n;
+                n.fx = null;
+                n.fy = null;
+            })
+            links = graph.links.map(function(sl){
+                return {
+                    source: nodeHash[sl.source.id],
+                    target: nodeHash[sl.target.id],
+                    value: sl.value,
+                };
+            });
+
+            restart();
+        }
+
+
+        // svg.on('dblclick', addNode);
 
         function ticked() {
             node.attr("cx", function(d) {return d.x;})
@@ -290,7 +328,7 @@ define(function(require) {
                 nodeIcons[d.id].append("path")
                     .attr("transform", "scale(0.1)")
                     .attr("d", logos[d.type])
-                    .attr("fill", nodeColor(d.type))
+                    .attr("fill", nodeColor(d))
             }
 
         }
@@ -309,12 +347,16 @@ define(function(require) {
 
         }
 
+        function getNodes() { return nodes;}
+        function getLinks() { return links;}
+
         return {
             addNode: addNode,
-            nodes: nodes,
-            links: links,
+            getNodes: getNodes,
+            getLinks: getLinks,
             append: append,
-            update: update
+            update: update,
+            remake: remake
         }
     }
 })

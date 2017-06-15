@@ -75,6 +75,7 @@ define(function(require){
             }
         })
 
+
         var relatedPeople = new List({
             container: views.related.body,
             types: ['divided', 'selection'],
@@ -92,8 +93,8 @@ define(function(require){
         var selectedSubjectID = 0, selected = [];
 
         ajax.getAll([
-            {url: '/data/test-relationship-small.csv', dataType: 'text'},
-            {url: '/data/test-geo280k-small.csv', dataType: 'text'}
+            {url: '/data/test-relationship.csv', dataType: 'text'},
+            {url: '/data/test-geo280k.csv', dataType: 'text'}
         ]).then(function(text){
             data.relationship = dataStruct({
                 array: dsv(text[0], '\t'),
@@ -157,6 +158,8 @@ define(function(require){
                             data.activityTotal[i].count + ' activtiies'
                 })
             })
+
+            subjects.get(0).className += ' selected'
 
             data.activityTotal.forEach(function(d){
                 relatedPeople.append({

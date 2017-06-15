@@ -3,7 +3,8 @@ var fs = require('fs'),
     express = require('express'),
     bodyParser = require('body-parser'),
     app = express(),
-    server = require('http').Server(app);
+    server = require('http').Server(app),
+    io = require('socket.io')(server);
 
 var port = process.env.PORT || 7000,
     host = process.env.HOST || "localhost";
@@ -32,6 +33,42 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 //require('./dataroutes.js').setup(app);
+var users = [],
+    largeDisplay = null;
+
+io.on('connection', function (socket) {
+    socket.on('add user', function (userInfo) {
+        socket.user = userInfo;
+        console.log(userInfo);
+        users.push(socket.user);
+
+        socket.emit('login', {
+            numUsers: users.length
+        });
+    });
+
+    socket.on('large display', function(displayInfo) {
+        largeDisplay = socket;
+        console.log('Large Display connected');
+    });
+
+    socket.on('push', function(graph) {
+        socket.user.graph = graph;
+        if(largeDisplay !== null) {
+            var graph = {links: [], nodes:[]};
+            users.forEach(function(user){
+                graph.nodes = graph.nodes.concat(user.graph.nodes);
+                graph.links = graph.links.concat(user.graph.links);
+            })
+            largeDisplay.emit('update', graph)
+        }
+    });
+
+    // socket.broadcast.emit('bcast msg', {
+    //     title: 'new user joined',
+    //     username: socket.username,
+    // });
+});
 
 server.listen(port, host, function(){
     console.log("server started, listening", host, port);
