@@ -2,41 +2,6 @@ define(function(require) {
     // dependencies
     var Panel = require('vastui/panel.js'),
         Button = require('vastui/button');
-
-    // return function() {
-    //     var relationshipLayout = require('./layout/relationship')(),
-    //         relationViews = relationshipLayout.views;
-    //     var geospatialLayout = require('./layout/geospatial')(),
-    //         geoViews = geospatialLayout.views;
-    //     var textLayout = require('./layout/textlayout')(),
-    //         textViews = textLayout.views;
-
-    //     var gmap = geoMap();
-    //     ajax.getAll([
-    //         {url: '/data/test-relationship-small.csv', dataType: 'text'},
-    //         {url: '/data/test-geo280k-small.csv', dataType: 'text'}
-    //     ]).then(function(text){
-    //         var data = {};
-
-    //         data.relationship = dataStruct({
-    //             array: dsv(text[0], '\t'),
-    //             header: ['source', 'target'],
-    //             types: ['int', 'int']
-    //         }).objectArray();
-
-    //         data.geo = dataStruct({
-    //             array: dsv(text[1], '\t'),
-    //             header: ['user', 'time', 'lat', 'long', 'location'],
-    //             types: ['int', 'time', 'float', 'float', 'string']
-    //         }).objectArray();
-
-    //         var subjects = pipeline()
-    //         .group({
-    //             $by: 'source',
-    //             connection: {target: '$count'}
-    //         })
-    //         (data.relationship);
-
     var pipeline = require('p4/core/pipeline');
     var ontoGraph = require('./ontology-graph');
 
