@@ -54,7 +54,8 @@ return function(arg) {
     	// console.log(msgObj);
         let pid = msgObj.content;
         let locs = R.map(meta => {
-        	let time = new Date(meta.recitime * 1000);
+        	// console.log(meta.recitime * 1000, meta.recitime + '000');
+        	let time = new Date(parseInt(meta.recitime));
             return {
             	day: time.getDay(),
             	hour: time.getHours(),

@@ -60,7 +60,7 @@ define(function(require) {
         // var selection = require('./selection')({
             onselect: function(pid, locs) {
 
-                console.log(locs);
+                // console.log(locs);
 
                 // Add locations
                 people.push(pid);
@@ -79,7 +79,7 @@ define(function(require) {
                 }
 
                 var allLocs = getAllLocations();
-                console.log(allLocs);
+                // console.log(allLocs);
 
                 if(allLocs.length){
 
