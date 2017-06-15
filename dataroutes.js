@@ -22,7 +22,7 @@ exports.setupRoutes = function(app) {
         let paramsToMessages = (parameters) => {
             let obj = _cache[parameters.date];
             let dateMsgs = obj.messages;
-            console.log(parameters);
+            // console.log(parameters);
             let msgs = R.filter(message => {
                 let containsWords =
                         R.isEmpty(parameters.words) ||
@@ -136,7 +136,7 @@ exports.setup = function(app) {
                 R.compose(R.map(R.zipObj(['content', 'metas'])), R.toPairs);
         let array = convert(uniques);
         // console.log(array.length);
-        res.send(array.slice(0, 500));
+        res.send(array.slice(0, 300));
     })
 }
 

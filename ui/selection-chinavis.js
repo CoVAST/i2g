@@ -48,9 +48,27 @@ return function(arg) {
     });
     document.getElementById('filter-view').style.whiteSpace = 'nowrap';
     document.getElementById('filter-view').style.overflow = 'auto';
-    appLayout.messagesPopulated = () => {
-    	console.log('messagesPopulated');
-    };
+    let logFunc = (str) => () => console.log(str);
+    appLayout.messagesPopulated = logFunc('messagesPopulated');
+    appLayout.messageClicked = (msgObj) => {
+    	// console.log(msgObj);
+        let pid = msgObj.content;
+        let locs = R.map(meta => {
+        	let time = new Date(meta.recitime * 1000);
+            return {
+            	day: time.getDay(),
+            	hour: time.getHours(),
+            	hours: time.getHours() + ' - ' + time.getHours(),
+                lat: meta.lat,
+            	location: meta.md5,
+                long: meta.lng,
+                month: time.getMonth(),
+                time: time,
+                user: msgObj.content
+            }
+        }, msgObj.metas);
+        onSelect(pid, locs);
+    }
 
     let dates = [];
     let wordCounts = [];
@@ -170,7 +188,8 @@ return function(arg) {
     })
     let smsList = new List({
         container: views.sms.body,
-        types: ['selection']
+        types: ['selection'],
+        onselect: id => appLayout.messageClicked(msgObjs[id])
     })
 
     let datesLoading = ajax.get({ url: '/chinavis/dates' })
