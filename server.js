@@ -22,6 +22,18 @@ var srcDir = {
     p4: './node_modules/p4.js/src',
 }
 
+let dataPath = 'selection.js';
+app.get("/selection", (req, res) => {
+    res.sendFile(__dirname + '/ui/' + dataPath);
+})
+app.get("/data/:dataSrc", (req, res) => {
+    if (req.params.dataSrc === 'chinavis') {
+        dataPath = 'selection-chinavis.js';
+    } else {
+        dataPath = 'selection.js';
+    }
+    res.redirect('/');
+})
 
 app.use("/vastui", express.static(srcDir.davi));
 app.use("/semantic", express.static('./semantic'));
