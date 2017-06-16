@@ -73,6 +73,45 @@ return function geoLocation(options) {
         resetCursor();
         onAdd.call(this, geo);
     }
+    let prepareAddImportantPath = e => {
+        setCursorToCrosshair();
+        map.doubleClickZoom.disable();
+        let thePath = {
+            type: 'polyline',
+            coordinates: [],
+            leaflet: L.polyline([], {
+                color: importantGeoColor,
+                opacity: 0.8,
+                weight: 1,
+                contextmenu: true,
+                contextmenuItems: [{
+                    separator: true,
+                    index: 0
+                }]
+            }).addTo(importantLocations)
+        };
+        map.on('click', addingImportantPath, thePath);
+        map.on('dblclick', doneAddImportantPath, thePath);
+    }
+    let addingImportantPath = function(e) {
+        let thePath = this;
+        thePath.coordinates.push(e.latlng);
+        thePath.leaflet.addLatLng(e.latlng);
+    }
+    let doneAddImportantPath = function(e) {
+        let thePath = this;
+        importantGeos.push(thePath);
+        thePath.leaflet.addContextMenuItem({
+            text: "Remove",
+            index: 0,
+            callback: removeImportantGeo.bind(this, thePath)
+        });
+        resetCursor();
+        map.doubleClickZoom.enable();
+        map.off('click', addingImportantPath, thePath);
+        map.off('dblclick', doneAddImportantPath, thePath);
+        onAdd.call(this, thePath);
+    }
     var prepareAddImportantPolygon = (e) => {
         setCursorToCrosshair();
         map.doubleClickZoom.disable();
@@ -101,8 +140,7 @@ return function geoLocation(options) {
             tempImportantPolygon.leaflet.addContextMenuItem({
                 text: "Remove",
                 index: 0,
-                callback:
-                    removeImportantGeo.bind(this, tempImportantPolygon)
+                callback: removeImportantGeo.bind(this, tempImportantPolygon)
             })
         }
         tempImportantPolygon.coordinates.push(e.latlng);
@@ -176,7 +214,7 @@ return function geoLocation(options) {
     }
     // set map center at SF
     var map = L.map('map-body', {
-        center: [37.830348, -122.386052],
+        center: [39.871822355, 116.404827115],
         zoom: 12,
         layers: [
             grayscale,
@@ -186,16 +224,24 @@ return function geoLocation(options) {
         ],
         contextmenu: true,
         contextmenuWidth: 140,
-        contextmenuItems: [{
-            text: 'Add location',
-            callback: prepareAddImportantLocation
-        }, {
-            text: 'Add rectangle',
-            callback: prepareAddImportantRect
-        }, {
-            text: 'Add polygon',
-            callback: prepareAddImportantPolygon
-        }]
+        contextmenuItems: [
+            {
+                text: 'Add location',
+                callback: prepareAddImportantLocation
+            },
+            {
+                text: 'Add rectangle',
+                callback: prepareAddImportantRect
+            },
+            // {
+            //     text: 'Add polygon',
+            //     callback: prepareAddImportantPolygon
+            // },
+            {
+                text: 'Add path',
+                callback: prepareAddImportantPath
+            }
+        ]
     });
     gMap = map;
 

@@ -101,6 +101,7 @@ return function(webSocket) {
                 long: Number.NEGATIVE_INFINITY,
             }
         }, locs);
+        console.log(minmax);
         return minmax;
     }
 
