@@ -66,7 +66,7 @@ return function(arg) {
             	location: meta.md5,
                 long: meta.lng,
                 month: time.month(),
-                time: time,
+                time: time.toDate(),
                 user: msgObj.content
             }
         }, msgObj.metas);

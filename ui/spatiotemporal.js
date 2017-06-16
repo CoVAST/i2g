@@ -50,40 +50,41 @@ define(function(require){
 
             views.timeline.clear();
 
-            var dayOfWeek_short = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'],
-                  dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            var dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
             var weeklyStats = pipeline()
                 .match({
                   user: {$in: people},
                 })
+                .derive(function(d){
+                    d.dayStr = dayOfWeek[d.day];
+                })
                 .group({
-                  $by: ['day', 'user'],
+                  $by: ['dayStr', 'user'],
                   count: '$count'
                 })
-                .sortBy({day: 1})
                 (data);
 
             var splot1 = new temporalPlot({
                 container: views.timeline.body,
                 height: views.timeline.innerHeight,
                 width: views.timeline.innerWidth / 2,
-                padding: {left: 30, right: 50, top: 30, bottom: 50},
+                padding: {left: 30, right: 50, top: 30, bottom: 70},
                 data:  weeklyStats,
                 title: 'Weekly Activities',
                 align: 'right',
-                formatX: function(d) { return dayOfWeek_short[d];},
+                domainX: dayOfWeek,
                 colors: function(d) {
                     return 'purple';
                 },
                 onselect: function(d) {
-                    var newNodeId = dayOfWeek[d];
+
                     var links = data.filter(function(a){
-                    return a.day == d;
+                    return a.dayStr == d;
                     });
 
                     var newNode = {
-                        id: newNodeId,
+                        id: d,
                         type: 'time',
                         pos: [0, views.map.innerHeight],
                         value: links.map((d)=>d.count).reduce((a,b)=>a+b)
@@ -91,7 +92,7 @@ define(function(require){
                     onSelect({day: d}, newNode);
                 },
                 vmap: {
-                    x: 'day',
+                    x: 'dayStr',
                     y: 'user',
                     size: 'count',
                     color: 'user',
@@ -104,17 +105,17 @@ define(function(require){
             })
             .derive(function(d){
                 if(d.hour < 4)
-                    d.hours = '0 - 4am';
+                    d.hours = '0 - 3:59';
                 else if(d.hour < 8)
-                    d.hours = '4 - 8am';
+                    d.hours = '4 - 7:59';
                 else if(d.hour < 12)
-                    d.hours = '8 - 12pm';
+                    d.hours = '8 - 11:59';
                 else if(d.hour < 16)
-                    d.hours = '12 - 16pm';
+                    d.hours = '12 - 15:59';
                 else if(d.hour < 20)
-                    d.hours = '16 - 20pm';
+                    d.hours = '16 - 19:59';
                 else
-                    d.hours = '20 - 24pm';
+                    d.hours = '20 - 23:59';
             })
             .group({
                 $by: ['hours', 'user'],
@@ -127,7 +128,7 @@ define(function(require){
                 container: views.timeline.body,
                 height: views.timeline.innerHeight,
                 width: views.timeline.innerWidth / 2,
-                padding: {left: 50, right: 30, top: 30, bottom: 50},
+                padding: {left: 50, right: 30, top: 30, bottom: 70},
                 data:  dailyStats,
                 align: 'left',
                 formatX: function(d) { return d;},
