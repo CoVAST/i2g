@@ -20,6 +20,7 @@ define(function(require){
             alpha = option.alpha || 0.7,
             axisOptions = option.axis || false,
             onSelect = option.onselect || function() {},
+            domainX = option.domainX || false,
             formatX = option.formatX || format(".3s"),
             formatY = option.formatY || format(".3s"),
             scatter = plot.append("g");
@@ -29,7 +30,7 @@ define(function(require){
             height = this.$height,
             width = this.$width;
 
-        var xDomains = arrays.unique(this.data.map(function(d){ return d[vmap.x]})).sort(function(a, b) { return parseInt(a) - parseInt(b);});
+        var xDomains = domainX || arrays.unique(this.data.map(function(d){ return d[vmap.x]})).sort(function(a, b) { return parseInt(a) - parseInt(b);});
         var yDomains = arrays.unique(this.data.map(function(d){ return d[vmap.y]})).sort(function(a,b){ return a - b;});
 
         var xAxisOptions = {
@@ -40,7 +41,8 @@ define(function(require){
             align: "bottom",
             ticks: xDomains.length,
             tickInterval: "fit",
-            labelPos: {x: 0, y: -25},
+            labelPos: {x: 5, y: -15},
+            labelAngel: -35,
             tickPosition: 0,
             format: formatX,
             // grid: 1
@@ -72,10 +74,14 @@ define(function(require){
             if(sizeDomain[1] !== sizeDomain [0])
 
             if (sizeDomain[0] !== sizeDomain[1]) {
+                var maxRadius = Math.min(
+                    this.$width / xDomains.length / 2,
+                    this.$height / yDomains.length / 2
+                );
                 size = scale({
                     type: 'linear',
                     domain: sizeDomain,
-                    range: [2, this.$height / yDomains.length /2]
+                    range: [2, maxRadius]
                 });
             }
         }
@@ -163,14 +169,24 @@ define(function(require){
                     marks[i].attr("fill", color(d[vmap.color]));
             });
         }
+        var xSelector = plot.append('g')
+            .append('rect')
+            .attr('width', this.$width)
+            .attr('height', this.$padding.bottom)
+            .attr('x', this.$padding.left)
+            .attr('y', this.$height + this.$padding.top)
+            .attr('fill', 'transparent')
+
+
 
         scatter.translate(this.$padding.left, this.$padding.top);
         var padding = this.$padding;
 
         var selected = new Array(xDomains.length).fill(false),
             selectBox = new Array(xDomains.length);
-        plot.svg.ondblclick = function(e) {
-            var xi = x.invert(e.offsetX - padding.left),
+        xSelector.svg.ondblclick  = function(e) {
+
+            var xi = x.invert(e.offsetX - padding.left - width/xDomains.length *.5) ,
                 dataId = xDomains.indexOf(xi);
 
             if(!selected[dataId]) {
@@ -180,10 +196,10 @@ define(function(require){
                     .attr("width", width / xDomains.length)
                     .attr("height",height)
                     .style("fill", 'none')
-                    .style("stroke", 'red')
+                    .style("stroke", 'green')
 
                 selected[dataId] = true;
-                console.log(xi, dataId, xDomains);
+                // console.log(dataId, xDomains[dataId]);
                 onSelect(xDomains[dataId]);
             } else {
 
@@ -234,7 +250,7 @@ define(function(require){
             legend.append("g")
               .append("text")
                 .attr("class", "i2v-chart-title")
-                .attr("y", 0)
+                .attr("y", this.$padding.top / 2)
                 .attr("x", this.$padding.left + this.$width/2 )
                 .attr("dy", "1em")
                 .css("text-anchor", "middle")

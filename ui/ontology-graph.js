@@ -90,6 +90,9 @@ define(function(require) {
 
         restart();
 
+        var linkSource = null,
+            linkTarget = null;
+
         function restart() {
 
             // Apply the general update pattern to the nodes.
@@ -105,6 +108,23 @@ define(function(require) {
                 .attr("fill", "transparent")
                 .attr("r", (d)=>nodeSize(d.value))
                 .merge(node)
+                .on('click', function(d){
+                    console.log(d);
+                    if(linkSource === null && linkTarget === null) {
+                        linkSource = d;
+                    } else if(linkSource !== null && linkTarget === null) {
+                        linkTarget = d;
+
+                        links.push({
+                            source: linkSource,
+                            target: linkTarget,
+                            value: 10,
+                        })
+
+                        linkSource = linkTarget = null;
+                        restart();
+                    }
+                })
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
@@ -138,9 +158,6 @@ define(function(require) {
             simulation.nodes(nodes);
             simulation.force("link").links(links).iterations(10);
             simulation.alphaTarget(0.1).restart();
-
-
-
         }
 
         function addNode(n) {
@@ -302,6 +319,7 @@ define(function(require) {
         function addLabel(d) {
             if (!nodeLabels.hasOwnProperty(d.id)) {
                 var label = (d.type=='people') ? 'P ' + d.id : d.id;
+
                 nodeLabels[d.id] = nodeInfo.append("text")
                     .attr("dx", 20)
                     .attr("dy", ".35em")
@@ -329,6 +347,7 @@ define(function(require) {
                     .attr("transform", "scale(0.1)")
                     .attr("d", logos[d.type])
                     .attr("fill", nodeColor(d))
+
             }
 
         }

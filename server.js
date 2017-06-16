@@ -18,7 +18,7 @@ app.use("/npm", express.static('node_modules'));
 
 // ivastack libs
 var srcDir = {
-    davi: './davi/src',
+    davi: '../ivastack/vastui/src',
     i2v: './node_modules/i2v/src',
     p4: './node_modules/p4.js/src',
 }

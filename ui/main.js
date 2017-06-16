@@ -12,7 +12,9 @@ define(function(require) {
 
         var ui = require('./layout/layout')();
 
-        var spatiotemporal = require('./spatiotemporal')(),
+        var spatiotemporal = require('./spatiotemporal')({
+            container: ui.cell('page-right')
+        }),
             map = spatiotemporal.map;
 
         var people = [], //array of IDs
@@ -109,7 +111,7 @@ define(function(require) {
                                 newLinks = [];
 
                             areas.forEach(function(area){
-
+                                console.log(datetimes);
                                 filter.lat = {$inRange: area.box.lat};
                                 filter.long = {$inRange: area.box.lng};
                                 filter.$or = datetimes;
