@@ -258,13 +258,18 @@ define(function(){
         //     markCount += 1;
         // });
 
+        function panTo(loc) {
+            map.panTo([loc.lat, loc.long]);
+        }
+
         return {
             relatedLocations: relatedLocations,
             primaryLocations: primaryLocations,
             importantLocations: importantLocations,
             onadd: function(cb) { onAdd = cb;},
             addLocations: addLocations,
-            removeLocations: removeLocations
+            removeLocations: removeLocations,
+            panTo: panTo
         }
     }
 })
