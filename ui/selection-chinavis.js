@@ -277,14 +277,17 @@ return function(arg) {
         }, senderCounts);
     }
 
-    let loadMessages = (dateString, words, senders) => ajax.get({
-    	url: '/chinavis/messages?parameters='
-                + encodeURIComponent(JSON.stringify({
-            date: dateString,
-            words: words,
-            senders: senders
-        }))
-    });
+    let loadMessages = (dateString, words, senders) => {
+    	views.sms.showLoading();
+    	return ajax.get({
+        	url: '/chinavis/messages?parameters='
+                    + encodeURIComponent(JSON.stringify({
+                date: dateString,
+                words: words,
+                senders: senders
+            }))
+        });
+    };
     let populateMessages = messages => {
     	smsList.clear();
     	msgObjs = messages;
@@ -293,6 +296,7 @@ return function(arg) {
     			text: msgObj.content
     		})
     	}, messages);
+    	views.sms.hideLoading();
     	appLayout.messagesPopulated(msgObjs);
     }
 
