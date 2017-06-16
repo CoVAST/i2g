@@ -15,8 +15,8 @@ var ajax = require('p4/io/ajax'),
 
 return function(arg) {
 	var options = arg || {},
-		container = options.container,
-		onSelect = options.onselect || function() {};
+		container = options.container;
+		// onSelect = options.onselect || function() {};
 
 	var appLayout = new Layout({
         margin: 5,
@@ -48,7 +48,12 @@ return function(arg) {
     });
     document.getElementById('filter-view').style.whiteSpace = 'nowrap';
     document.getElementById('filter-view').style.overflow = 'auto';
+
+    appLayout.mapCenter = [39.9042, 116.4074];
+    appLayout.mapZoom = 8;
+
     let logFunc = (str) => () => console.log(str);
+    appLayout.onSelect = options.onselect || logFunc('messagesPopulated');
     appLayout.messagesPopulated = logFunc('messagesPopulated');
     appLayout.messageClicked = (msgObj) => {
     	// console.log(msgObj);
@@ -70,7 +75,7 @@ return function(arg) {
                 user: msgObj.content
             }
         }, msgObj.metas);
-        onSelect(pid, locs);
+        appLayout.onSelect(pid, locs);
     }
 
     let dates = [];

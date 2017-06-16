@@ -212,8 +212,8 @@ return function geoLocation(options) {
     }
     // set map center at SF
     var map = L.map('map-body', {
-        center: [39.871822355, 116.404827115],
-        zoom: 12,
+        center: options.mapCenter || [8.7832, -124.5085],
+        zoom: options.mapZoom || 12,
         layers: [
             grayscale,
             primaryLocations,
@@ -285,7 +285,8 @@ return function geoLocation(options) {
         onadd: function(cb) { onAdd = cb;},
         addLocations: addLocations,
         removeLocations: removeLocations,
-        flyToBounds: R.bind(map.flyToBounds, map)
+        flyToBounds: R.bind(map.flyToBounds, map),
+        flyTo: R.bind(map.flyTo, map)
     }
 }
 

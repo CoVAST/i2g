@@ -13,9 +13,10 @@ return function(webSocket) {
 
     var ui = require('./layout/layout')();
     var spatiotemporal = require('./spatiotemporal')({
-        container: ui.cell('page-right')
-    }),
-        map = spatiotemporal.map;
+        container: ui.cell('page-right'),
+        mapZoom: 2
+    });
+    var map = spatiotemporal.map;
 
     var people = [], //array of IDs
         locations = {},
@@ -105,118 +106,129 @@ return function(webSocket) {
         return minmax;
     }
 
-    var selection = require('/selection')({
-        onselect: function(pid, locs) {
-            if (R.isEmpty(locations)) {
-                let minmax = calcLocsRect(locs);
-                map.flyToBounds([
-                    [minmax.min.lat, minmax.min.long],
-                    [minmax.max.lat, minmax.max.long]
-                ]);
-            }
-            // Add locations
-            people.push(pid);
-            if(!locations.hasOwnProperty(pid)){
-                locations[pid] = locs;
-                locationMarks[pid] =
-                        map.addLocations(locs, {color: 'purple'});
-                igraph.append({
-                    nodes: {id: pid, type: "people", pos: [100,100], value: 0},
-                    links: []
-                });
-            } else {
-                map.removeLocations(locationMarks[pid]);
-                delete locations[pid];
-                delete locationMarks[pid];
-            }
-
-            var allLocs = getAllLocations();
-            // console.log(allLocs);
-
-            if(allLocs.length){
-
-                spatiotemporal.updateTimeline({
-                    data: allLocs,
-                    people: people,
-                    onselect: function(kv, d) {
-                        datetimes.push(kv);
-                        var filter = {},
-                            newLinks = [];
-
-                        areas.forEach(function(area){
-                            console.log(datetimes);
-                            filter.lat = {$inRange: area.box.lat};
-                            filter.long = {$inRange: area.box.lng};
-                            filter.$or = datetimes;
-                            var matches = pipeline().match(filter)(allLocs);
-                            filter.$or.forEach(function(dt){
-                                var key = Object.keys(dt)[0];
-                                var results = pipeline()
-                                .group({
-                                    $by: ['user', key],
-                                    value: '$count'
-                                })
-                                .derive(function(d){
-                                    d.area = area.label;
-                                })
-                                (matches);
-
-                                results.forEach(function(res){
-                                    newLinks.push({
-                                        source: res.user,
-                                        target: res[key],
-                                        value: res.value,
-                                        dest: res.area
-                                    });
-                                    newLinks.push({
-                                        source: res[key],
-                                        target: res.area,
-                                        value: res.value,
-                                        dest: res.area
-                                    });
-                                });
-                            })
-
-                            var matchedPeople = arrays.unique(matches.map((d)=>d.user));
-                            var otherPeople = arrays.diff(people,matchedPeople);
-
-                            if(otherPeople.length) {
-                                var extraReults = pipeline()
-                                .match({
-                                    user: {$in: otherPeople}
-                                })
-                                .group({
-                                    $by: ['user'],
-                                    value: '$count'
-                                })
-                                .derive(function(d){
-                                    d.area = area.label;
-                                })
-                                (allLocs);
-
-                                extraReults.forEach(function(res){
-                                    newLinks.push({
-                                        source: res.user,
-                                        target: res.area,
-                                        value: res.value,
-                                        dest: res.area
-                                    });
-                                });
-                            }
-                            console.log(extraReults, newLinks);
-
-                        });
-
-                        igraph.update({
-                            nodes: d,
-                            links: newLinks
-                        });
-                    }
-                });
-            }
-
+    let addLocationsToMap = (pid, locs) => {
+        people.push(pid);
+        if(!locations.hasOwnProperty(pid)){
+            locations[pid] = locs;
+            locationMarks[pid] =
+                    map.addLocations(locs, {color: 'purple'});
+            igraph.append({
+                nodes: {id: pid, type: "people", pos: [100,100], value: 0},
+                links: []
+            });
+        } else {
+            map.removeLocations(locationMarks[pid]);
+            delete locations[pid];
+            delete locationMarks[pid];
         }
+    }
+
+    let generateLinks = R.curry((allLocs, d, area) => {
+        console.log(datetimes);
+        let newLinks = [];
+        let filter = {};
+        filter.lat = {$inRange: area.box.lat};
+        filter.long = {$inRange: area.box.lng};
+        filter.$or = datetimes;
+        var matches = pipeline().match(filter)(allLocs);
+        filter.$or.forEach(function(dt){
+            var key = Object.keys(dt)[0];
+            var results = pipeline()
+            .group({
+                $by: ['user', key],
+                value: '$count'
+            })
+            .derive(function(d){
+                d.area = area.label;
+            })
+            (matches);
+
+            results.forEach(function(res){
+                newLinks.push({
+                    source: res.user,
+                    target: res[key],
+                    value: res.value,
+                    dest: res.area
+                });
+                newLinks.push({
+                    source: res[key],
+                    target: res.area,
+                    value: res.value,
+                    dest: res.area
+                });
+            });
+        })
+
+        var matchedPeople =
+                arrays.unique(matches.map((d)=>d.user));
+        var otherPeople =
+                arrays.diff(people,matchedPeople);
+
+        if(otherPeople.length) {
+            var extraReults = pipeline()
+            .match({
+                user: {$in: otherPeople}
+            })
+            .group({
+                $by: ['user'],
+                value: '$count'
+            })
+            .derive(function(d){
+                d.area = area.label;
+            })
+            (allLocs);
+
+            extraReults.forEach(function(res){
+                newLinks.push({
+                    source: res.user,
+                    target: res.area,
+                    value: res.value,
+                    dest: res.area
+                });
+            });
+        }
+        console.log(extraReults, newLinks);
+        return newLinks;
     });
+
+    var selection = require('/selection')();
+    selection.onSelect = function(pid, locs) {
+        if (R.isEmpty(locations)) {
+            let minmax = calcLocsRect(locs);
+            map.flyToBounds([
+                [minmax.min.lat, minmax.min.long],
+                [minmax.max.lat, minmax.max.long]
+            ]);
+        }
+        // Add locations
+        addLocationsToMap(pid, locs);
+
+        var allLocs = getAllLocations();
+        // console.log(allLocs);
+
+        if(allLocs.length){
+
+            spatiotemporal.updateTimeline({
+                data: allLocs,
+                people: people,
+                onselect: function(kv, d) {
+                    datetimes.push(kv);
+
+                    let areasToLinks =
+                            R.pipe(R.map(generateLinks(allLocs)(d)),
+                                R.flatten);
+                    let newLinks = areasToLinks(areas);
+                    // areas.forEach(R.partial(generateLinks, d));
+
+                    igraph.update({
+                        nodes: d,
+                        links: newLinks
+                    });
+                }
+            });
+        }
+    }
+    map.flyTo(selection.mapCenter, selection.mapZoom);
 
     map.onadd(function(d){
 
