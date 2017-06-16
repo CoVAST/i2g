@@ -258,10 +258,6 @@ define(function(){
         //     markCount += 1;
         // });
 
-        function panTo(loc) {
-            map.panTo([loc.lat, loc.long]);
-        }
-
         return {
             relatedLocations: relatedLocations,
             primaryLocations: primaryLocations,
@@ -269,7 +265,7 @@ define(function(){
             onadd: function(cb) { onAdd = cb;},
             addLocations: addLocations,
             removeLocations: removeLocations,
-            panTo: panTo
+            flyToBounds: R.bind(map.flyToBounds, map)
         }
     }
 })

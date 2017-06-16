@@ -75,39 +75,42 @@ return function(webSocket) {
 
     $('#panel-igraph').transition('fade left');
 
+    /// TODO: consider defining class Rect.
+    let calcLocsRect = locs => {
+        let minmax = R.reduce((acc, loc) => {
+            let lat = parseFloat(loc.lat);
+            let long = parseFloat(loc.long);
+            return {
+                min: {
+                    lat: Math.min(acc.min.lat, lat),
+                    long: Math.min(acc.min.long, long)
+                },
+                max: {
+                    lat: Math.max(acc.max.lat, lat),
+                    long: Math.max(acc.max.long, long)
+                }
+            }
+        }, {
+            min: {
+                lat: Number.POSITIVE_INFINITY,
+                long: Number.POSITIVE_INFINITY,
+            },
+            max: {
+                lat: Number.NEGATIVE_INFINITY,
+                long: Number.NEGATIVE_INFINITY,
+            }
+        }, locs);
+        return minmax;
+    }
 
     var selection = require('/selection')({
         onselect: function(pid, locs) {
             if (R.isEmpty(locations)) {
-                let minmax = R.reduce((acc, loc) => {
-                    let lat = parseFloat(loc.lat);
-                    let long = parseFloat(loc.long);
-                    return {
-                        min: {
-                            lat: Math.min(acc.min.lat, lat),
-                            long: Math.min(acc.min.long, long)
-                        },
-                        max: {
-                            lat: Math.max(acc.max.lat, lat),
-                            long: Math.max(acc.max.long, long)
-                        }
-                    }
-                }, {
-                    min: {
-                        lat: Number.POSITIVE_INFINITY,
-                        long: Number.POSITIVE_INFINITY,
-                    },
-                    max: {
-                        lat: Number.NEGATIVE_INFINITY,
-                        long: Number.NEGATIVE_INFINITY,
-                    }
-                }, locs);
-                console.log(minmax);
-                let center = {
-                    lat: 0.5 * (minmax.min.lat + minmax.max.lat),
-                    long: 0.5 * (minmax.min.long + minmax.max.long)
-                };
-                map.panTo(center);
+                let minmax = calcLocsRect(locs);
+                map.flyToBounds([
+                    [minmax.min.lat, minmax.min.long],
+                    [minmax.max.lat, minmax.max.long]
+                ]);
             }
             // Add locations
             people.push(pid);
