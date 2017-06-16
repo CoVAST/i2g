@@ -55,15 +55,17 @@ return function(arg) {
         let pid = msgObj.content;
         let locs = R.map(meta => {
         	// console.log(meta.recitime * 1000, meta.recitime + '000');
-        	let time = new Date(parseInt(meta.recitime));
+        	let time = moment(parseInt(meta.recitime)).tz('Asia/Shanghai');
+        	gTime = time;
+        	// let time = new Date(parseInt(meta.recitime));
             return {
-            	day: time.getDay(),
-            	hour: time.getHours(),
-            	hours: time.getHours() + ' - ' + time.getHours(),
+            	day: time.day(),
+            	hour: time.hour(),
+            	hours: time.hour() + ' - ' + time.hour(),
                 lat: meta.lat,
             	location: meta.md5,
                 long: meta.lng,
-                month: time.getMonth(),
+                month: time.month(),
                 time: time,
                 user: msgObj.content
             }

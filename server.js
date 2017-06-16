@@ -23,7 +23,7 @@ var srcDir = {
     p4: './node_modules/p4.js/src',
 }
 
-let dataPath = 'selection.js';
+let dataPath = process.env.COVA_DATASRC || 'selection.js';
 app.get("/selection", (req, res) => {
     res.sendFile(__dirname + '/ui/' + dataPath);
 })
