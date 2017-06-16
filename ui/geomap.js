@@ -27,9 +27,6 @@ return function geoLocation(options) {
             "Important Locations": importantLocations
         };
     // important locations
-    var isAddingImportantRect = false;
-    var tempImportantRect = null;
-    var tempImportantPolygon = null;
     var importantGeoColor = 'red';
     importantGeos = [];
     var removeImportantGeo = (geo) => {
@@ -115,62 +112,10 @@ return function geoLocation(options) {
     var prepareAddImportantPolygon = (e) => {
         setCursorToCrosshair();
         map.doubleClickZoom.disable();
-        map.on('click', addingImportantPolygon);
-        map.on('dblclick', doneAddImportantPolygon);
-        // isAddingImportantPolygon = true;
-    }
-    var addingImportantPolygon = (e) => {
-        if (!tempImportantPolygon) {
-            tempImportantPolygon = {
-                type: 'polygon',
-                coordinates: [e.latlng],
-                leaflet: L.polygon([e.latlng], {
-                    color: importantGeoColor,
-                    opacity: 0.8,
-                    weight: 1,
-                    fillColor: importantGeoColor,
-                    fillOpacity: 0.5,
-                    contextmenu: true,
-                    contextmenuItems: [{
-                        separator: true,
-                        index: 0
-                    }]
-                }).addTo(importantLocations)
-            }
-            tempImportantPolygon.leaflet.addContextMenuItem({
-                text: "Remove",
-                index: 0,
-                callback: removeImportantGeo.bind(this, tempImportantPolygon)
-            })
-        }
-        tempImportantPolygon.coordinates.push(e.latlng);
-        tempImportantPolygon.leaflet.addLatLng(e.latlng);
-    }
-    var doneAddImportantPolygon = (e) => {
-        onAdd.call(this, tempImportantPolygon);
-        importantGeos.push(tempImportantPolygon);
-        tempImportantPolygon = null;
-        resetCursor();
-        map.doubleClickZoom.enable();
-        map.off('click', addingImportantPolygon);
-        map.off('dblclick', doneAddImportantPolygon);
-        // isAddingImportantPolygon = false;
-    }
-    var prepareAddImportantRect = (e) => {
-        //console.log('prepareAddImportantRect');
-        setCursorToCrosshair();
-        isAddingImportantRect = true;
-        map.on('mousedown', startAddImportantRect);
-        map.on('mousemove', addingImportantRect);
-        map.on('mouseup', doneAddImportantRect);
-        map.dragging.disable();
-    }
-    var startAddImportantRect = (e) => {
-        //console.log('startAddImportantRect');
-        tempImportantRect = {
-            type: 'rect',
-            coordinates: [e.latlng, e.latlng],
-            leaflet: L.rectangle([e.latlng, e.latlng], {
+        let thePolygon = {
+            type: 'polygon',
+            coordinates: [],
+            leaflet: L.polygon([], {
                 color: importantGeoColor,
                 opacity: 0.8,
                 weight: 1,
@@ -183,33 +128,86 @@ return function geoLocation(options) {
                 }]
             }).addTo(importantLocations)
         }
-        tempImportantRect.leaflet.addContextMenuItem({
+        map.on('click', addingImportantPolygon, thePolygon);
+        map.on('dblclick', doneAddImportantPolygon, thePolygon);
+        // isAddingImportantPolygon = true;
+    }
+    var addingImportantPolygon = function(e) {
+        let thePolygon = this;
+        thePolygon.coordinates.push(e.latlng);
+        thePolygon.leaflet.addLatLng(e.latlng);
+    }
+    var doneAddImportantPolygon = function(e) {
+        let thePolygon = this;
+        importantGeos.push(thePolygon);
+        thePolygon.leaflet.addContextMenuItem({
             text: "Remove",
             index: 0,
-            callback: removeImportantGeo.bind(this, tempImportantRect)
+            callback: removeImportantGeo.bind(this, thePolygon)
         })
-        L.DomEvent.stop(e);
-    }
-    var addingImportantRect = (e) => {
-        if (!tempImportantRect) {
-            return;
-        }
-        tempImportantRect.coordinates[1] = e.latlng;
-        tempImportantRect.leaflet.setBounds(
-                tempImportantRect.coordinates);
-        L.DomEvent.stop(e);
-    }
-    var doneAddImportantRect = (e) => {
-        //console.log('doneAddImportantRect');
-        tempImportantRect.coordinates[1] = e.latlng;
-        onAdd.call(this, tempImportantRect);
-        importantGeos.push(tempImportantRect);
-        tempImportantRect = null;
         resetCursor();
-        map.off('mousedown', startAddImportantRect);
-        map.off('mousemove', addingImportantRect);
-        map.off('mouseup', doneAddImportantRect);
+        map.doubleClickZoom.enable();
+        map.off('click', addingImportantPolygon, thePolygon);
+        map.off('dblclick', doneAddImportantPolygon, thePolygon);
+        onAdd.call(this, thePolygon);
+        // isAddingImportantPolygon = false;
+    }
+    var prepareAddImportantRect = (e) => {
+        //console.log('prepareAddImportantRect');
+        setCursorToCrosshair();
+        isAddingImportantRect = true;
+        let theRect = {
+            type: 'rect',
+            coordinates: [],
+            leaflet: null
+        }
+        map.on('mousedown', startAddImportantRect, theRect);
+        map.on('mousemove', addingImportantRect, theRect);
+        map.on('mouseup', doneAddImportantRect, theRect);
+        map.dragging.disable();
+    }
+    var startAddImportantRect = function(e) {
+        //console.log('startAddImportantRect');
+        let theRect = this;
+        theRect.coordinates = [e.latlng, e.latlng];
+        theRect.leaflet = L.rectangle(theRect.coordinates, {
+            color: importantGeoColor,
+            opacity: 0.8,
+            weight: 1,
+            fillColor: importantGeoColor,
+            fillOpacity: 0.5,
+            contextmenu: true,
+            contextmenuItems: [{
+                separator: true,
+                index: 0
+            }]
+        }).addTo(importantLocations)
+        L.DomEvent.stop(e);
+    }
+    var addingImportantRect = function(e) {
+        let theRect = this;
+        if (!theRect.leaflet)
+            return;
+        theRect.coordinates[1] = e.latlng;
+        theRect.leaflet.setBounds(theRect.coordinates);
+        L.DomEvent.stop(e);
+    }
+    var doneAddImportantRect = function(e) {
+        //console.log('doneAddImportantRect');
+        let theRect = this;
+        theRect.coordinates[1] = e.latlng;
+        importantGeos.push(theRect);
+        theRect.leaflet.addContextMenuItem({
+            text: "Remove",
+            index: 0,
+            callback: removeImportantGeo.bind(this, theRect)
+        });
+        resetCursor();
+        map.off('mousedown', startAddImportantRect, theRect);
+        map.off('mousemove', addingImportantRect, theRect);
+        map.off('mouseup', doneAddImportantRect, theRect);
         map.dragging.enable();
+        onAdd.call(this, theRect);
         // isAddingImportantRect = false;
     }
     // set map center at SF
@@ -233,10 +231,10 @@ return function geoLocation(options) {
                 text: 'Add rectangle',
                 callback: prepareAddImportantRect
             },
-            // {
-            //     text: 'Add polygon',
-            //     callback: prepareAddImportantPolygon
-            // },
+            {
+                text: 'Add polygon',
+                callback: prepareAddImportantPolygon
+            },
             {
                 text: 'Add path',
                 callback: prepareAddImportantPath
