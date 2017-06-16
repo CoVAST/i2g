@@ -123,6 +123,14 @@ return function(webSocket) {
         }
     }
 
+    let flyToLocations = (locs) => {
+        let minmax = calcLocsRect(locs);
+        map.flyToBounds([
+            [minmax.min.lat, minmax.min.long],
+            [minmax.max.lat, minmax.max.long]
+        ]);
+    }
+
     let generateLinks = R.curry((allLocs, d, area) => {
         console.log(datetimes);
         let newLinks = [];
@@ -193,21 +201,14 @@ return function(webSocket) {
 
     var selection = require('/selection')();
     selection.onSelect = function(pid, locs) {
-        if (R.isEmpty(locations)) {
-            let minmax = calcLocsRect(locs);
-            map.flyToBounds([
-                [minmax.min.lat, minmax.min.long],
-                [minmax.max.lat, minmax.max.long]
-            ]);
-        }
-        // Add locations
+        let aboutToFly = R.isEmpty(locations) ? true : false;
         addLocationsToMap(pid, locs);
+        if (aboutToFly) {
+            flyToLocations(locs);
+        }
 
         var allLocs = getAllLocations();
-        // console.log(allLocs);
-
         if(allLocs.length){
-
             spatiotemporal.updateTimeline({
                 data: allLocs,
                 people: people,

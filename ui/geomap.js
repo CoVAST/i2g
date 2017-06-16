@@ -47,7 +47,7 @@ return function geoLocation(options) {
         var geo = {
             type: 'point',
             coordinates: e.latlng,
-            leaflet: L.circleMarker(e.latlng, {
+            leaflet: L.marker(e.latlng, {
                 color: 'none',
                 fillColor: importantGeoColor,
                 // weight: 1,
