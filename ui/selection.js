@@ -164,7 +164,7 @@ define(function(require){
             data.subjects.forEach(function(d, i){
                 subjects.append({
                     header: 'Subject ' + i,
-                    // icon: 'big spy',
+                    icon: 'big spy',
                     text: data.subjects[i].connection + ' connections, ' +
                             data.activityTotal[i].count + ' activtiies'
                 })
@@ -176,7 +176,7 @@ define(function(require){
                 relatedPeople.append({
                     header: 'Related Person ' + d.user + ' (' +
                         d.count + ' activtiies)',
-                    // icon: 'user mid'
+                    icon: 'user mid'
                 })
             });
 
