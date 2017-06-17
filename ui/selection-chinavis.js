@@ -20,10 +20,10 @@ return function(arg) {
 
     let onSelect = (pid, locs) => {
         appLayout.onSelect(pid, locs);
-        igraph.append({
-            nodes: {id: pid, type: "people", pos: [100,100], value: 0},
-            links: []
-        });
+        // igraph.append({
+        //     nodes: {id: pid, type: "people", pos: [100,100], value: 0},
+        //     links: []
+        // });
     }
 
 	var appLayout = new Layout({
@@ -96,10 +96,13 @@ return function(arg) {
 
     let setCurrDate = dateId => {
     	currDate = dates[dateId].date;
+        views.words.showLoading();
     	let wordsLoading = loadWords(currDate);
     	wordsLoading.then(populateWordList);
+        views.senders.showLoading();
     	let sendersLoading = loadSenders(currDate);
     	sendersLoading.then(populateSenderList);
+        views.sms.showLoading();
     	Promise.all([ wordsLoading, sendersLoading ])
     		.then(results => loadMessages(currDate, [], []))
     		.then(populateMessages);
@@ -115,7 +118,9 @@ return function(arg) {
     	currSenders = senders;
     }
     let updateMessages = () => {
-    	loadMessages(currDate, currWords, currSenders).then(populateMessages);
+        loadWordSenderMessages(currDate, currWords, currSenders);
+    	// loadMessages(currDate, currWords, currSenders)
+        //     .then(populateMessages);
     }
 
     var views = {};
@@ -229,12 +234,7 @@ return function(arg) {
                  + dateObj.date
                  + '">'
                  + formatted
-                 + '</span>'
-                 // + '（'
-                 // + '<span class="cv-text-dates-count">'
-                 // + dateObj.nMessages
-                 // + '</span>'
-                 // + '）';
+                 + '</span>';
         }
         R.forEach(obj => {
             dateList.append({
@@ -247,49 +247,118 @@ return function(arg) {
     let loadWords = dateString => ajax.get({
     	url: '/chinavis/wordcounts/' + dateString
     });
+    let wordCountToEl = wordCount => {
+        return '<span class="cv-text-words-word">'
+             + wordCount[0]
+             + '</span>';
+    };
     let populateWordList = array => {
     	wordCounts = array;
         wordList.clear();
-        let wordCountToEl = wordCount => {
-            return '<span class="cv-text-words-word">'
-                 + wordCount[0]
-                 + '</span>'
-                 // + '（'
-                 // + '<span class="cv-text-words-count">'
-                 // + wordCount[1]
-                 // + '</span>'
-                 // + '）';
-        };
+        let selectedIds = [];
         R.forEach(wordCount => {
             wordList.append({
                 text: wordCountToEl(wordCount)
             });
+            if (R.contains(wordCount[0], currWords)) {
+                let id = $(wordList).children().length - 1;
+                selectedIds.push(id);
+            }
         }, wordCounts);
+        wordList.setSelectedItemIds(selectedIds);
+        views.words.hideLoading();
+        $.contextMenu({
+            selector: '#panel-words .list .item',
+            items: {
+                addToOntologyGraph: {
+                    name: "Add to Concept Map",
+                    callback: function(key, opt){
+                        let id = this.parent().children().index(this);
+                        // appLayout.messageClicked(msgObjs[id]);
+                        igraph.append({
+                            nodes: {
+                                id: wordCounts[id][0],
+                                type: "word",
+                                pos: [100,100],
+                                value: 0,
+                                props: wordCounts[id]
+                            },
+                            links: []
+                        })
+                    }
+                }
+            }
+        })
     }
 
     let loadSenders = dateString => ajax.get({
     	url: '/chinavis/sendercounts/' + dateString
     });
+    let senderCountToEl = senderCount => {
+        return '<span class="cv-text-senders-word">'
+             + senderCount[0]
+             + '</span>';
+    }
     let populateSenderList = array => {
     	senderCounts = array;
         senderList.clear();
-        let senderCountToEl = senderCount => {
-            return '<span class="cv-text-senders-word">'
-                 + senderCount[0]
-                 + '</span>'
-                 // + '（'
-                 // + '<span class="cv-text-senders-count">'
-                 // + senderCount[1]
-                 // + '</span>'
-                 // + '）';
-        }
+        let selectedIds = [];
         R.forEach(senderCount => {
             senderList.append({
                 text: senderCountToEl(senderCount)
             });
+            if (R.contains(senderCount[0], currSenders)) {
+                let id = $(senderList).children().length - 1;
+                selectedIds.push(id);
+            }
         }, senderCounts);
+        senderList.setSelectedItemIds(selectedIds);
+        views.senders.hideLoading();
+        $.contextMenu({
+            selector: '#panel-senders .list .item',
+            items: {
+                addToOntologyGraph: {
+                    name: "Add to Concept Map",
+                    callback: function(key, opt){
+                        let id = this.parent().children().index(this);
+                        // appLayout.messageClicked(msgObjs[id]);
+                        igraph.append({
+                            nodes: {
+                                id: senderCounts[id][0],
+                                type: "sender",
+                                pos: [100,100],
+                                value: 0,
+                                props: senderCounts[id]
+                            },
+                            links: []
+                        })
+                    }
+                }
+            }
+        })
     }
 
+    let loadWordSenderMessages = (dateString, words, senders) => {
+        views.words.showLoading();
+        views.senders.showLoading();
+        views.sms.showLoading();
+        let url = '/chinavis/wordsendermessages?parameters='
+                + encodeURIComponent(JSON.stringify({
+            date: dateString,
+            words: words,
+            senders: senders
+        }));
+        oboe(url)
+            .node('words', words => {
+                populateWordList(words);
+            })
+            .node('senders', senders => {
+                populateSenderList(senders);
+            })
+            .node('messages', messages => {
+                populateMessages(messages);
+            })
+    }
     let loadMessages = (dateString, words, senders) => {
     	views.sms.showLoading();
     	return ajax.get({
@@ -310,6 +379,28 @@ return function(arg) {
     		})
     	}, messages);
     	views.sms.hideLoading();
+        $.contextMenu({
+            selector: '#panel-sms .list .item',
+            items: {
+                addToOntologyGraph: {
+                    name: "Add to Concept Map",
+                    callback: function(key, opt){
+                        let id = this.parent().children().index(this);
+                        // appLayout.messageClicked(msgObjs[id]);
+                        igraph.append({
+                            nodes: {
+                                id: msgObjs[id].content,
+                                type: "message",
+                                pos: [100,100],
+                                value: 0,
+                                props: msgObjs[id]
+                            },
+                            links: []
+                        })
+                    }
+                }
+            }
+        })
     	appLayout.messagesPopulated(msgObjs);
     }
 

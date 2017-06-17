@@ -19,27 +19,26 @@ exports.setupRoutes = function(app) {
                 callback(_cache[date]);
             });
         }
+        let isMessageSelected = R.curry((words, senders, message) => {
+            let containsWords =
+                    R.isEmpty(words) ||
+                    R.all(bool => bool)(
+                        R.map(
+                            word => R.contains(word, message.content), words));
+            let containsSenders =
+                    R.isEmpty(senders) ||
+                    R.all(bool => bool)(
+                        R.map(sender => R.equals(sender, message.phone),
+                            senders));
+            return R.and(containsWords, containsSenders);
+        });
         let paramsToMessages = (parameters) => {
             let obj = _cache[parameters.date];
             let dateMsgs = obj.messages;
-            // console.log(parameters);
-            let msgs = R.filter(message => {
-                let containsWords =
-                        R.isEmpty(parameters.words) ||
-                        R.all(bool => bool)(
-                            R.map(
-                                word => R.contains(word, message.content),
-                                parameters.words));
-                let containsSenders =
-                        R.isEmpty(parameters.senders) ||
-                        R.all(bool => bool)(
-                            R.map(
-                                sender => R.equals(
-                                    sender, message.phone),
-                                    parameters.senders));
-                return R.and(containsWords, containsSenders);
-            }, dateMsgs);
-            let uniques = {}
+            let uniques = {};
+            let msgs = R.filter(
+                    isMessageSelected(parameters.words)(parameters.senders),
+                    dateMsgs);
             R.forEach(record => {
                 if (!uniques[record.content]) {
                     uniques[record.content] = [];
@@ -52,6 +51,39 @@ exports.setupRoutes = function(app) {
                     R.compose(
                             R.map(R.zipObj(['content', 'metas'])), R.toPairs);
             return convert(uniques);
+        }
+        let paramsToWordSenderMessages = (parameters, res) => {
+            let msgs = paramsToMessages(parameters);
+            let wordCounts =
+                    R.fromPairs(R.map(wordCount => [wordCount[0], 0],
+                        _cache[parameters.date].words));
+            let senderCounts =
+                    R.fromPairs(R.map(senderCount => [senderCount[0], 0],
+                        _cache[parameters.date].senders));
+            R.forEach(message => {
+                R.forEachObjIndexed((count, word) => {
+                    if (R.contains(word, message.content)) {
+                        wordCounts[word] += message.metas.length;
+                    }
+                }, wordCounts);
+                R.forEachObjIndexed((count, sender) => {
+                    let hasSender = R.reduce(
+                            (acc, meta) => acc || sender === meta.phone,
+                            false,
+                            message.metas);
+                    if (hasSender) {
+                        senderCounts[sender] += message.metas.length;
+                    }
+                }, senderCounts);
+            }, msgs);
+            let filterByCount = R.filter(count => count > 0);
+            let sortByCount = R.sort((a, b) => b[1] - a[1]);
+            let filterAndSort = R.pipe(filterByCount, R.toPairs, sortByCount);
+            res.send({
+                words: filterAndSort(wordCounts),
+                senders: filterAndSort(senderCounts),
+                messages: msgs
+            });
         }
 
         return {
@@ -91,6 +123,15 @@ exports.setupRoutes = function(app) {
                 readDate(parameters.date, obj => {
                     callback(paramsToMessages(parameters));
                 });
+            },
+            wordSenderMessages: (parameters, res) => {
+                if (R.contains(parameters.date, R.keys(_cache))) {
+                    paramsToWordSenderMessages(parameters, res);
+                    return;
+                }
+                readDate(parameters.date, obj => {
+                    paramsToWordSenderMessages(parameters, res);
+                });
             }
         }
     })();
@@ -107,6 +148,10 @@ exports.setupRoutes = function(app) {
     app.get('/chinavis/messages', (req, res) => {
         data.messages(JSON.parse(req.query.parameters), R.bind(res.send, res));
     });
+    app.get('/chinavis/wordsendermessages', (req, res) => {
+        data.wordSenderMessages(
+                JSON.parse(req.query.parameters), res);
+    })
 }
 
 exports.setup = function(app) {
