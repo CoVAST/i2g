@@ -115,7 +115,9 @@ return function(arg) {
     	currSenders = senders;
     }
     let updateMessages = () => {
-    	loadMessages(currDate, currWords, currSenders).then(populateMessages);
+        loadWordSenderMessages(currDate, currWords, currSenders);
+    	// loadMessages(currDate, currWords, currSenders)
+        //     .then(populateMessages);
     }
 
     var views = {};
@@ -229,12 +231,7 @@ return function(arg) {
                  + dateObj.date
                  + '">'
                  + formatted
-                 + '</span>'
-                 // + '（'
-                 // + '<span class="cv-text-dates-count">'
-                 // + dateObj.nMessages
-                 // + '</span>'
-                 // + '）';
+                 + '</span>';
         }
         R.forEach(obj => {
             dateList.append({
@@ -247,49 +244,74 @@ return function(arg) {
     let loadWords = dateString => ajax.get({
     	url: '/chinavis/wordcounts/' + dateString
     });
+    let wordCountToEl = wordCount => {
+        return '<span class="cv-text-words-word">'
+             + wordCount[0]
+             + '</span>';
+    };
     let populateWordList = array => {
     	wordCounts = array;
         wordList.clear();
-        let wordCountToEl = wordCount => {
-            return '<span class="cv-text-words-word">'
-                 + wordCount[0]
-                 + '</span>'
-                 // + '（'
-                 // + '<span class="cv-text-words-count">'
-                 // + wordCount[1]
-                 // + '</span>'
-                 // + '）';
-        };
+        let selectedIds = [];
         R.forEach(wordCount => {
             wordList.append({
                 text: wordCountToEl(wordCount)
             });
+            if (R.contains(wordCount[0], currWords)) {
+                let id = $(wordList).children().length - 1;
+                selectedIds.push(id);
+            }
         }, wordCounts);
+        wordList.setSelectedItemIds(selectedIds);
+        views.words.hideLoading();
     }
 
     let loadSenders = dateString => ajax.get({
     	url: '/chinavis/sendercounts/' + dateString
     });
+    let senderCountToEl = senderCount => {
+        return '<span class="cv-text-senders-word">'
+             + senderCount[0]
+             + '</span>';
+    }
     let populateSenderList = array => {
     	senderCounts = array;
         senderList.clear();
-        let senderCountToEl = senderCount => {
-            return '<span class="cv-text-senders-word">'
-                 + senderCount[0]
-                 + '</span>'
-                 // + '（'
-                 // + '<span class="cv-text-senders-count">'
-                 // + senderCount[1]
-                 // + '</span>'
-                 // + '）';
-        }
+        let selectedIds = [];
         R.forEach(senderCount => {
             senderList.append({
                 text: senderCountToEl(senderCount)
             });
+            if (R.contains(senderCount[0], currSenders)) {
+                let id = $(senderList).children().length - 1;
+                selectedIds.push(id);
+            }
         }, senderCounts);
+        senderList.setSelectedItemIds(selectedIds);
+        views.senders.hideLoading();
     }
 
+    let loadWordSenderMessages = (dateString, words, senders) => {
+        views.words.showLoading();
+        views.senders.showLoading();
+        views.sms.showLoading();
+        let url = '/chinavis/wordsendermessages?parameters='
+                + encodeURIComponent(JSON.stringify({
+            date: dateString,
+            words: words,
+            senders: senders
+        }));
+        oboe(url)
+            .node('words', words => {
+                populateWordList(words);
+            })
+            .node('senders', senders => {
+                populateSenderList(senders);
+            })
+            .node('messages', messages => {
+                populateMessages(messages);
+            })
+    }
     let loadMessages = (dateString, words, senders) => {
     	views.sms.showLoading();
     	return ajax.get({
