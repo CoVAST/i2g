@@ -89,7 +89,7 @@ define(function(require){
                         pos: [0, views.map.innerHeight],
                         value: links.map((d)=>d.count).reduce((a,b)=>a+b)
                     }
-                    onSelect({day: d}, newNode);
+                    onSelect({dayStr: d}, newNode);
                 },
                 vmap: {
                     x: 'dayStr',

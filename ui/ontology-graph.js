@@ -7,6 +7,7 @@ define(function(require) {
             graph = options.graph || {},
             width = options.width,
             height = options.height,
+            menu = options.menu || false,
             onselect = options.onselect || function() {};
 
         var nodes = graph.nodes,
@@ -96,12 +97,19 @@ define(function(require) {
         function restart() {
 
             // Apply the general update pattern to the nodes.
+            //
+            nodes = Object.keys(nodeHash).map(function(k){
+                return nodeHash[k];
+            });
+
             node = node.data(nodes, function(d) {
                 return d.id;
             });
+
             node.exit().remove();
             node = node.enter()
                 .append("circle")
+                .attr('class', 'nodeHolder')
                 // .attr("fill", function(d) {
                 //     return nodeColor(d.type);
                 // })
@@ -109,7 +117,9 @@ define(function(require) {
                 .attr("r", (d)=>nodeSize(d.value))
                 .merge(node)
                 .on('click', function(d){
-                    console.log(d);
+                    // console.log(d);
+                    d.fx = d3.mouse(this)[0];
+                    d.fy = d3.mouse(this)[1];
                     if(linkSource === null && linkTarget === null) {
                         linkSource = d;
                     } else if(linkSource !== null && linkTarget === null) {
@@ -163,7 +173,7 @@ define(function(require) {
         function addNode(n) {
 
             var n = n || {},
-                pos = d3.mouse(this) || [100, 100],
+                pos = n.pos || d3.mouse(this) || [100, 100],
                 id = n.id ;
 
             var newNode = n || {
@@ -323,8 +333,6 @@ define(function(require) {
                 nodeLabels[d.id] = nodeInfo.append("text")
                     .attr("dx", 20)
                     .attr("dy", ".35em")
-
-                    //   .attr("text-anchor", "end")
                     .attr("x", d.x)
                     .attr("y", d.y)
                     .text(label);
@@ -347,24 +355,42 @@ define(function(require) {
                     .attr("transform", "scale(0.1)")
                     .attr("d", logos[d.type])
                     .attr("fill", nodeColor(d))
-
             }
-
         }
-
-        // function addLinkCursor(d) {
-        //
-        //     if(!linkCursors.hasOwnProperty(d.id){
-        //         var d.target.
-        //         linkInfo.append("polygon")
-        //     })
-        // }
 
         function updateIcon(d) {
             nodeIcons[d.id]
             .attr("transform", "translate(" + (d.x-20) + "," + (d.y-20) + ")")
-
         }
+
+        function nodeMenu() {
+            $.contextMenu({
+                selector: '.nodeHolder',
+                callback: function(key, options) {
+
+                    if(key == 'removeNode') {
+                        var thisNode = this[0],
+                            thisNodeId = thisNode.__data__.id;
+
+                        d3.select(thisNode).remove();
+                        nodeLabels[thisNodeId].remove();
+                        nodeIcons[thisNodeId].remove();
+                        delete nodeLabels[thisNodeId];
+                        delete nodeHash[thisNodeId];
+                    }
+
+
+                    // restart();
+                },
+                items: {
+                    removeNode: {name: "Remove this node", icon: "fa-delete"},
+                    addLink: {name: "Add link", icon: "fa-link"},
+                    addNotes: {name: "Add notes", icon: "fa-text"},
+                }
+            });
+        }
+
+        nodeMenu();
 
         function getNodes() { return nodes;}
         function getLinks() { return links;}

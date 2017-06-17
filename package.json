@@ -10,6 +10,7 @@
     "express": "^4.15.3",
     "i2v": "^0.2.1",
     "jquery": "^3.2.1",
+    "jquery-contextmenu": "^2.5.0",
     "leaflet": "^1.0.3",
     "leaflet-contextmenu": "^1.4.0",
     "moment-timezone": "^0.5.13",

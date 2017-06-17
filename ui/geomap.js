@@ -201,6 +201,11 @@ return function geoLocation(options) {
 
     L.control.layers(baseLayers, overlays).addTo(map);
 
+
+    function colorMap() {
+        return '#000';
+    }
+
     function addLocations(locs, params) {
         var c = params.color || 'steelblue',
             a = params.alpah || 0.5,

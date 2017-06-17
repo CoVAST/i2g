@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"/>
     <!-- <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico"> -->
@@ -31,6 +33,13 @@
       stroke-opacity: 0.6;
     }
 
+    .context-menu-icon.context-menu-icon--fa::before {
+        color: rgb(11, 170, 160);
+    }
+
+    .context-menu-item:hover{
+        background-color: #CCC;
+    }
     </style>
     <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' /> -->
     <link rel="stylesheet" href="/npm/leaflet/dist/leaflet.css" />
@@ -47,6 +56,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/npm/ramda/dist/ramda.min.js"></script>
     <script src="/npm/moment/min/moment-with-locales.js"></script>
+    <script src="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
     <script src="/npm/moment-timezone/builds/moment-timezone-with-data.min.js"></script>
   </head>
   <body>
@@ -154,7 +164,7 @@
             } else {
                 setUserName(username);
             }
-            // $('#logout-action').
+
         })
 
     </script>
