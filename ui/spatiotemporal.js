@@ -38,7 +38,10 @@ define(function(require){
         });
 
 
-        appLayout.map = geoMap();
+        appLayout.map = geoMap({
+            mapCenter: options.mapCenter,
+            mapZoom: options.mapZoom
+        });
         appLayout.views = views;
 
 
