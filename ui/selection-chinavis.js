@@ -20,10 +20,10 @@ return function(arg) {
 
     let onSelect = (pid, locs) => {
         appLayout.onSelect(pid, locs);
-        igraph.append({
-            nodes: {id: pid, type: "people", pos: [100,100], value: 0},
-            links: []
-        });
+        // igraph.append({
+        //     nodes: {id: pid, type: "people", pos: [100,100], value: 0},
+        //     links: []
+        // });
     }
 
 	var appLayout = new Layout({
@@ -96,10 +96,13 @@ return function(arg) {
 
     let setCurrDate = dateId => {
     	currDate = dates[dateId].date;
+        views.words.showLoading();
     	let wordsLoading = loadWords(currDate);
     	wordsLoading.then(populateWordList);
+        views.senders.showLoading();
     	let sendersLoading = loadSenders(currDate);
     	sendersLoading.then(populateSenderList);
+        views.sms.showLoading();
     	Promise.all([ wordsLoading, sendersLoading ])
     		.then(results => loadMessages(currDate, [], []))
     		.then(populateMessages);
@@ -264,6 +267,28 @@ return function(arg) {
         }, wordCounts);
         wordList.setSelectedItemIds(selectedIds);
         views.words.hideLoading();
+        $.contextMenu({
+            selector: '#panel-words .list .item',
+            items: {
+                addToOntologyGraph: {
+                    name: "Add to Concept Map",
+                    callback: function(key, opt){
+                        let id = this.parent().children().index(this);
+                        // appLayout.messageClicked(msgObjs[id]);
+                        igraph.append({
+                            nodes: {
+                                id: wordCounts[id][0],
+                                type: "word",
+                                pos: [100,100],
+                                value: 0,
+                                props: wordCounts[id]
+                            },
+                            links: []
+                        })
+                    }
+                }
+            }
+        })
     }
 
     let loadSenders = dateString => ajax.get({
@@ -289,6 +314,28 @@ return function(arg) {
         }, senderCounts);
         senderList.setSelectedItemIds(selectedIds);
         views.senders.hideLoading();
+        $.contextMenu({
+            selector: '#panel-senders .list .item',
+            items: {
+                addToOntologyGraph: {
+                    name: "Add to Concept Map",
+                    callback: function(key, opt){
+                        let id = this.parent().children().index(this);
+                        // appLayout.messageClicked(msgObjs[id]);
+                        igraph.append({
+                            nodes: {
+                                id: senderCounts[id][0],
+                                type: "sender",
+                                pos: [100,100],
+                                value: 0,
+                                props: senderCounts[id]
+                            },
+                            links: []
+                        })
+                    }
+                }
+            }
+        })
     }
 
     let loadWordSenderMessages = (dateString, words, senders) => {
@@ -332,6 +379,28 @@ return function(arg) {
     		})
     	}, messages);
     	views.sms.hideLoading();
+        $.contextMenu({
+            selector: '#panel-sms .list .item',
+            items: {
+                addToOntologyGraph: {
+                    name: "Add to Concept Map",
+                    callback: function(key, opt){
+                        let id = this.parent().children().index(this);
+                        // appLayout.messageClicked(msgObjs[id]);
+                        igraph.append({
+                            nodes: {
+                                id: msgObjs[id].content,
+                                type: "message",
+                                pos: [100,100],
+                                value: 0,
+                                props: msgObjs[id]
+                            },
+                            links: []
+                        })
+                    }
+                }
+            }
+        })
     	appLayout.messagesPopulated(msgObjs);
     }
 
