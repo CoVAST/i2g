@@ -15,8 +15,16 @@ var ajax = require('p4/io/ajax'),
 
 return function(arg) {
 	var options = arg || {},
-		container = options.container;
-		// onSelect = options.onselect || function() {};
+		container = options.container,
+        igraph = options.igraph;
+
+    let onSelect = (pid, locs) => {
+        appLayout.onSelect(pid, locs);
+        igraph.append({
+            nodes: {id: pid, type: "people", pos: [100,100], value: 0},
+            links: []
+        });
+    }
 
 	var appLayout = new Layout({
         margin: 5,
@@ -75,7 +83,7 @@ return function(arg) {
                 user: msgObj.content
             }
         }, msgObj.metas);
-        appLayout.onSelect(pid, locs);
+        onSelect(pid, locs);
     }
 
     let dates = [];

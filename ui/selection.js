@@ -13,8 +13,8 @@ define(function(require){
 
     return function(arg) {
         var options = arg || {},
-            container = options.container || 'domain-vis';
-            // onSelect = options.onselect || function() {};
+            container = options.container || 'domain-vis',
+            igraph = options.igraph;
 
         var data = {},
             result;
@@ -37,6 +37,14 @@ define(function(require){
         selection.onSelect = options.onselect || function() {};
         selection.mapCenter = [37.7749, -122.4194];
         selection.mapZoom = 10;
+
+        let onSelect = (d, r) => {
+            selection.onSelect.call(this, d, r);
+            igraph.append({
+                nodes: {id: d, type: "people", pos: [100,100], value: 0},
+                links: []
+            });
+        }
 
         var views = {};
 
@@ -89,7 +97,7 @@ define(function(require){
                     user: d
                 })
                 (data.records);
-                selection.onSelect.call(this, d, r);
+                onSelect.call(this, d, r);
             }
         });
 

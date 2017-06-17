@@ -112,10 +112,6 @@ return function(webSocket) {
             locations[pid] = locs;
             locationMarks[pid] =
                     map.addLocations(locs, {color: 'purple'});
-            igraph.append({
-                nodes: {id: pid, type: "people", pos: [100,100], value: 0},
-                links: []
-            });
         } else {
             map.removeLocations(locationMarks[pid]);
             delete locations[pid];
@@ -199,13 +195,21 @@ return function(webSocket) {
         return newLinks;
     });
 
-    var selection = require('/selection')();
+    var selection = require('/selection')({
+        container: 'domain-vis',
+        igraph: igraph
+    });
     selection.onSelect = function(pid, locs) {
         let aboutToFly = R.isEmpty(locations) ? true : false;
         addLocationsToMap(pid, locs);
         if (aboutToFly) {
             flyToLocations(locs);
         }
+
+        // igraph.append({
+        //     nodes: {id: pid, type: "people", pos: [100,100], value: 0},
+        //     links: []
+        // });
 
         var allLocs = getAllLocations();
         if(allLocs.length){
