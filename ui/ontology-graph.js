@@ -8,6 +8,7 @@ define(function(require) {
             width = options.width,
             height = options.height,
             menu = options.menu || false,
+            notePanel = options.notePanel || null,
             onselect = options.onselect || function() {};
 
         var nodes = graph.nodes,
@@ -16,7 +17,7 @@ define(function(require) {
         var maxLinkValue = 0;
 
         var svg = d3.select(container).append('svg:svg');
-        svg.attr("width", width).attr("height", height);
+        svg.attr("width", width).attr("height", height).attr('id', 'igraph-svg');
 
         svg.append("svg:defs").append("svg:marker")
               .attr("id",'end')
@@ -367,29 +368,26 @@ define(function(require) {
             $.contextMenu({
                 selector: '.nodeHolder',
                 callback: function(key, options) {
-
                     if(key == 'removeNode') {
                         var thisNode = this[0],
                             thisNodeId = thisNode.__data__.id;
-
                         d3.select(thisNode).remove();
                         nodeLabels[thisNodeId].remove();
                         nodeIcons[thisNodeId].remove();
                         delete nodeLabels[thisNodeId];
                         delete nodeHash[thisNodeId];
+                        restart();
+                    } else if(key == 'addNotes') {
+                        notePanel.style.display = 'block';
                     }
-
-
-                    // restart();
                 },
                 items: {
-                    removeNode: {name: "Remove this node", icon: "fa-delete"},
-                    addLink: {name: "Add link", icon: "fa-link"},
-                    addNotes: {name: "Add notes", icon: "fa-text"},
+                    removeNode: {name: "Remove this node", icon: "fa-times"},
+                    addLink: {name: "Add link", icon: "fa-long-arrow-right"},
+                    addNotes: {name: "Add notes", icon: "fa-commenting"},
                 }
             });
         }
-
         nodeMenu();
 
         function getNodes() { return nodes;}

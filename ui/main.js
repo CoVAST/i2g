@@ -2,7 +2,8 @@ define(function(require) {
 
 // dependencies
 var Panel = require('vastui/panel.js'),
-    Button = require('vastui/button');
+    Button = require('vastui/button'),
+    Dropdown = require('vastui/dropdown');
 
 var arrays = require('p4/core/arrays'),
     pipeline = require('p4/core/pipeline');
@@ -40,6 +41,7 @@ return function(webSocket) {
         header: {height: 0.07, style: {backgroundColor: '#FFF'}}
     })
 
+
     var igraph = ontoGraph({
         container: graphPanel.body,
         width: graphPanel.innerWidth,
@@ -48,22 +50,29 @@ return function(webSocket) {
         graph: {nodes: [], links: []}
     });
 
-    graphPanel.header.append(new Button({
-        label: '+Node',
-        types: ['blue'],
-        size: '0.6em'
-    }))
+    var nodeChoices = new Dropdown({
+        label: "+Node",
+        items: [
+            {name: 'Custom node', icon: 'circle teal'},
+            {name: 'Location', icon: 'marker teal', onclick: function() { console.log(igraph.update);}}
+        ]
+    });
+    nodeChoices.style.marginRight = '0.5em';
+    graphPanel.header.append(nodeChoices);
+
 
     graphPanel.header.append(new Button({
-        label: '+Edge',
-        types: ['blue'],
-        size: '0.6em'
+        label: 'Provenance',
+        types: ['large'],
+        onclick: function() {
+            $('.ui.sidebar').sidebar('toggle');
+        }
     }))
 
     graphPanel.header.append(new Button({
         label: 'Share',
-        types: ['teal'],
-        size: '0.6em',
+        types: ['teal', 'large'],
+        // size: '0.6em',
         onclick: function() {
             var graph = {
                 nodes: igraph.getNodes(),
@@ -75,7 +84,47 @@ return function(webSocket) {
     }))
 
 
+
+    var notePanel = new Panel({
+        container:'page-sidebar',
+        id: "igraph-notes",
+        // width: graphPanel.innerWidth/3,
+        // height: 300,
+        padding: 10,
+        style: {
+            position: 'fixed',
+            display: 'none',
+            bottom: 0,
+            left: 0,
+            height: 'auto',
+            'text-align': 'right'
+        }
+        // title: "Insight Graph",
+        // header: {height: 0.07, style: {backgroundColor: '#FFF'}}
+    })
+
+    notePanel.append(
+        '<div class="ui form" style="text-align:left">'+
+            '<div class="field"><label>Label</label><input type="text"></div>' +
+            '<div class="field"><label>Detail</label>' +
+                '<textarea id="user-notes"></textarea>' +
+            '</div>' +
+        '</div><br />'
+    );
+
+    notePanel.append(new Button({
+        label: ' Save ',
+        types: ['positive']
+    }));
+
+    notePanel.append(new Button({
+        label: 'Cancel',
+        types: ['negative']
+    }));
+
     $('#panel-igraph').transition('fade left');
+
+
 
     /// TODO: consider defining class Rect.
     let calcLocsRect = locs => {

@@ -60,7 +60,7 @@
     <script src="/npm/moment-timezone/builds/moment-timezone-with-data.min.js"></script>
   </head>
   <body>
-      <div class="ui top menu page-menu" id="page-header" style="margin:0;">
+      <div class="ui top fixed menu page-menu" id="page-header" style="margin:0;">
         <div class="item">
           <h2 style="color: teal;">CoVA</h2>
         </div>
@@ -89,12 +89,18 @@
             </a>
         </div>
       </div>
-      <div id="page-main">
-        <div class="ui content sticky fixed cv-page cv-page-active" id="page-relationship"></div>
-        <div class="ui content sticky fixed cv-page" id="page-geospatial"></div>
-        <div class="ui content sticky fixed cv-page" id="page-text"></div>
-        <div class="ui content sticky fixed cv-page" id="page-collaboration"></div>
+      <div class="ui sidebar vertical menu" id="page-sidebar">
+
       </div>
+      <div class="pusher">
+          <div id="page-main" >
+            <div class="ui content sticky fixed cv-page cv-page-active" id="page-relationship"></div>
+            <div class="ui content sticky fixed cv-page" id="page-geospatial"></div>
+            <div class="ui content sticky fixed cv-page" id="page-text"></div>
+            <div class="ui content sticky fixed cv-page" id="page-collaboration"></div>
+          </div>
+      </div>
+
 
       <div class="ui small modal">
         <div class="header">
@@ -118,10 +124,19 @@
     <script>
         var webSocket = io();
         require(["main"], function(main) {
+            var pageHeaderHeight =  $('#page-header').height();
+
+            $('.ui.sidebar')
+              .sidebar({
+                  dimPage: false,
+                  closable: false
+                })
 
             $("#page-main")
-                .css("height", $("body").height() - $('#page-header')
-                .height());
+                .css({
+                    height: $("body").height() - pageHeaderHeight ,
+                    'margin-top': pageHeaderHeight + 'px'
+                });
 
             $(".page-menu > a.item").click(function(){
                 $(".page-menu > a.item.active").each(function(menuID){
