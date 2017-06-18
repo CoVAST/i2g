@@ -52,6 +52,24 @@ define(function(require){
         let people = [];
         let datetimes = [];
         let areas = [];
+        appLayout.setSubjects = subjectLocations => {
+            // clear locations
+            R.forEachObjIndexed(
+                    geo => appLayout.map.removeLocations(geo.mapObjs),
+                    subjectGeos);
+            // add locations
+            people = [];
+            subjectGeos = R.mapObjIndexed((locations, subjectKey) => {
+                let mapObjs =
+                        appLayout.map.addLocations(
+                            locations, { color: colorMap(subjectKey) });
+                people.push(subjectKey);
+                return { mapObjs: mapObjs, locations: locations };
+            })(subjectLocations);
+            console.log(subjectGeos);
+            // update timeline
+            updateTimeline();
+        }
         appLayout.addSubject = (subjectKey, locations) => {
             // add locations to map
             let aboutToFly = R.isEmpty(subjectGeos);

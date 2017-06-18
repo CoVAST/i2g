@@ -74,30 +74,42 @@ return function(arg) {
     appLayout.mapCenter = [39.9042, 116.4074];
     appLayout.mapZoom = 8;
 
+    let metaToLoc = R.curry((user, meta) => {
+        let time = moment(parseInt(meta.recitime)).tz('Asia/Shanghai');
+        // let time = new Date(parseInt(meta.recitime));
+        return {
+            day: time.day(),
+            hour: time.hour(),
+            hours: time.hour() + ' - ' + time.hour(),
+            lat: meta.lat,
+            location: meta.md5,
+            long: meta.lng,
+            month: time.month(),
+            time: time.toDate(),
+            user: user
+        }
+    });
+
     let logFunc = (str) => () => console.log(str);
     appLayout.onSelect = options.onselect || logFunc('messagesPopulated');
     appLayout.messagesPopulated = logFunc('messagesPopulated');
     appLayout.messageClicked = (msgObj) => {
     	// console.log(msgObj);
         let pid = msgObj.content;
-        let locs = R.map(meta => {
-        	// console.log(meta.recitime * 1000, meta.recitime + '000');
-        	let time = moment(parseInt(meta.recitime)).tz('Asia/Shanghai');
-        	gTime = time;
-        	// let time = new Date(parseInt(meta.recitime));
-            return {
-            	day: time.day(),
-            	hour: time.hour(),
-            	hours: time.hour() + ' - ' + time.hour(),
-                lat: meta.lat,
-            	location: meta.md5,
-                long: meta.lng,
-                month: time.month(),
-                time: time.toDate(),
-                user: msgObj.content
-            }
-        }, msgObj.metas);
+        let locs = R.map(metaToLoc(msgObj.content), msgObj.metas);
         onSelect(pid, locs);
+    }
+    appLayout.onMultiSelect =
+            options.onmultiselect || logFunc('messagesSelected');
+    appLayout.messagesSelected = ids => {
+        let idToMsgObj = id => msgObjs[id];
+        let msgObjToPid = R.prop('content');
+        let msgObjToLocs = msgObj => metaToLoc(msgObj.content, msgObj.metas);
+        let msgObjToPidLocs = msgObj => {
+            return { pid: msgObjToPid(msgObj), locs: msgObjToLocs(msgObj) };
+        }
+        let idsToPidLocsArray = R.map(R.pipe(idToMsgObj, msgObjToPidLocs));
+        appLayout.onMultiSelect(idsToPidLocsArray(ids));
     }
 
     let dates = [];
@@ -224,6 +236,11 @@ return function(arg) {
             padding: '0 6px'
         },
         header: {height: 35, style: {backgroundColor: '#FFF'}}
+    })
+    views.sms.header.append(createLinkClear('cv-text-messages-clear'));
+    $('#cv-text-messages-clear').click(() => {
+        smsList.clearSelected();
+        appLayout.messagesSelected([]);
     })
     let smsList = new List({
         container: views.sms.body,

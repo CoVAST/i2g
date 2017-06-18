@@ -153,11 +153,16 @@ return function(webSocket) {
             spatiotemporal.removeSubject(subjectKey);
             delete subjectLocations[subjectKey];
             return;
-
         }
         // add subject to spatiotemporal panel
         subjectLocations[subjectKey] = locations;
         spatiotemporal.addSubject(subjectKey, locations);
+    }
+    selection.onMultiSelect = pidLocsArray => {
+        let pidLocsToPair = pidLocs => [pidLocs.pid, pidLocs.locs];
+        subjectLocations =
+                R.pipe(R.map(pidLocsToPair), R.fromPairs)(pidLocsArray);
+        spatiotemporal.setSubjects(subjectLocations);
     }
     map.flyTo(selection.mapCenter, selection.mapZoom);
 
