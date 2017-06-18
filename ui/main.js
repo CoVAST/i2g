@@ -126,45 +126,6 @@ return function(webSocket) {
 
     $('#panel-igraph').transition('fade left');
 
-
-
-    /// TODO: consider defining class Rect.
-    let calcLocsRect = locs => {
-        let minmax = R.reduce((acc, loc) => {
-            let lat = parseFloat(loc.lat);
-            let long = parseFloat(loc.long);
-            return {
-                min: {
-                    lat: Math.min(acc.min.lat, lat),
-                    long: Math.min(acc.min.long, long)
-                },
-                max: {
-                    lat: Math.max(acc.max.lat, lat),
-                    long: Math.max(acc.max.long, long)
-                }
-            }
-        }, {
-            min: {
-                lat: Number.POSITIVE_INFINITY,
-                long: Number.POSITIVE_INFINITY,
-            },
-            max: {
-                lat: Number.NEGATIVE_INFINITY,
-                long: Number.NEGATIVE_INFINITY,
-            }
-        }, locs);
-        console.log(minmax);
-        return minmax;
-    }
-
-    let flyToLocations = (locs) => {
-        let minmax = calcLocsRect(locs);
-        map.flyToBounds([
-            [minmax.min.lat, minmax.min.long],
-            [minmax.max.lat, minmax.max.long]
-        ]);
-    }
-
     var selection = require('/selection')({
         container: 'domain-vis',
         igraph: igraph
