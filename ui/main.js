@@ -29,7 +29,7 @@ return function(webSocket) {
         time: '#4183D7'
     }
 
-    var colorMap = d3.scaleOrdinal(d3.schemeCategory20);
+    var colorMap = d3.scaleOrdinal(d3.schemeCategory10);
 
     function getAllLocations() {
         var locs = [];
