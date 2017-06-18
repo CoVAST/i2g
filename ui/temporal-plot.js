@@ -23,6 +23,7 @@ define(function(require){
             domainX = option.domainX || false,
             formatX = option.formatX || format(".3s"),
             formatY = option.formatY || format(".3s"),
+            scaleX = options.scaleX || 'ordinal',
             scatter = plot.append("g");
 
 
@@ -30,16 +31,13 @@ define(function(require){
             height = this.$height,
             width = this.$width;
 
-        var xDomains = domainX || arrays.unique(this.data.map(function(d){ return d[vmap.x]})).sort(function(a, b) { return parseInt(a) - parseInt(b);});
         var yDomains = arrays.unique(this.data.map(function(d){ return d[vmap.y]})).sort(function(a,b){ return a - b;});
 
         var xAxisOptions = {
             container: plot,
             dim: "x",
-            scale: 'ordinal',
-            domain: xDomains,
+            scale: scaleX,
             align: "bottom",
-            ticks: xDomains.length,
             tickInterval: "fit",
             labelPos: {x: 5, y: -15},
             labelAngel: -35,
@@ -47,8 +45,17 @@ define(function(require){
             format: formatX,
             // grid: 1
         };
+        var xDomains;
 
+        if(scaleX == 'linear') {
+            xAxisOptions.ticks = 6;
+            xDomains = stats(data, [vmap.x]);
 
+        } else {
+            xDomains = domainX || arrays.unique(this.data.map(function(d){ return d[vmap.x]})).sort(function(a, b) { return parseInt(a) - parseInt(b);});
+            xAxisOptions.ticks = xDomains.length;
+        }
+        xAxisOptions.domain = xDomains;
         var yAxisOptions = {
             container: plot,
             dim: "y",
@@ -69,21 +76,24 @@ define(function(require){
         var size = function() { return option.size|| 5};
 
         if(vmap.size) {
-            var sizeDomain = stats.domains(this.data, [vmap.size])[vmap.size];
+            var maxRadius,
+                sizeDomain = stats.domains(this.data, [vmap.size])[vmap.size];
 
-            if(sizeDomain[1] !== sizeDomain [0])
-
-            if (sizeDomain[0] !== sizeDomain[1]) {
-                var maxRadius = Math.min(
+            if(scale == 'linear') {
+                maxRadius = this.$height / yDomains.length / 2;
+            } else if (sizeDomain[0] !== sizeDomain[1]) {
+                maxRadius = Math.min(
                     this.$width / xDomains.length / 2,
                     this.$height / yDomains.length / 2
                 );
-                size = scale({
-                    type: 'linear',
-                    domain: sizeDomain,
-                    range: [2, maxRadius]
-                });
+
             }
+            size = scale({
+                type: 'linear',
+                domain: sizeDomain,
+                range: [2, maxRadius]
+            });
+
         }
 
         if(axisOptions.hasOwnProperty('x')) {
