@@ -69,7 +69,7 @@ return function(webSocket) {
         label: "+Node",
         items: [
             {name: 'Custom node', icon: 'circle teal'},
-            {name: 'Location', icon: 'marker teal', onclick: function() { console.log(igraph.update);}}
+            {name: 'Location', icon: 'marker teal', onclick: function() {}}
         ]
     });
     nodeChoices.style.marginRight = '0.5em';
