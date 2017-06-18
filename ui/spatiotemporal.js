@@ -4,10 +4,12 @@ define(function(require){
         Button = require('vastui/button'),
         ButtonGroup = require('vastui/button-group');
 
-    var arrays = require('p4/core/arrays');
-    var pipeline = require('p4/core/pipeline');
+    var arrays = require('p4/core/arrays'),
+        stats = require('p4/dataopt/stats'),
+        pipeline = require('p4/core/pipeline');
 
     var geoMap = require('./geomap'),
+        lineChart = require('i2v/charts/lineChart'),
         temporalPlot = require('./temporal-plot');
 
     return function(arg) {
@@ -36,9 +38,8 @@ define(function(require){
         });
 
 
-        var timeMode = 1;
-
-        var timelineControl = new ButtonGroup({
+        var timeMode = 0,
+            timelineControl = new ButtonGroup({
             buttons: [
                 new Button({
                     label: 'Timeline',
@@ -283,7 +284,62 @@ define(function(require){
             views.timeline.clear();
 
             if(timeMode == 0) {
+                var timespan = stats.domains(data, ['time']).time;
 
+                    var timeAggr = pipeline()
+                    .match({
+                        user: {$in: people},
+                    })
+                    .derive(function(d){
+                        d.timestep = Math.floor((d.time - timespan[0]) / (timespan[1]-timespan[0]) * 256);
+                    })
+                    .group({
+                        $by:  ['user', 'timestep'],
+                            // time: '$min',
+                        value: {'location': '$count'}
+                    })
+                    .sortBy({timestep: 1})
+                    (data);
+
+
+
+                    var timeSeries = new Array(people.length);
+                    people.forEach(
+                            function(s, i){
+                        timeSeries[i] = timeAggr
+                            .filter(function(a) {
+                                return a.user == s;
+                            }).sort(function(a, b){
+                                return b.timestep - a.timestep;
+                            });
+                    })
+                    // console.log(activities);
+                    new lineChart({
+                        container: views.timeline.body,
+                        height: views.timeline.innerHeight,
+                        width: views.timeline.innerWidth,
+                        padding: {left: 100, right: 50, top: 30, bottom: 50},
+                        data: timeSeries,
+                        formatX: function(d) {
+                            var tx = timespan[1]-timespan[0];
+                                dt = new Date((timespan[0].getTime() + d/256 * tx));
+
+                            if(tx < 3600 * 24 * 1000) {
+                                return dt.getHours() + ":" + dt.getMinutes();
+                            } else {
+                                return [dt.getFullYear(), dt.getMonth(), dt.getDate()].join('-') ;
+                            }
+                        },
+                        series: people,
+                        // zero: true,
+                        vmap: {
+                            x: 'timestep',
+                            y: 'value',
+                            color: 'user',
+                            colorMap: colorMap
+                            // color: 'user',
+                        }
+                    })
             }
             if(timeMode == 1) {
                 var dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
