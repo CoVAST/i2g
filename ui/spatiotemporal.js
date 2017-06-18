@@ -13,6 +13,7 @@ define(function(require){
         var options = arg || {},
             data = options.data || [],
             igraph = options.igraph,
+            colorMap = options.colorMap,
             colorScheme = options.colorScheme;
 
         var appLayout = new Layout({
@@ -40,7 +41,6 @@ define(function(require){
             header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
 
-
         appLayout.map = geoMap({
             mapCenter: options.mapCenter,
             mapZoom: options.mapZoom,
@@ -57,13 +57,13 @@ define(function(require){
             let aboutToFly = R.isEmpty(subjectGeos);
             let mapObjs =
                     appLayout.map.addLocations(
-                        locations, { color: colorScheme.people });
+                        locations, { color: colorMap(subjectKey) });
             subjectGeos[subjectKey] = {
                 mapObjs: mapObjs,
                 locations: locations
             };
             people.push(subjectKey);
-            flyToLocations(locations);
+            if(aboutToFly) flyToLocations(locations);
             // update timeline
             updateTimeline();
         }
@@ -151,7 +151,7 @@ define(function(require){
         }
 
         let generateLinks = R.curry((allLocs, d, area) => {
-            console.log(datetimes);
+            // console.log(datetimes);
             let newLinks = [];
             let filter = {};
             filter.lat = {$inRange: area.box.lat};
@@ -280,9 +280,7 @@ define(function(require){
                 title: 'Weekly Activities',
                 align: 'right',
                 domainX: dayOfWeek,
-                colors: function(d) {
-                    return colorScheme.people;
-                },
+                colors: colorMap,
                 onselect: function(d) {
 
                     var links = data.filter(function(a){
@@ -339,9 +337,7 @@ define(function(require){
                 align: 'left',
                 formatX: function(d) { return d;},
                 title: 'Daily Activities',
-                colors: function(d) {
-                    return colorScheme.people;
-                },
+                colors: colorMap,
                 onselect: function(d) {
                     var newNodeId = d;
 
@@ -371,5 +367,4 @@ define(function(require){
 
         return appLayout;
     }
-
 })
