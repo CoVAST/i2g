@@ -284,14 +284,15 @@ define(function(require){
             views.timeline.clear();
 
             if(timeMode == 0) {
-                var timespan = stats.domains(data, ['time']).time;
+                var timespan = stats.domains(data, ['time']).time,
+                    duration = timespan[1] - timespan[0];
 
                     var timeAggr = pipeline()
                     .match({
                         user: {$in: people},
                     })
                     .derive(function(d){
-                        d.timestep = Math.floor((d.time - timespan[0]) / (timespan[1]-timespan[0]) * 256);
+                        d.timestep = Math.floor((d.time - timespan[0]) / (duration) * 256);
                     })
                     .group({
                         $by:  ['user', 'timestep'],
@@ -314,17 +315,16 @@ define(function(require){
                             });
                     })
                     // console.log(activities);
-                    new lineChart({
+                    var mainTimeline = new lineChart({
                         container: views.timeline.body,
                         height: views.timeline.innerHeight,
                         width: views.timeline.innerWidth,
                         padding: {left: 100, right: 50, top: 30, bottom: 50},
                         data: timeSeries,
                         formatX: function(d) {
-                            var tx = timespan[1]-timespan[0];
-                                dt = new Date((timespan[0].getTime() + d/256 * tx));
+                            var dt = new Date((timespan[0].getTime() + d/256 * duration));
 
-                            if(tx < 3600 * 24 * 1000) {
+                            if(duration < 3600 * 24 * 1000) {
                                 return dt.getHours() + ":" + dt.getMinutes();
                             } else {
                                 return [dt.getFullYear(), dt.getMonth(), dt.getDate()].join('-') ;
@@ -338,6 +338,13 @@ define(function(require){
                             color: 'user',
                             colorMap: colorMap
                             // color: 'user',
+                        },
+                        onchange: function(extent) {
+                            var timeWindow = [
+                                new Date((timespan[0].getTime() + extent.x[0]/256 * duration)),
+                                new Date((timespan[0].getTime() + extent.x[1]/256 * duration))
+                            ];
+                            console.log(timeWindow);
                         }
                     })
             }
