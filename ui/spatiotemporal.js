@@ -92,15 +92,22 @@ define(function(require){
             var links = pipeline()
             .group({
                 $by: ['user'],
-                count: {'location': '$count'}
+                value: {'location': '$count'}
             })
             (selectedLocations);
-
             areas.push(d);
-            igraph.append({
-                nodes: {id: d.label  , type: "location", pos: [0,0], value: selectedLocations.length},
-                links: links
-            });
+            links.forEach(function(li){
+                li.source = li.user;
+                li.target = d.label;
+            })
+            igraph.addNodes({
+                id: d.label,
+                type: "location",
+                pos: [0,0],
+                value: selectedLocations.length
+            })
+            .addLinks(links)
+            .update();
         })
 
         /// TODO: consider defining class Rect.
@@ -205,7 +212,7 @@ define(function(require){
                     });
                 });
             }
-            console.log(extraReults, newLinks);
+
             return newLinks;
         });
 
@@ -227,10 +234,13 @@ define(function(require){
                             R.pipe(
                                 R.map(generateLinks(allLocs)(d)), R.flatten);
                     let newLinks = areasToLinks(areas);
-                    igraph.update({
-                        nodes: d,
-                        links: newLinks
-                    });
+
+                    igraph
+                        .removeLinks({all:true})
+                        .addNodes(d)
+                        .addLinks(newLinks)
+                        .update();
+
                 }
             })
         }
@@ -244,8 +254,6 @@ define(function(require){
             views.timeline.clear();
 
             var dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-            console.log(people);
 
             var weeklyStats = pipeline()
                 .match({
@@ -343,10 +351,8 @@ define(function(require){
                         type: 'time',
                         pos: [0, views.map.innerHeight],
                         value: links.map((d)=>d.count).reduce((a,b)=>a+b)
-                    }
-
+                    };
                     onSelect({hours: d}, newNode);
-
                 },
                 vmap: {
                     x: 'hours',

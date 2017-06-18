@@ -318,12 +318,14 @@ define(function(require) {
         otGraph.addLinks = function(newLinks){
             var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
             newLinks.forEach(function(li){
+
                 li.source = nodeHash[li.source];
                 li.target = nodeHash[li.target];
+                    console.log(li, nodeHash);
                 if(!li.hasOwnProperty('datalink')) li.datalink = false;
                 links.push(li);
             })
-
+            return otGraph;
         };
 
         function removeNode(nodeId) {
@@ -334,35 +336,65 @@ define(function(require) {
         }
 
         function removeLink(linkId) {
-            delete links[linkId];
+            links.splice(linkId,1);
         }
 
         otGraph.removeNodes = function(query) {
-            var query = query ||  {};
-            var nodeIds;
-            if(query.id) {
-                nodeIds = query.id;
-            } else if(query.type) {
-                nodeIds = nodes.filter(function(n){
-                    return n.type !== query.type;
-                })
-                .map(function(n){ return n.id });
-            } else if(query.datalink) {
-                nodeIds = nodes.filter(function(n){
-                    return n.datalink !== query.datalink;
-                })
-                .map(function(n){ return n.id });
-            }
-
-            nodeIds.forEach(function(nid){
-                removeNode(nid);
-            });
+            var nodeIds,
+                query = query ||  {};
 
             if(query.all) {
                 nodes.forEach(function(n) {
                     removeNode(n.id);
                 })
+            } else {
+                if(query.id) {
+                    nodeIds = query.id;
+                } else if(query.type) {
+                    nodeIds = nodes.filter(function(n){
+                        return n.type !== query.type;
+                    })
+                    .map(function(n){ return n.id });
+                } else if(query.datalink) {
+                    nodeIds = nodes.filter(function(n){
+                        return n.datalink !== query.datalink;
+                    })
+                    .map(function(n){ return n.id });
+                }
+
+                nodeIds.forEach(function(nid){
+                    removeNode(nid);
+                });
             }
+            return otGraph;
+        }
+
+        otGraph.removeLinks = function(query) {
+            var linkIds,
+                query = query ||  {};
+
+            if(query.all) {
+                links = [];
+            } else {
+                if(query.id) {
+                    linkIds = query.id;
+                } else if(query.type) {
+                    linkIds = links.filter(function(li){
+                        return li.type !== query.type;
+                    })
+                    .map(function(n){ return li.id });
+                } else if(query.datalink) {
+                    linkIds = links.filter(function(li){
+                        return li.datalink !== query.datalink;
+                    })
+                    .map(function(li){ return li.id });
+                }
+                linkIds.forEach(function(lid){
+                    removeLink(lid);
+                });
+            }
+
+            return otGraph;
         }
 
         otGraph.update = function(subgraph) {
@@ -374,12 +406,14 @@ define(function(require) {
             if(newLinks.length) otGraph.addLinks(newLinks);
 
             restart();
+            return otGraph;
         };
 
         otGraph.append = function(subgraph) {
             otGraph.addNodes(subgraph.nodes);
             otGraph.addLinks(subgraph.links);
             restart();
+            return otGraph;
         }
 
         otGraph.remake = function(graph) {
@@ -399,6 +433,7 @@ define(function(require) {
             });
 
             restart();
+            return otGraph;
         }
 
         otGraph.getNodes = function() { return nodes;};
