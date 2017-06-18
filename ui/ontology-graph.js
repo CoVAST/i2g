@@ -1,6 +1,7 @@
 define(function(require) {
     var logos = require('./icons');
     return function(arg) {
+        'use strict';
         var options = arg || {},
             container = options.container || "body",
             domain = options.domain || [0, 1],
@@ -57,11 +58,11 @@ define(function(require) {
         var nodeSize = d3.scalePow()
             .exponent(0.20)
             .domain([1, 3000])
-            .range([5, 50]);
+            .range([5, 500]);
 
         var linkSize = d3.scalePow()
             .exponent(0.2)
-            .domain([1, 3000])
+            .domain([0, 3000])
             .range([1, 10]);
 
         var simulation = d3.forceSimulation(nodes)
@@ -115,10 +116,9 @@ define(function(require) {
                 //     return nodeColor(d.type);
                 // })
                 .attr("fill", "transparent")
-                .attr("r", (d)=>nodeSize(d.value))
+                .attr("r", 20)
                 .merge(node)
                 .on('click', function(d){
-                    // console.log(d);
                     d.fx = d3.mouse(this)[0];
                     d.fy = d3.mouse(this)[1];
                     if(linkSource === null && linkTarget === null) {
@@ -148,6 +148,12 @@ define(function(require) {
             });
 
             // Apply the general update pattern to the links.
+            //
+            links = links.filter(function(li){
+                console.log(li);
+                return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
+            });
+
             link = link.data(links, function(d) {
                 return d.source.id + "-" + d.target.id;
             });
@@ -168,103 +174,8 @@ define(function(require) {
             // Update and restart the simulation.
             simulation.nodes(nodes);
             simulation.force("link").links(links).iterations(10);
-            simulation.alphaTarget(0.1).restart();
+            simulation.alphaTarget(0.3).restart();
         }
-
-        function addNode(n) {
-
-            var n = n || {},
-                pos = n.pos || d3.mouse(this) || [100, 100],
-                id = n.id ;
-
-            var newNode = n || {
-                x: pos[0],
-                y: pos[1],
-                value: 10,
-                group: 2,
-                id: id
-            };
-            nodes.push(newNode);
-            restart();
-        }
-
-        function append(subgraph) {
-            var sg = subgraph ||  {},
-                sn = sg.nodes;
-
-            var pos = sn.pos || [100, 100],
-                id = sn.id || nodes.length;
-
-            var newNode = {
-                x: pos[0],
-                y: pos[1],
-                value: sn.value || 10,
-                type: sn.type || 'event',
-                id: id
-            };
-            nodeHash[id] = newNode;
-            nodes.push(newNode);
-            sg.links.forEach(function(sl){
-                links.push({
-                    source: nodes.filter(function(d) {return d.id === sl.user})[0],
-                    target: newNode,
-                    value: sl.count,
-                })
-            })
-            // links = links.concat([sl]);
-            restart();
-        }
-
-        function update(subgraph) {
-            var sg = subgraph ||  {},
-                sn = sg.nodes;
-
-            var pos = sn.pos || [100, 100],
-                id = sn.id || nodes.length;
-
-            var newNode = {
-                x: pos[0],
-                y: pos[1],
-                value: sn.value || 10,
-                type: sn.type || 'event',
-                id: id
-            };
-            nodes.push(newNode);
-            console.log(id);
-            nodeHash[id] = newNode;
-            var newLinks = sg.links.map(function(sl){
-                return {
-                    source: nodeHash[sl.source],
-                    target: nodeHash[sl.target],
-                    value: sl.value,
-                }
-            })
-            // console.log(newLinks);
-            links = newLinks;
-            restart();
-        }
-
-        function remake(graph) {
-            nodes = graph.nodes;
-            nodeHash = {};
-            nodes.forEach(function(n){
-                nodeHash[n.id] = n;
-                n.fx = null;
-                n.fy = null;
-            })
-            links = graph.links.map(function(sl){
-                return {
-                    source: nodeHash[sl.source.id],
-                    target: nodeHash[sl.target.id],
-                    value: sl.value,
-                };
-            });
-
-            restart();
-        }
-
-
-        // svg.on('dblclick', addNode);
 
         function ticked() {
             node.attr("cx", function(d) {return d.x;})
@@ -274,7 +185,6 @@ define(function(require) {
             //     .attr("y1", function(d) {return d.source.y;})
             //     .attr("x2", function(d) {return d.target.x;})
             //     .attr("y2", function(d) {return d.target.y;});
-
 
             link.attr("d", function(d){
                 return "M" + d.source.x + "," + d.source.y
@@ -298,12 +208,7 @@ define(function(require) {
                 } else if(d.y < paddingSpace) {
                     d.fy = paddingSpace;
                 }
-
             });
-
-            // links.data(links, function(d){
-            //     console.log(d.target.x );
-            // })
         }
 
         function dragstarted(d) {
@@ -390,16 +295,115 @@ define(function(require) {
         }
         nodeMenu();
 
-        function getNodes() { return nodes;}
-        function getLinks() { return links;}
 
-        return {
-            addNode: addNode,
-            getNodes: getNodes,
-            getLinks: getLinks,
-            append: append,
-            update: update,
-            remake: remake
+
+        var otGraph = {};
+
+        otGraph.addNodes = function(newNodes) {
+            var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
+            newNodes.forEach(function(newNode){
+                var pos = newNode.pos || [width/2, height/2];
+                if(!newNode.hasOwnProperty('id')) newNode.id = nodes.length;
+                if(!newNode.hasOwnProperty('datalink')) newNode.datalink = false;
+                newNode.x = pos[0];
+                newNode.y = pos[1];
+                nodeHash[newNode.id] = newNode;
+
+                addIcon(newNode);
+                addLabel(newNode);
+            })
+            return otGraph;
         }
+
+        otGraph.addLinks = function(newLinks){
+            var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
+            newLinks.forEach(function(li){
+                li.source = nodeHash[li.source];
+                li.target = nodeHash[li.target];
+                if(!li.hasOwnProperty('datalink')) li.datalink = false;
+                links.push(li);
+            })
+
+        };
+
+        function removeNode(nodeId) {
+            nodeLabels[nodeId].remove();
+            nodeIcons[nodeId].remove();
+            delete nodeLabels[nodeId];
+            delete nodeHash[nodeId];
+        }
+
+        function removeLink(linkId) {
+            delete links[linkId];
+        }
+
+        otGraph.removeNodes = function(query) {
+            var query = query ||  {};
+            var nodeIds;
+            if(query.id) {
+                nodeIds = query.id;
+            } else if(query.type) {
+                nodeIds = nodes.filter(function(n){
+                    return n.type !== query.type;
+                })
+                .map(function(n){ return n.id });
+            } else if(query.datalink) {
+                nodeIds = nodes.filter(function(n){
+                    return n.datalink !== query.datalink;
+                })
+                .map(function(n){ return n.id });
+            }
+
+            nodeIds.forEach(function(nid){
+                removeNode(nid);
+            });
+
+            if(query.all) {
+                nodes.forEach(function(n) {
+                    removeNode(n.id);
+                })
+            }
+        }
+
+        otGraph.update = function(subgraph) {
+            var subgraph = subgraph || {nodes: null, links: null},
+                newNodes = subgraph.nodes || [],
+                newLinks = subgraph.links || [];
+
+            if(newNodes.length) otGraph.addNodes(newNodes);
+            if(newLinks.length) otGraph.addLinks(newLinks);
+
+            restart();
+        };
+
+        otGraph.append = function(subgraph) {
+            otGraph.addNodes(subgraph.nodes);
+            otGraph.addLinks(subgraph.links);
+            restart();
+        }
+
+        otGraph.remake = function(graph) {
+            nodes = graph.nodes;
+            nodeHash = {};
+            nodes.forEach(function(n){
+                nodeHash[n.id] = n;
+                n.fx = null;
+                n.fy = null;
+            })
+            links = graph.links.map(function(sl){
+                return {
+                    source: nodeHash[sl.source.id],
+                    target: nodeHash[sl.target.id],
+                    value: sl.value,
+                };
+            });
+
+            restart();
+        }
+
+        otGraph.getNodes = function() { return nodes;};
+        otGraph.getNodes = function() { return links;};
+
+        return otGraph;
     }
 })

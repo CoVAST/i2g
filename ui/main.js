@@ -93,7 +93,7 @@ return function(webSocket) {
         padding: 10,
         style: {
             position: 'fixed',
-            display: 'none',
+            // display: 'none',
             bottom: 0,
             left: 0,
             height: 'auto',
@@ -273,7 +273,7 @@ return function(webSocket) {
                                 R.flatten);
                     let newLinks = areasToLinks(areas);
                     // areas.forEach(R.partial(generateLinks, d));
-
+                    // igraph.removeLinks();
                     igraph.update({
                         nodes: d,
                         links: newLinks
@@ -302,15 +302,25 @@ return function(webSocket) {
         var links = pipeline()
         .group({
             $by: ['user'],
-            count: {'location': '$count'}
+            value: {'location': '$count'}
         })
         (selectedLocations);
 
         areas.push(d);
-        igraph.append({
-            nodes: {id: d.label  , type: "location", pos: [0,0], value: selectedLocations.length},
-            links: links
+
+        links.forEach(function(li){
+            li.source = li.user;
+            li.target = d.label;
         });
+
+        igraph.addNodes([{id: d.label, type: "location", pos: [0,0], value: selectedLocations.length}]);
+        igraph.addLinks(links);
+        igraph.update();
+
+        // igraph.append({
+        //     nodes: {id: d.label, type: "location", pos: [0,0], value: selectedLocations.length},
+        //     links: links
+        // });
     })
 
 }
