@@ -26,6 +26,19 @@ return function(arg) {
         // });
     }
 
+    let addNodeToOntology = (id, type, props) => {
+        igraph.append({
+            nodes: {
+                id: id,
+                type: type,
+                pos: [100,100],
+                value: 0,
+                props: props
+            },
+            links: []
+        })
+    }
+
 	var appLayout = new Layout({
         margin: 5,
         container: 'page-left-view-body',
@@ -274,17 +287,8 @@ return function(arg) {
                     name: "Add to Concept Map",
                     callback: function(key, opt){
                         let id = this.parent().children().index(this);
-                        // appLayout.messageClicked(msgObjs[id]);
-                        igraph.append({
-                            nodes: {
-                                id: wordCounts[id][0],
-                                type: "word",
-                                pos: [100,100],
-                                value: 0,
-                                props: wordCounts[id]
-                            },
-                            links: []
-                        })
+                        addNodeToOntology(
+                                wordCounts[id][0], 'word', wordCounts[id]);
                     }
                 }
             }
@@ -321,17 +325,8 @@ return function(arg) {
                     name: "Add to Concept Map",
                     callback: function(key, opt){
                         let id = this.parent().children().index(this);
-                        // appLayout.messageClicked(msgObjs[id]);
-                        igraph.append({
-                            nodes: {
-                                id: senderCounts[id][0],
-                                type: "sender",
-                                pos: [100,100],
-                                value: 0,
-                                props: senderCounts[id]
-                            },
-                            links: []
-                        })
+                        addNodeToOntology(senderCounts[id][0], 'sender',
+                                senderCounts[id]);
                     }
                 }
             }
@@ -386,17 +381,8 @@ return function(arg) {
                     name: "Add to Concept Map",
                     callback: function(key, opt){
                         let id = this.parent().children().index(this);
-                        // appLayout.messageClicked(msgObjs[id]);
-                        igraph.append({
-                            nodes: {
-                                id: msgObjs[id].content,
-                                type: "message",
-                                pos: [100,100],
-                                value: 0,
-                                props: msgObjs[id]
-                            },
-                            links: []
-                        })
+                        addNodeToOntology(
+                                msgObjs[id].content, 'message', msgObjs[id]);
                     }
                 }
             }
