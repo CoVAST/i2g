@@ -3,6 +3,7 @@ define(function(){
 return function geoLocation(options) {
     var options = options || {};
     var onAdd = options.onadd || function() {};
+    var colorScheme = options.colorScheme;
     var relatedLocations = new L.LayerGroup();
     var primaryLocations = new L.LayerGroup();
     var importantLocations = new L.LayerGroup();
@@ -27,7 +28,7 @@ return function geoLocation(options) {
             "Important Locations": importantLocations
         };
     // important locations
-    var importantGeoColor = 'red';
+    var importantGeoColor = colorScheme.area;
     importantGeos = [];
     var removeImportantGeo = (geo) => {
         var index = importantGeos.indexOf(geo);

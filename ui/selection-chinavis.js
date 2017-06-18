@@ -16,7 +16,8 @@ var ajax = require('p4/io/ajax'),
 return function(arg) {
 	var options = arg || {},
 		container = options.container,
-        igraph = options.igraph;
+        igraph = options.igraph,
+        colorScheme = options.colorScheme;
 
     let onSelect = (pid, locs) => {
         appLayout.onSelect(pid, locs);
@@ -156,6 +157,12 @@ return function(arg) {
         onselect: setCurrDate
     });
 
+    let createLinkClear = id => {
+        return '<a id="' + id + '" href="#" style="color:'
+             + colorScheme.semantic
+             + '">Clear</a>';
+    }
+
     views.words = new Panel({
         container: appLayout.cell('words-view'),
         id: 'panel-words',
@@ -167,8 +174,7 @@ return function(arg) {
         },
         header: {height: 35, style: {backgroundColor: '#FFF'}}
     });
-    views.words.header.append(
-    		'<a id="cv-text-words-clear" href="#">Clear</a>');
+    views.words.header.append(createLinkClear('cv-text-words-clear'));
     $('#cv-text-words-clear').click(() => {
     	setCurrWords([]);
     	updateMessages();
@@ -194,8 +200,7 @@ return function(arg) {
         },
         header: {height: 35, style: {backgroundColor: '#FFF'}}
     });
-    views.senders.header.append(
-    		'<a id="cv-text-senders-clear" href="#">Clear</a>');
+    views.senders.header.append(createLinkClear('cv-text-senders-clear'));
     $('#cv-text-senders-clear').click(() => {
     	setCurrSenders([]);
     	updateMessages();

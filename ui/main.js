@@ -21,6 +21,14 @@ return function(webSocket) {
     var areas = [],
         datetimes = [];
 
+    var colorScheme = {
+        colors: ['#EC644B', '#446CB3', '#4ECDC4', '#F7CA18', '#F89406'],
+        semantic: '#2ABEB3',
+        area: '#2ABEB3',
+        people: '#D35400',
+        time: '#4183D7'
+    }
+
     function getAllLocations() {
         var locs = [];
         Object.keys(locations).forEach(function(k){
@@ -42,13 +50,15 @@ return function(webSocket) {
         width: graphPanel.innerWidth,
         height: graphPanel.innerHeight,
         domain: [0, 1],
-        graph: {nodes: [], links: []}
+        graph: {nodes: [], links: []},
+        colorScheme: colorScheme
     });
 
     var spatiotemporal = require('./spatiotemporal')({
         container: ui.cell('page-right'),
         mapZoom: 2,
-        igraph: igraph
+        igraph: igraph,
+        colorScheme: colorScheme
     });
     var map = spatiotemporal.map;
 
@@ -128,7 +138,8 @@ return function(webSocket) {
 
     var selection = require('/selection')({
         container: 'domain-vis',
-        igraph: igraph
+        igraph: igraph,
+        colorScheme: colorScheme
     });
 
     let subjectLocations = {};
