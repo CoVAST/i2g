@@ -10,7 +10,8 @@ define(function(require) {
             height = options.height,
             menu = options.menu || false,
             notePanel = options.notePanel || null,
-            onselect = options.onselect || function() {};
+            onselect = options.onselect || function() {},
+            colorScheme = options.colorScheme;
 
         var nodes = graph.nodes,
             links = graph.links;
@@ -38,12 +39,12 @@ define(function(require) {
         var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
 
         var nodeTypeColor = {
-            location: 'red',
-            people: 'purple',
-            time: 'green',
-            date: 'green',
-            day: 'green',
-            datetime: 'green'
+            location: colorScheme.area,
+            people: colorScheme.people,
+            time: colorScheme.time,
+            date: colorScheme.time,
+            day: colorScheme.time,
+            datetime: colorScheme.time
         }
         var nodeColor = function(d) {
             // if(d.type == 'location') {
@@ -259,7 +260,7 @@ define(function(require) {
 
                 nodeIcons[d.id].append("path")
                     .attr("transform", "scale(0.1)")
-                    .attr("d", logos[d.type])
+                    .attr("d", logos(d.type))
                     .attr("fill", nodeColor(d))
             }
         }

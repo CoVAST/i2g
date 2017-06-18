@@ -12,7 +12,8 @@ define(function(require){
     return function(arg) {
         var options = arg || {},
             data = options.data || [],
-            igraph = options.igraph;
+            igraph = options.igraph,
+            colorScheme = options.colorScheme;
 
         var appLayout = new Layout({
             margin: 10,
@@ -42,7 +43,8 @@ define(function(require){
 
         appLayout.map = geoMap({
             mapCenter: options.mapCenter,
-            mapZoom: options.mapZoom
+            mapZoom: options.mapZoom,
+            colorScheme: colorScheme
         });
         appLayout.views = views;
 
@@ -54,7 +56,8 @@ define(function(require){
             // add locations to map
             let aboutToFly = R.isEmpty(subjectGeos);
             let mapObjs =
-                    appLayout.map.addLocations(locations, { color: 'purple' });
+                    appLayout.map.addLocations(
+                        locations, { color: colorScheme.people });
             subjectGeos[subjectKey] = {
                 mapObjs: mapObjs,
                 locations: locations
@@ -278,7 +281,7 @@ define(function(require){
                 align: 'right',
                 domainX: dayOfWeek,
                 colors: function(d) {
-                    return 'purple';
+                    return colorScheme.people;
                 },
                 onselect: function(d) {
 
@@ -337,7 +340,7 @@ define(function(require){
                 formatX: function(d) { return d;},
                 title: 'Daily Activities',
                 colors: function(d) {
-                    return 'purple';
+                    return colorScheme.people;
                 },
                 onselect: function(d) {
                     var newNodeId = d;
