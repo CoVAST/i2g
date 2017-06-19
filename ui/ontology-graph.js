@@ -284,7 +284,7 @@ define(function(require) {
                         delete nodeHash[thisNodeId];
                         restart();
                     } else if(key == 'addNotes') {
-                        notePanel.style.display = 'block';
+                        notePanel.show();
                     }
                 },
                 items: {
@@ -438,7 +438,7 @@ define(function(require) {
         }
 
         otGraph.getNodes = function() { return nodes;};
-        otGraph.getNodes = function() { return links;};
+        otGraph.getLinks = function() { return links;};
 
         return otGraph;
     }

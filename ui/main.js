@@ -1,9 +1,10 @@
 define(function(require) {
 
 // dependencies
-var Panel = require('vastui/panel.js'),
+var Panel = require('vastui/panel'),
     Button = require('vastui/button'),
-    Dropdown = require('vastui/dropdown');
+    Dropdown = require('vastui/dropdown'),
+    NotePanel = require('./notepanel');
 
 var arrays = require('p4/core/arrays'),
     pipeline = require('p4/core/pipeline');
@@ -42,11 +43,16 @@ return function(webSocket) {
 
     var graphPanel = new Panel({
         container: ui.views.left.body,
-        id: "panel-igraph",
-        title: "Insight Graph",
+        id: 'panel-igraph',
+        title: 'Insight Graph',
         header: {height: 0.07, style: {backgroundColor: '#FFF'}}
     })
 
+    var np = new NotePanel({
+        container: 'page-sidebar',
+        id: 'igraph-notes',
+        onopen: function() {$('.ui.sidebar').sidebar('toggle');}
+    });
 
     var igraph = ontoGraph({
         container: graphPanel.body,
@@ -54,6 +60,7 @@ return function(webSocket) {
         height: graphPanel.innerHeight,
         domain: [0, 1],
         graph: {nodes: [], links: []},
+        notePanel: np,
         colorScheme: colorScheme
     });
 
@@ -74,12 +81,16 @@ return function(webSocket) {
         ]
     });
     nodeChoices.style.marginRight = '0.5em';
-    graphPanel.header.append(nodeChoices);
+    nodeChoices.style.position = 'absolute';
+    nodeChoices.style.top = '10px';
+    nodeChoices.style.left = '10px';
 
+    graphPanel.append(nodeChoices);
 
     graphPanel.header.append(new Button({
         label: 'Provenance',
         types: ['large'],
+        size: '12px',
         onclick: function() {
             $('.ui.sidebar').sidebar('toggle');
         }
@@ -88,7 +99,7 @@ return function(webSocket) {
     graphPanel.header.append(new Button({
         label: 'Share',
         types: ['teal', 'large'],
-        // size: '0.6em',
+        size: '12px',
         onclick: function() {
             var graph = {
                 nodes: igraph.getNodes(),
@@ -99,44 +110,6 @@ return function(webSocket) {
         }
     }))
 
-
-
-    var notePanel = new Panel({
-        container:'page-sidebar',
-        id: "igraph-notes",
-        // width: graphPanel.innerWidth/3,
-        // height: 300,
-        padding: 10,
-        style: {
-            position: 'fixed',
-            // display: 'none',
-            bottom: 0,
-            left: 0,
-            height: 'auto',
-            'text-align': 'right'
-        }
-        // title: "Insight Graph",
-        // header: {height: 0.07, style: {backgroundColor: '#FFF'}}
-    })
-
-    notePanel.append(
-        '<div class="ui form" style="text-align:left">'+
-            '<div class="field"><label>Label</label><input type="text"></div>' +
-            '<div class="field"><label>Detail</label>' +
-                '<textarea id="user-notes"></textarea>' +
-            '</div>' +
-        '</div><br />'
-    );
-
-    notePanel.append(new Button({
-        label: ' Save ',
-        types: ['positive']
-    }));
-
-    notePanel.append(new Button({
-        label: 'Cancel',
-        types: ['negative']
-    }));
 
     $('#panel-igraph').transition('fade left');
 
