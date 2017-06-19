@@ -26,8 +26,9 @@ return function(webSocket) {
         colors: ['#EC644B', '#446CB3', '#4ECDC4', '#F7CA18', '#F89406'],
         semantic: '#2ABEB3',
         area: '#2ABEB3',
-        // people: '#D35400',
-        time: '#4183D7'
+        time: '#4183D7',
+        mapHighlight: '#F39C12',
+        mapHighlightOpacity: 0.75
     }
 
     var colorMap = d3.scaleOrdinal(d3.schemeCategory10);

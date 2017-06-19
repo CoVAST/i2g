@@ -7,7 +7,7 @@ return function geoLocation(options) {
     var relatedLocations = new L.LayerGroup();
     var primaryLocations = new L.LayerGroup();
     var importantLocations = new L.LayerGroup();
-    gImportantLocations = importantLocations;
+    var highlightLayer = new L.LayerGroup();
 
     var mbAttr = 'Map data &copy; ' +
             '<a href="http://openstreetmap.org">OpenStreetMap</a> ' +
@@ -25,7 +25,8 @@ return function geoLocation(options) {
         overlays = {
             "Primary Locations": primaryLocations,
             "Related People": relatedLocations,
-            "Important Locations": importantLocations
+            "Important Locations": importantLocations,
+            "Highlight Locations": highlightLayer
         };
     // important locations
     var importantGeoColor = colorScheme.area;
@@ -80,7 +81,7 @@ return function geoLocation(options) {
             leaflet: L.polyline([], {
                 color: importantGeoColor,
                 opacity: 0.8,
-                weight: 1,
+                weight: 8,
                 contextmenu: true,
                 contextmenuItems: [{
                     separator: true,
@@ -219,7 +220,8 @@ return function geoLocation(options) {
             grayscale,
             primaryLocations,
             relatedLocations,
-            importantLocations
+            importantLocations,
+            highlightLayer
         ],
         contextmenu: true,
         contextmenuWidth: 140,
@@ -273,6 +275,29 @@ return function geoLocation(options) {
         })
     }
 
+    function highlightLocations(locObjs) {
+        if (R.isEmpty(locObjs)) {
+            highlightLayer.clearLayers();
+            primaryLocations.invoke('setStyle', {
+                fillOpacity: 0.5
+            });
+            return;
+        }
+        primaryLocations.eachLayer(layer => {
+            layer.setStyle({
+                fillOpacity: 0.02
+            });
+        });
+        highlightLayer.clearLayers();
+        return R.map(loc => {
+            let options = R.clone(loc.options);
+            /// TODO: also check other properties.
+            if (R.isNil(options.radius)) options.radius = 200;
+            // console.log(options);
+            return L.circle(loc.latlng, options).addTo(highlightLayer)
+        }, locObjs);
+    }
+
     // map.on('contextmenu', function() {
     //     console.log('contextmenu');
     // })
@@ -291,6 +316,7 @@ return function geoLocation(options) {
         onadd: function(cb) { onAdd = cb;},
         addLocations: addLocations,
         removeLocations: removeLocations,
+        highlightLocations: highlightLocations,
         flyToBounds: R.bind(map.flyToBounds, map),
         flyTo: R.bind(map.flyTo, map)
     }

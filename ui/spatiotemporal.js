@@ -293,6 +293,35 @@ define(function(require){
             })
         }
 
+        let highlightLocationsByTimeSpan = timeSpan => {
+            // console.log(timeSpan);
+            let filterSubjectGeos = R.mapObjIndexed((geos, subjectKey) => {
+                let filtered = R.filter(loc => {
+                    return loc.time.getTime() >= timeSpan[0].getTime()
+                        && loc.time.getTime() < timeSpan[1].getTime();
+                }, geos.locations);
+                let locObjs = R.map(loc => {
+                    return {
+                        latlng: [ loc.lat, loc.long ],
+                        options: {
+                            color: colorScheme.mapHighlight,
+                            fillColor: colorMap(subjectKey),
+                            opacity: colorScheme.mapHighlightOpacity,
+                            fillOpacity: colorScheme.mapHighlightOpacity
+                        }
+                    };
+                }, filtered);
+                return locObjs;
+            });
+            let locObjs = R.pipe(
+                    filterSubjectGeos,
+                    R.toPairs,
+                    R.map(R.prop(1)),
+                    R.flatten)(subjectGeos);
+            // console.log(locObjs);
+            appLayout.map.highlightLocations(locObjs);
+        }
+
         appLayout.updateTimeline = function(arg) {
             var options = arg ||  {},
                 data = options.data,
@@ -333,6 +362,12 @@ define(function(require){
                             });
                     })
                     // console.log(activities);
+                    let extentToTimeWindow = R.curry((timeSpan, extent) => {
+                        console.log(extent);
+                        return [
+                            new Date((timespan[0].getTime() + extent.x[0]/256 * duration)),
+                            new Date((timespan[0].getTime() + extent.x[1]/256 * duration))
+                        ]});
                     var mainTimeline = new lineChart({
                         container: views.timeline.body,
                         height: views.timeline.innerHeight,
@@ -357,13 +392,8 @@ define(function(require){
                             colorMap: colorMap
                             // color: 'user',
                         },
-                        onchange: function(extent) {
-                            var timeWindow = [
-                                new Date((timespan[0].getTime() + extent.x[0]/256 * duration)),
-                                new Date((timespan[0].getTime() + extent.x[1]/256 * duration))
-                            ];
-                            console.log(timeWindow);
-                        }
+                        onchange: R.pipe(extentToTimeWindow(timespan),
+                            highlightLocationsByTimeSpan)
                     })
             }
             if(timeMode == 1) {
