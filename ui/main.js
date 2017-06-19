@@ -124,8 +124,8 @@ return function(webSocket) {
     selection.onSelect = function(subjectKey, locations) {
         if (R.has(subjectKey, subjectLocations)) {
             /// TODO: this is not the best way to toggle selection.
-            spatiotemporal.removeSubject(subjectKey);
             delete subjectLocations[subjectKey];
+            spatiotemporal.removeSubject(subjectKey);
             return;
         }
         // add subject to spatiotemporal panel
