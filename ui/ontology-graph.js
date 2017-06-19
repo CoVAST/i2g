@@ -235,8 +235,9 @@ define(function(require) {
 
         function addLabel(d) {
             if (!nodeLabels.hasOwnProperty(d.id)) {
-                var label = (d.type=='people') ? 'P ' + d.id : d.id;
-
+                var label = (d.hasOwnProperty('label')) ? d.label : d.id;
+                if(d.type=='people') label = 'P' + label;
+                if(label.length > 20) label = label.slice(0, 7) + '...';
                 nodeLabels[d.id] = nodeInfo.append("text")
                     .attr("dx", 20)
                     .attr("dy", ".35em")
