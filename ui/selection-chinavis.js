@@ -165,7 +165,7 @@ return function(arg) {
     });
     let dateList = new List({
         container: views.dates.body,
-        types: ['selection'],
+        types: ['selection', 'single'],
         onselect: setCurrDate
     });
 
@@ -277,7 +277,9 @@ return function(arg) {
             });
         }, dates);
     });
-    datesLoading.then(dates => setCurrDate(0));
+    datesLoading
+        .then(dates => setCurrDate(0))
+        .then(() => dateList.setSelectedItemIds([0]));
 
     let loadWords = dateString => ajax.get({
     	url: '/chinavis/wordcounts/' + dateString
