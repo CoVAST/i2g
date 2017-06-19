@@ -6,6 +6,7 @@
   "dependencies": {
     "babyparse": "^0.4.6",
     "body-parser": "^1.17.2",
+    "d3": "^4.9.1",
     "davi": "^0.1.1",
     "express": "^4.15.3",
     "i2v": "^0.2.1",

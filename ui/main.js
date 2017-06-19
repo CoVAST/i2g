@@ -72,11 +72,28 @@ return function(webSocket) {
     });
     var map = spatiotemporal.map;
 
+    function newNodeAdd(ntype) {
+        return function() {
+            igraph.addNodes({
+                label: 'new ' + ntype,
+                type: ntype,
+                fx: 100,
+                fy: 100,
+                value: 0,
+                datalink: false
+            }).update();
+            np.show();
+        }
+    }
+
     var nodeChoices = new Dropdown({
         label: "+Node",
         items: [
-            {name: 'Custom node', icon: 'circle teal'},
-            {name: 'Location', icon: 'marker teal', onclick: function() {}}
+            {name: 'Custom node', icon: 'circle teal', onclick: newNodeAdd('custom')},
+            {name: 'Location', icon: 'marker teal', onclick: newNodeAdd('location')},
+            {name: 'Money', icon: 'usd teal', onclick: newNodeAdd('money')},
+            {name: 'Datetime', icon: 'wait teal', onclick: newNodeAdd('time')},
+            {name: 'Communication', icon: 'phone teal', onclick: newNodeAdd('phone')}
         ]
     });
     nodeChoices.style.marginRight = '0.5em';
