@@ -32,8 +32,10 @@ define(function(require) {
               .attr("orient", "auto")
             .append("svg:path")
             //   .attr("stroke", "red")
-              .attr("stroke", "none")
+            //   .attr("stroke", "none")
               .attr("fill", "purple")
+            //   .attr("transform", "scale(0.05)")
+            //   .attr("d", logos('info'));
               .attr("d", "M0,-5L10,0L0,5");
 
         var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
@@ -144,8 +146,8 @@ define(function(require) {
 
             // console.log(node);
             node.data(nodes, function(d){
-                addIcon(d);
-                addLabel(d);
+                addNodeIcon(d);
+                addNodeLabel(d);
             });
 
             // Apply the general update pattern to the links.
@@ -195,8 +197,8 @@ define(function(require) {
 
             var paddingSpace = 50;
             node.data(nodes, function(d, i){
-                updateLabel(d);
-                updateIcon(d);
+                updateNodeLabel(d);
+                updateNodeIcon(d);
 
                 if(d.x > width - paddingSpace) {
                     d.fx = width - paddingSpace;
@@ -233,28 +235,49 @@ define(function(require) {
             //   d.fy = null;
         }
 
-        function addLabel(d) {
+        function addNodeLabel(d) {
             if (!nodeLabels.hasOwnProperty(d.id)) {
-                var label = (d.hasOwnProperty('label')) ? d.label : d.id;
-                if(d.type=='people') label = 'P' + label;
-                if(label.length > 20) label = label.slice(0, 7) + '...';
+
                 nodeLabels[d.id] = nodeInfo.append("text")
                     .attr("dx", 20)
                     .attr("dy", ".35em")
                     .attr("x", d.x)
-                    .attr("y", d.y)
-                    .text(label);
+                    .attr("y", d.y);
+                labelNode(d);
             }
         }
 
-        function updateLabel(d) {
+        function modifyNode(d, props) {
+            var theNode = (typeof d == 'object') ? d : nodeHash[d];
+
+            for(var p in props) {
+                theNode[p] = props[p];
+            }
+
+            if(props.hasOwnProperty('label')) {
+                labelNode(theNode);
+            }
+
+        }
+
+        function labelNode(d) {
+            var label = (d.hasOwnProperty('label')) ? d.label : d.id;
+            if(d.type=='people')
+                label = 'P' + label;
+            if(label.length > 20)
+                label = label.slice(0, 7) + '...';
+
+            nodeLabels[d.id].text(label);
+        }
+
+        function updateNodeLabel(d) {
             if (nodeLabels.hasOwnProperty(d.id)) {
                 nodeLabels[d.id].attr("x", d.x);
                 nodeLabels[d.id].attr("y", d.y);
             }
         }
 
-        function addIcon(d) {
+        function addNodeIcon(d) {
             if(!nodeIcons.hasOwnProperty(d.id)){
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
@@ -266,7 +289,7 @@ define(function(require) {
             }
         }
 
-        function updateIcon(d) {
+        function updateNodeIcon(d) {
             nodeIcons[d.id]
             .attr("transform", "translate(" + (d.x-20) + "," + (d.y-20) + ")")
         }
@@ -297,8 +320,6 @@ define(function(require) {
         }
         nodeMenu();
 
-
-
         var otGraph = {};
 
         otGraph.addNodes = function(newNodes) {
@@ -311,8 +332,8 @@ define(function(require) {
                 newNode.y = pos[1];
                 nodeHash[newNode.id] = newNode;
 
-                addIcon(newNode);
-                addLabel(newNode);
+                addNodeIcon(newNode);
+                addNodeLabel(newNode);
             })
             return otGraph;
         }

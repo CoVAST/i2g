@@ -91,6 +91,7 @@ return function(webSocket) {
         label: "+Node",
         items: [
             {name: 'Custom node', icon: 'circle teal', onclick: newNodeAdd('custom')},
+            {name: 'Person', icon: 'user teal', onclick: newNodeAdd('people')},
             {name: 'Location', icon: 'marker teal', onclick: newNodeAdd('location')},
             {name: 'Money', icon: 'usd teal', onclick: newNodeAdd('money')},
             {name: 'Datetime', icon: 'wait teal', onclick: newNodeAdd('time')},
@@ -140,7 +141,7 @@ return function(webSocket) {
     let subjectLocations = {};
     selection.onSelect = function(subjectKey, locations) {
         if (R.has(subjectKey, subjectLocations)) {
-            /// TODO: this is not the best way to toggle selection.
+            /// FIXME: this is not the best way to toggle selection.
             spatiotemporal.removeSubject(subjectKey);
             delete subjectLocations[subjectKey];
             return;

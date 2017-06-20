@@ -149,7 +149,7 @@ define(function(require){
                 li.target = d.label;
             })
             igraph.addNodes({
-                id: d.label,
+                label: d.label,
                 type: "location",
                 pos: [0,0],
                 value: selectedLocations.length
