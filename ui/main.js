@@ -44,7 +44,7 @@ return function(webSocket) {
 
     var graphLayout = new Layout({
         // margin: 2,
-        padding: 6,
+        // padding: 5,
         id: 'graph-layout',
         container: 'page-left-view-body',
         cols: [
@@ -172,9 +172,6 @@ return function(webSocket) {
         spatiotemporal.setSubjects(subjectLocations);
     }
     map.flyTo(selection.mapCenter, selection.mapZoom);
-
-    $('#page-right-view-body').css('overflow', '');
-    $('#page-left-view-body').css('overflow', '');
 }
 
 });

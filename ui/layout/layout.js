@@ -5,7 +5,7 @@ define(function(require){
 
     return function() {
         var appLayout = new Layout({
-            // margin: 5,
+            margin: 10,
             padding: 0,
             container: 'page-main',
             cols: [
