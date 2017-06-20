@@ -333,7 +333,7 @@ define(function(require) {
 
                 nodeIcons[d.id].append("path")
                     .attr("transform", "scale(0.1)")
-                    .attr("d", logos(d.type))
+                    .attr("d", logos(d.icon || d.type))
                     .attr("fill", nodeColor(d))
             }
         }

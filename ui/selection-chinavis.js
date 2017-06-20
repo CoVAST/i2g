@@ -27,10 +27,11 @@ return function(arg) {
         // });
     }
 
-    let addNodeToOntology = (id, type, props) => {
+    let addNodeToOntology = (id, type, props, icon) => {
         igraph.addNodes({
                 label: id,
                 type: type,
+                icon: icon,
                 pos: [100,100],
                 value: 0,
                 props: props
@@ -405,7 +406,7 @@ return function(arg) {
                     callback: function(key, opt){
                         let id = this.parent().children().index(this);
                         addNodeToOntology(
-                                msgObjs[id].content, 'message', msgObjs[id]);
+                                msgObjs[id].content, 'people', msgObjs[id], 'phone');
                     }
                 }
             }
