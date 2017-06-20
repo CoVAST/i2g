@@ -4,6 +4,7 @@ define(function(require) {
 var Panel = require('vastui/panel'),
     Button = require('vastui/button'),
     Dropdown = require('vastui/dropdown'),
+    List = require('vastui/list'),
     NotePanel = require('./notepanel');
 
 var arrays = require('p4/core/arrays'),
@@ -48,6 +49,12 @@ return function(webSocket) {
         header: {height: 0.07, style: {backgroundColor: '#FFF'}}
     })
 
+    var hl = new List({
+        container: 'page-sidebar',
+        id: 'igraph-history',
+        types: ['selection']
+    });
+
     var np = new NotePanel({
         container: 'page-sidebar',
         id: 'igraph-notes',
@@ -61,6 +68,7 @@ return function(webSocket) {
         domain: [0, 1],
         graph: {nodes: [], links: []},
         notePanel: np,
+        historyList: hl,
         colorScheme: colorScheme
     });
 
@@ -83,7 +91,7 @@ return function(webSocket) {
                 value: 0,
                 datalink: false
             }).update();
-            np.show();
+            // np.show();
         }
     }
 
@@ -123,7 +131,7 @@ return function(webSocket) {
                 nodes: igraph.getNodes(),
                 links: igraph.getLinks()
             };
-            console.log('push graph to server');
+            console.log('push graph to server', graph);
             webSocket.emit('push', graph);
         }
     }))

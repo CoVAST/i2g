@@ -282,7 +282,7 @@ define(function(require){
                             R.pipe(
                                 R.map(generateLinks(allLocs)(d)), R.flatten);
                     let newLinks = areasToLinks(areas);
-
+                    console.log('Adding ndoes :::', d);
                     igraph
                         .removeLinks({all:true})
                         .addNodes(d)

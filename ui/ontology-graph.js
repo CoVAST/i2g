@@ -16,7 +16,8 @@ define(function(require) {
         var nodes = graph.nodes,
             links = graph.links;
 
-        var maxLinkValue = 0;
+        var maxLinkValue = 0,
+            nodeCounter = 0;
 
         var svg = d3.select(container).append('svg:svg');
         svg.attr("width", width).attr("height", height).attr('id', 'igraph-svg');
@@ -66,7 +67,7 @@ define(function(require) {
         var linkSize = d3.scalePow()
             .exponent(0.2)
             .domain([0, 3000])
-            .range([1, 10]);
+            .range([1, 6]);
 
         var simulation = d3.forceSimulation(nodes)
             .force("charge", d3.forceManyBody().strength(-1000))
@@ -81,7 +82,7 @@ define(function(require) {
 
         var g = svg.append("g"),
             link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
-            node = g.append("g").attr("stroke", "none").selectAll(".node");
+            node = g.append("g").attr("stroke-width", 2).attr("stroke", "none").selectAll(".node");
 
         var linkCursors = {};
 
@@ -98,6 +99,23 @@ define(function(require) {
 
         var linkSource = null,
             linkTarget = null;
+
+        var tempLink = svg.append('g')
+            .append('line')
+            .attr('stroke', '#CCC')
+            .attr('stroke-width', 0)
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', 0)
+            .attr('y2', 0);
+
+        svg.on('mousemove', function(e){
+            if(linkSource !== null){
+                var pos = d3.mouse(this);
+                tempLink.attr('x2', pos[0]-3)
+                    .attr('y2', pos[1]-3);
+            }
+        })
 
         function restart() {
 
@@ -119,23 +137,30 @@ define(function(require) {
                 //     return nodeColor(d.type);
                 // })
                 .attr("fill", "transparent")
-                .attr("r", 20)
+                .attr("r", 40)
                 .merge(node)
                 .on('click', function(d){
-                    d.fx = d3.mouse(this)[0];
-                    d.fy = d3.mouse(this)[1];
-                    if(linkSource === null && linkTarget === null) {
-                        linkSource = d;
-                    } else if(linkSource !== null && linkTarget === null) {
+                    // d.fx = d3.mouse(this)[0];
+                    // d.fy = d3.mouse(this)[1];
+                console.log('clicked on node', d.id);
+                if(linkSource !== null && linkTarget === null) {
                         linkTarget = d;
-
+                        console.log(linkTarget);
                         links.push({
                             source: linkSource,
                             target: linkTarget,
-                            value: 10,
+                            value: 2,
+                            datalink: false
                         })
 
                         linkSource = linkTarget = null;
+                        tempLink
+                            .attr('stroke-width', 0)
+                            .attr('x1', 0)
+                            .attr('y1', 0)
+                            .attr('x2', 0)
+                            .attr('y2', 0);
+
                         restart();
                     }
                 })
@@ -144,6 +169,9 @@ define(function(require) {
                     .on("drag", dragged)
                     .on("end", dragended))
 
+            node
+            .append('title')
+            .text((d)=>{ if(d.detail) return d.detail})
             // console.log(node);
             node.data(nodes, function(d){
                 addNodeIcon(d);
@@ -247,19 +275,6 @@ define(function(require) {
             }
         }
 
-        function modifyNode(d, props) {
-            var theNode = (typeof d == 'object') ? d : nodeHash[d];
-
-            for(var p in props) {
-                theNode[p] = props[p];
-            }
-
-            if(props.hasOwnProperty('label')) {
-                labelNode(theNode);
-            }
-
-        }
-
         function labelNode(d) {
             var label = (d.hasOwnProperty('label')) ? d.label : d.id;
             if(d.type=='people')
@@ -298,9 +313,9 @@ define(function(require) {
             $.contextMenu({
                 selector: '.nodeHolder',
                 callback: function(key, options) {
+                    var thisNode = this[0],
+                        thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
-                        var thisNode = this[0],
-                            thisNodeId = thisNode.__data__.id;
                         d3.select(thisNode).remove();
                         nodeLabels[thisNodeId].remove();
                         nodeIcons[thisNodeId].remove();
@@ -308,7 +323,30 @@ define(function(require) {
                         delete nodeHash[thisNodeId];
                         restart();
                     } else if(key == 'addNotes') {
+                        d3.select(thisNode).attr('stroke', 'orange');
+                        console.log(nodeHash[thisNodeId]);
+                        notePanel.setNote({
+                            label: nodeHash[thisNodeId].label,
+                            detail: nodeHash[thisNodeId].detail
+                        })
                         notePanel.show();
+                        notePanel.onsave = function() {
+                            var info = notePanel.getNote();
+                            otGraph.modifyNode(thisNodeId, info);
+                            d3.select(thisNode).attr('stroke', 'transparent');
+                        }
+                        notePanel.oncancel = function() {
+                            d3.select(thisNode).attr('stroke', 'transparent');
+                        }
+                    } else if(key == 'addLink'){
+                        linkSource = nodeHash[thisNodeId];
+                        linkTarget = null;
+                        tempLink
+                            .attr('x1', linkSource.x)
+                            .attr('y1', linkSource.y)
+                            .attr('x2', linkSource.x)
+                            .attr('y2', linkSource.y)
+                            .attr('stroke-width', 4);
                     }
                 },
                 items: {
@@ -326,8 +364,10 @@ define(function(require) {
             var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
             newNodes.forEach(function(newNode){
                 var pos = newNode.pos || [width/2, height/2];
-                if(!newNode.hasOwnProperty('id')) newNode.id = nodes.length;
-                if(!newNode.hasOwnProperty('datalink')) newNode.datalink = false;
+                // if(!newNode.hasOwnProperty('id'))
+                    newNode.id = nodeCounter++;
+                if(!newNode.hasOwnProperty('datalink'))
+                    newNode.datalink = false;
                 newNode.x = pos[0];
                 newNode.y = pos[1];
                 nodeHash[newNode.id] = newNode;
@@ -350,6 +390,19 @@ define(function(require) {
             })
             return otGraph;
         };
+
+
+        otGraph.modifyNode = function(d, props) {
+            var theNode = (typeof d == 'object') ? d : nodeHash[d];
+
+            for(var p in props) {
+                theNode[p] = props[p];
+            }
+
+            if(props.hasOwnProperty('label')) {
+                labelNode(theNode);
+            }
+        }
 
         function removeNode(nodeId) {
             nodeLabels[nodeId].remove();

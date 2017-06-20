@@ -56,18 +56,27 @@ define(function(require){
         wrapper.style.marginBottom = '0.5em';
         notePanel.append(wrapper);
 
+        notePanel.onsave = function() {};
+        notePanel.oncancel = function() {};
+
         notePanel.getNote = function() {
             return {
-                label: inpute.value,
+                label: input.value,
                 detail: textarea.value
             };
+        }
+
+        notePanel.setNote = function(info) {
+            input.value = info.label || '';
+            textarea.value = info.detail || '';
         }
 
         notePanel.append(new Button({
             label: ' Save ',
             types: ['positive'],
             onclick: function(){
-                notePanel.getNote();
+                // notePanel.getNote();
+                notePanel.onsave();
                 notePanel.hide();
             }
         }));
@@ -75,7 +84,10 @@ define(function(require){
         notePanel.append(new Button({
             label: 'Cancel',
             types: ['negative'],
-            onclick: notePanel.hide
+            onclick: function() {
+                notePanel.hide();
+                notePanel.oncancel();
+            }
         }));
 
         return notePanel;
