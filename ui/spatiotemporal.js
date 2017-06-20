@@ -304,11 +304,14 @@ return function(arg) {
                     && loc.time.getTime() < timeSpan[1].getTime();
             }, geos.locations);
             let locObjs = R.map(loc => {
+                let fillColor = colorMap(subjectKey);
+                let color = tinycolor(fillColor).complement().lighten(20).toHexString();
+                // console.log(color);
                 return {
                     latlng: [ loc.lat, loc.long ],
                     options: {
-                        color: colorScheme.mapHighlight,
-                        fillColor: colorMap(subjectKey),
+                        color: color,
+                        fillColor: fillColor,
                         opacity: colorScheme.mapHighlightOpacity,
                         fillOpacity: colorScheme.mapHighlightOpacity
                     }

@@ -8,6 +8,7 @@ return function geoLocation(options) {
     var primaryLocations = new L.LayerGroup();
     var importantLocations = new L.LayerGroup();
     var highlightLayer = new L.LayerGroup();
+    var circleRadius = 5;
 
     var mbAttr = 'Map data &copy; ' +
             '<a href="http://openstreetmap.org">OpenStreetMap</a> ' +
@@ -256,10 +257,10 @@ return function geoLocation(options) {
     function addLocations(locs, params) {
         var c = params.color || 'steelblue',
             a = params.alpah || 0.5,
-            r = params.size || 200;
+            r = params.size || circleRadius;
 
         return locs.map(function(loc){
-            return L.circle([loc.lat, loc.long], {
+            return L.circleMarker([loc.lat, loc.long], {
                 color: 'none',
                 fillColor: c,
                 // weight: 1,
@@ -292,7 +293,7 @@ return function geoLocation(options) {
         let nNewCircles = locObjs.length - highlightLayer.getLayers().length;
         if (nNewCircles > 0) {
             for (let i = 0; i < nNewCircles; ++i) {
-                L.circle([0, 0], { radius: 200 }).addTo(highlightLayer);
+                L.circleMarker([0, 0], { radius: circleRadius }).addTo(highlightLayer);
             }
         }
         let layers = highlightLayer.getLayers();
@@ -309,9 +310,9 @@ return function geoLocation(options) {
         // return R.map(loc => {
         //     let options = R.clone(loc.options);
         //     /// TODO: also check other properties.
-        //     if (R.isNil(options.radius)) options.radius = 200;
+        //     if (R.isNil(options.radius)) options.radius = circleRadius;
         //     // console.log(options);
-        //     return L.circle(loc.latlng, options).addTo(highlightLayer)
+        //     return L.circleMarker(loc.latlng, options).addTo(highlightLayer)
         // }, locObjs);
     }
 
