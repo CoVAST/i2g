@@ -206,7 +206,6 @@ define(function(require) {
             // Apply the general update pattern to the links.
             //
             links = links.filter(function(li){
-                console.log(li);
                 return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
             });
 
@@ -612,6 +611,10 @@ define(function(require) {
                     (nodes);
             }
         };
+        otGraph.findNode = function(query) {
+            return otGraph.getNodes(query)[0];
+        }
+
         otGraph.getLinks = function() { return links;};
 
         return otGraph;

@@ -51,12 +51,12 @@ return function(arg) {
             new Button({
                 label: 'Daily Stats',
                 size: '9px',
-                onclick: function() {timeMode = 1; updateTimeline()}
+                onclick: function() {timeMode = 2; updateTimeline()}
             }),
             new Button({
                 label: 'Weekly Stats',
                 size: '9px',
-                onclick: function() {timeMode = 2;  updateTimeline()}
+                onclick: function() {timeMode = 1;  updateTimeline()}
             })
         ]
     });
@@ -150,14 +150,15 @@ return function(arg) {
         areas.push(d);
         igraph.addNodes({
             label: d.label,
+            labelPrefix: 'Location ',
             type: "location",
             pos: [0,0],
             value: selectedLocations.length
         }).update();
 
         links.forEach(function(li){
-            li.source = igraph.getNodes({type: 'people', tag: li.user})[0];
-            li.target = igraph.getNodes({type: 'location', tag: d.label})[0];
+            li.source = igraph.findNode({type: 'people', tag: li.user});
+            li.target = igraph.findNode({type: 'location', tag: d.label});
         });
         // console.log(links);
         igraph.addLinks(links)
@@ -222,15 +223,16 @@ return function(arg) {
             (matches);
 
             results.forEach(function(res){
+                console.log(res[key]);
                 newLinks.push({
-                    source: res.user,
-                    target: res[key],
+                    source: igraph.findNode({type: 'people', tag: res.user}),
+                    target: igraph.findNode({type: 'time', tag: res[key]}),
                     value: res.value,
                     dest: res.area
                 });
                 newLinks.push({
-                    source: res[key],
-                    target: res.area,
+                    source: igraph.findNode({type: 'time', tag: res[key]}),
+                    target: igraph.findNode({type: 'location', tag: res.area}),
                     value: res.value,
                     dest: res.area
                 });
@@ -284,38 +286,22 @@ return function(arg) {
             people: people,
             onselect: (kv, d) => {
                 datetimes.push(kv);
+
+                igraph
+                    .removeLinks({all:true})
+                    .addNodes(d)
+                    .update();
+
                 let areasToLinks =
                         R.pipe(
                             R.map(generateLinks(allLocs)(d)), R.flatten);
                 let newLinks = areasToLinks(areas);
 
+                console.log(newLinks);
+
                 igraph
-                    .removeLinks({all:true})
-                    .addNodes(d)
                     .addLinks(newLinks)
                     .update();
-
-
-        // let updateTimeline = () => {
-        //     let toLocations = R.pipe(R.toPairs,
-        //             R.map(pair => pair[1].locations),
-        //             R.flatten);
-        //     let allLocs = toLocations(subjectGeos);
-        //     appLayout.updateTimeline({
-        //         data: allLocs,
-        //         people: people,
-        //         onselect: (kv, d) => {
-        //             datetimes.push(kv);
-        //             let areasToLinks =
-        //                     R.pipe(
-        //                         R.map(generateLinks(allLocs)(d)), R.flatten);
-        //             let newLinks = areasToLinks(areas);
-        //             console.log('Adding ndoes :::', d);
-        //             igraph
-        //                 .removeLinks({all:true})
-        //                 .addNodes(d)
-        //                 .addLinks(newLinks)
-        //                 .update();
 
             }
         })
@@ -360,99 +346,6 @@ return function(arg) {
             people = options.people,
             onSelect = options.onselect;
 
-// <<<<<<< HEAD
-//         appLayout.updateTimeline = function(arg) {
-//             var options = arg ||  {},
-//                 data = options.data,
-//                 people = options.people,
-//                 onSelect = options.onselect;
-//
-//             views.timeline.clear();
-//
-//             if(timeMode == 0) {
-//                 var timespan = stats.domains(data, ['time']).time,
-//                     duration = timespan[1] - timespan[0];
-//
-//                     var timeAggr = pipeline()
-//                     .match({
-//                         user: {$in: people},
-//                     })
-//                     .derive(function(d){
-//                         d.timestep = Math.floor((d.time - timespan[0]) / (duration) * 256);
-//                     })
-//                     .group({
-//                         $by:  ['user', 'timestep'],
-//                             // time: '$min',
-//                         value: {'location': '$count'}
-//                     })
-//                     .sortBy({timestep: 1})
-//                     (data);
-//
-//
-//
-//                     var timeSeries = new Array(people.length);
-//                     people.forEach(
-//                             function(s, i){
-//                         timeSeries[i] = timeAggr
-//                             .filter(function(a) {
-//                                 return a.user == s;
-//                             }).sort(function(a, b){
-//                                 return b.timestep - a.timestep;
-//                             });
-//                     })
-//                     // console.log(activities);
-//                     let extentToTimeWindow = R.curry((timeSpan, extent) => {
-//                         console.log(extent);
-//                         return [
-//                             new Date((timespan[0].getTime() + extent.x[0]/256 * duration)),
-//                             new Date((timespan[0].getTime() + extent.x[1]/256 * duration))
-//                         ]});
-//                     var mainTimeline = new lineChart({
-//                         container: views.timeline.body,
-//                         height: views.timeline.innerHeight,
-//                         width: views.timeline.innerWidth,
-//                         padding: {left: 100, right: 50, top: 30, bottom: 50},
-//                         data: timeSeries,
-//                         formatX: function(d) {
-//                             var dt = new Date((timespan[0].getTime() + d/256 * duration));
-//
-//                             if(duration < 3600 * 24 * 1000) {
-//                                 return dt.getHours() + ":" + dt.getMinutes();
-//                             } else {
-//                                 return [dt.getFullYear(), dt.getMonth(), dt.getDate()].join('-') ;
-//                             }
-//                         },
-//                         series: people,
-//                         // zero: true,
-//                         vmap: {
-//                             x: 'timestep',
-//                             y: 'value',
-//                             color: 'user',
-//                             colorMap: colorMap
-//                             // color: 'user',
-//                         },
-//                         onchange: R.pipe(extentToTimeWindow(timespan),
-//                             highlightLocationsByTimeSpan)
-//                     })
-//             }
-//             if(timeMode == 2) {
-//                 var dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-//
-//                 var weeklyStats = pipeline()
-//                     .match({
-//                       user: {$in: people},
-//                     })
-//                     .derive(function(d){
-//                         d.dayStr = dayOfWeek[d.day];
-//                     })
-//                     .group({
-//                       $by: ['dayStr', 'user'],
-//                       count: '$count'
-//                     })
-//                     (data);
-//
-//                 var splot1 = new temporalPlot({
-// =======
         views.timeline.clear();
 
         if(timeMode == 0) {
@@ -492,7 +385,6 @@ return function(arg) {
                         new Date((timespan[0].getTime() + extent.x[1]/256 * duration))
                     ]});
                 var mainTimeline = new lineChart({
-// >>>>>>> 81515aa739659737dbb648b3924eb1fbc6748d67
                     container: views.timeline.body,
                     height: views.timeline.innerHeight,
                     width: views.timeline.innerWidth,
@@ -551,7 +443,7 @@ return function(arg) {
                     return a.dayStr == d;
                     });
                     var newNode = {
-                        id: d,
+                        label: d,
                         type: 'time',
                         pos: [0, views.map.innerHeight],
                         value: links.map((d)=>d.count).reduce((a,b)=>a+b)
@@ -570,20 +462,6 @@ return function(arg) {
             .match({
                 user: {$in: people},
             })
-            // .derive(function(d){
-            //     if(d.hour < 4)
-            //         d.hours = '0 - 3:59';
-            //     else if(d.hour < 8)
-            //         d.hours = '4 - 7:59';
-            //     else if(d.hour < 12)
-            //         d.hours = '8 - 11:59';
-            //     else if(d.hour < 16)
-            //         d.hours = '12 - 15:59';
-            //     else if(d.hour < 20)
-            //         d.hours = '16 - 19:59';
-            //     else
-            //         d.hours = '20 - 23:59';
-            // })
             .group({
                 $by: ['hour', 'user'],
                 count: {'location': '$count'}
@@ -609,7 +487,7 @@ return function(arg) {
                     });
 
                     var newNode = {
-                        id: newNodeId,
+                        label: newNodeId,
                         type: 'time',
                         pos: [0, views.map.innerHeight],
                         value: links.map((d)=>d.count).reduce((a,b)=>a+b)

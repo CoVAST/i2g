@@ -28,16 +28,13 @@ return function(arg) {
     }
 
     let addNodeToOntology = (id, type, props) => {
-        igraph.append({
-            nodes: {
-                id: id,
+        igraph.addNodes({
+                label: id,
                 type: type,
                 pos: [100,100],
                 value: 0,
                 props: props
-            },
-            links: []
-        })
+        }).update()
     }
 
 	var appLayout = new Layout({
