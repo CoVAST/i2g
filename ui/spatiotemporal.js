@@ -21,7 +21,8 @@ return function(arg) {
         colorScheme = options.colorScheme;
 
     var appLayout = new Layout({
-        margin: 10,
+        // margin: 10,
+        padding: 5,
         container: 'page-right-view-body',
         rows: [
             {id: 'map-view', height: 0.7},
@@ -85,6 +86,7 @@ return function(arg) {
         R.forEachObjIndexed(
                 geo => appLayout.map.removeLocations(geo.mapObjs),
                 subjectGeos);
+        appLayout.map.highlightLocations([]);
         // add locations
         people = [];
         subjectGeos = R.mapObjIndexed((locations, subjectKey) => {
@@ -362,9 +364,7 @@ return function(arg) {
                             return b.timestep - a.timestep;
                         });
                 })
-                // console.log(activities);
                 let extentToTimeWindow = R.curry((timeSpan, extent) => {
-                    console.log(extent);
                     return [
                         new Date((timespan[0].getTime() + extent.x[0]/256 * duration)),
                         new Date((timespan[0].getTime() + extent.x[1]/256 * duration))

@@ -41,7 +41,9 @@ return function(arg) {
     }
 
 	var appLayout = new Layout({
-        margin: 5,
+        // margin: 5,
+        // padding: 0,
+        id: 'panel-data-selection',
         container: 'page-left-view-body',
         rows: [
             {
@@ -69,7 +71,7 @@ return function(arg) {
         ]
     });
     document.getElementById('filter-view').style.whiteSpace = 'nowrap';
-    document.getElementById('filter-view').style.overflow = 'auto';
+    document.getElementById('filter-view').style.overflow = '';
 
     appLayout.mapCenter = [39.9042, 116.4074];
     appLayout.mapZoom = 8;

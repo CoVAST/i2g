@@ -3,6 +3,7 @@ define(function(require) {
 // dependencies
 var Panel = require('vastui/panel'),
     Button = require('vastui/button'),
+    Layout = require('vastui/layout'),
     Dropdown = require('vastui/dropdown'),
     NotePanel = require('./notepanel');
 
@@ -41,8 +42,23 @@ return function(webSocket) {
         return locs;
     }
 
+    var graphLayout = new Layout({
+        // margin: 2,
+        padding: 6,
+        id: 'graph-layout',
+        container: 'page-left-view-body',
+        cols: [
+            {
+                id: 'graph-view',
+                width: 1.0
+            }
+        ]
+    })
+
     var graphPanel = new Panel({
-        container: ui.views.left.body,
+        // margin: 11,
+        // container: ui.views.left.body,
+        container: graphLayout.cell('graph-view'),
         id: 'panel-igraph',
         title: 'Insight Graph',
         header: {height: 0.07, style: {backgroundColor: '#FFF'}}
@@ -128,10 +144,10 @@ return function(webSocket) {
     }))
 
 
-    $('#panel-igraph').transition('fade left');
+    $('#graph-layout').transition('fade left');
 
     var selection = require('/selection')({
-        container: 'domain-vis',
+        // container: 'domain-vis',
         igraph: igraph,
         colorScheme: colorScheme
     });
@@ -157,6 +173,8 @@ return function(webSocket) {
     }
     map.flyTo(selection.mapCenter, selection.mapZoom);
 
+    $('#page-right-view-body').css('overflow', '');
+    $('#page-left-view-body').css('overflow', '');
 }
 
 });

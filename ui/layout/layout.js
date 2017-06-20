@@ -5,7 +5,8 @@ define(function(require){
 
     return function() {
         var appLayout = new Layout({
-            margin: 10,
+            // margin: 5,
+            padding: 0,
             container: 'page-main',
             cols: [
                 {
@@ -24,6 +25,11 @@ define(function(require){
         views.left = new Panel({
             container: appLayout.cell('page-left'),
             id: "page-left-view",
+            style: {
+                border: 'unset',
+                boxShadow: 'unset',
+                overflow: 'unset'
+            }
             // title: "Detail View",
             // header: {height: 35, style: {backgroundColor: '#FFF'}}
         });
@@ -31,6 +37,11 @@ define(function(require){
         views.right = new Panel({
             container: appLayout.cell('page-right'),
             id: "page-right-view",
+            style: {
+                border: 'unset',
+                boxShadow: 'unset',
+                overflow: 'unset'
+            }
             // title: "Info Graph",
             // header: {height: 40, style: {backgroundColor: '#FFF'}}
         });

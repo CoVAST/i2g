@@ -70,11 +70,11 @@
         <div class="item">
           <h2 style="color: teal;">CoVA</h2>
         </div>
-        <a  href="#panel-selection"
+        <a  href="#panel-data-selection"
             class="item active">
           <i class="users large teal icon"></i>Selection
         </a>
-        <a  href="#panel-igraph" class="item">
+        <a  href="#graph-layout" class="item">
           <i class="marker large teal icon"></i>Analysis
         </a>
         <a href="#page-collaboration" class="item">
@@ -99,12 +99,7 @@
 
       </div>
       <div class="pusher">
-          <div id="page-main" >
-            <div class="ui content sticky fixed cv-page cv-page-active" id="page-relationship"></div>
-            <div class="ui content sticky fixed cv-page" id="page-geospatial"></div>
-            <div class="ui content sticky fixed cv-page" id="page-text"></div>
-            <div class="ui content sticky fixed cv-page" id="page-collaboration"></div>
-          </div>
+          <div id="page-main"></div>
       </div>
 
 
@@ -141,7 +136,7 @@
             $("#page-main")
                 .css({
                     height: $("body").height() - pageHeaderHeight ,
-                    'margin-top': pageHeaderHeight + 'px'
+                    'margin-top': pageHeaderHeight + 5 + 'px'
                 });
 
             $(".page-menu > a.item").click(function(){

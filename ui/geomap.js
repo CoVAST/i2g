@@ -278,24 +278,41 @@ return function geoLocation(options) {
     function highlightLocations(locObjs) {
         if (R.isEmpty(locObjs)) {
             highlightLayer.clearLayers();
-            primaryLocations.invoke('setStyle', {
-                fillOpacity: 0.5
-            });
+            // primaryLocations.invoke('setStyle', {
+            //     fillOpacity: 0.5
+            // });
             return;
         }
-        primaryLocations.eachLayer(layer => {
-            layer.setStyle({
-                fillOpacity: 0.02
-            });
-        });
-        highlightLayer.clearLayers();
-        return R.map(loc => {
-            let options = R.clone(loc.options);
-            /// TODO: also check other properties.
-            if (R.isNil(options.radius)) options.radius = 200;
-            // console.log(options);
-            return L.circle(loc.latlng, options).addTo(highlightLayer)
-        }, locObjs);
+        // primaryLocations.eachLayer(layer => {
+        //     layer.setStyle({
+        //         fillOpacity: 0.02
+        //     });
+        // });
+
+        let nNewCircles = locObjs.length - highlightLayer.getLayers().length;
+        if (nNewCircles > 0) {
+            for (let i = 0; i < nNewCircles; ++i) {
+                L.circle([0, 0], { radius: 200 }).addTo(highlightLayer);
+            }
+        }
+        let layers = highlightLayer.getLayers();
+        // console.log(layers);
+        for (let i = 0; i < locObjs.length; ++i) {
+            layers[i].setLatLng(locObjs[i].latlng);
+            layers[i].setStyle(locObjs[i].options);
+        }
+        for (let i = locObjs.length; i < layers.length; ++i) {
+            layers[i].setStyle({ opacity: 0, fillOpacity: 0 });
+        }
+
+        // highlightLayer.clearLayers();
+        // return R.map(loc => {
+        //     let options = R.clone(loc.options);
+        //     /// TODO: also check other properties.
+        //     if (R.isNil(options.radius)) options.radius = 200;
+        //     // console.log(options);
+        //     return L.circle(loc.latlng, options).addTo(highlightLayer)
+        // }, locObjs);
     }
 
     // map.on('contextmenu', function() {
