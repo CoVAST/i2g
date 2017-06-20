@@ -13,14 +13,15 @@ define(function(require){
 
     return function(arg) {
         var options = arg || {},
-            container = options.container || 'domain-vis',
+            // container = options.container || 'domain-vis',
             igraph = options.igraph;
 
         var data = {},
             result;
 
         var selection = new Layout({
-            margin: 5,
+            // margin: 5,
+            // padding: 5,
             id: "panel-data-selection",
             container: 'page-left-view-body',
             cols: [

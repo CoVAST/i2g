@@ -20,7 +20,8 @@
     "p4.js": "^0.1.2",
     "ramda": "^0.24.1",
     "requirejs": "^2.3.3",
-    "socket.io": "^2.0.3"
+    "socket.io": "^2.0.3",
+    "tinycolor2": "^1.4.1"
   },
   "devDependencies": {},
   "scripts": {

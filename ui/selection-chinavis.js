@@ -41,7 +41,9 @@ return function(arg) {
     }
 
 	var appLayout = new Layout({
-        margin: 5,
+        // margin: 5,
+        // padding: 0,
+        id: 'panel-data-selection',
         container: 'page-left-view-body',
         rows: [
             {
@@ -69,7 +71,7 @@ return function(arg) {
         ]
     });
     document.getElementById('filter-view').style.whiteSpace = 'nowrap';
-    document.getElementById('filter-view').style.overflow = 'auto';
+    document.getElementById('filter-view').style.overflow = '';
 
     appLayout.mapCenter = [39.9042, 116.4074];
     appLayout.mapZoom = 8;
@@ -165,7 +167,7 @@ return function(arg) {
     });
     let dateList = new List({
         container: views.dates.body,
-        types: ['selection'],
+        types: ['selection', 'single'],
         onselect: setCurrDate
     });
 
@@ -277,7 +279,9 @@ return function(arg) {
             });
         }, dates);
     });
-    datesLoading.then(dates => setCurrDate(0));
+    datesLoading
+        .then(dates => setCurrDate(0))
+        .then(() => dateList.setSelectedItemIds([0]));
 
     let loadWords = dateString => ajax.get({
     	url: '/chinavis/wordcounts/' + dateString

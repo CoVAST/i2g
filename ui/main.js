@@ -3,6 +3,7 @@ define(function(require) {
 // dependencies
 var Panel = require('vastui/panel'),
     Button = require('vastui/button'),
+    Layout = require('vastui/layout'),
     Dropdown = require('vastui/dropdown'),
     List = require('vastui/list'),
     NotePanel = require('./notepanel');
@@ -42,8 +43,23 @@ return function(webSocket) {
         return locs;
     }
 
+    var graphLayout = new Layout({
+        // margin: 2,
+        // padding: 5,
+        id: 'graph-layout',
+        container: 'page-left-view-body',
+        cols: [
+            {
+                id: 'graph-view',
+                width: 1.0
+            }
+        ]
+    })
+
     var graphPanel = new Panel({
-        container: ui.views.left.body,
+        // margin: 11,
+        // container: ui.views.left.body,
+        container: graphLayout.cell('graph-view'),
         id: 'panel-igraph',
         title: 'Insight Graph',
         header: {height: 0.07, style: {backgroundColor: '#FFF'}}
@@ -141,10 +157,10 @@ return function(webSocket) {
     }))
 
 
-    $('#panel-igraph').transition('fade left');
+    $('#graph-layout').transition('fade left');
 
     var selection = require('/selection')({
-        container: 'domain-vis',
+        // container: 'domain-vis',
         igraph: igraph,
         colorScheme: colorScheme
     });
@@ -154,8 +170,8 @@ return function(webSocket) {
     selection.onSelect = function(subjectKey, locations) {
         if (R.has(subjectKey, subjectLocations)) {
             /// FIXME: this is not the best way to toggle selection.
-            spatiotemporal.removeSubject(subjectKey);
             delete subjectLocations[subjectKey];
+            spatiotemporal.removeSubject(subjectKey);
             return;
         }
         // add subject to spatiotemporal panel
@@ -169,7 +185,6 @@ return function(webSocket) {
         spatiotemporal.setSubjects(subjectLocations);
     }
     map.flyTo(selection.mapCenter, selection.mapZoom);
-
 }
 
 });

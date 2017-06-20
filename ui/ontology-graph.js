@@ -270,11 +270,11 @@ define(function(require) {
                 }
             });
 
-            link.data(links, function(li, i){
-                li.icon.attr("transform", "translate(" +
-                    (li.source.x + (li.target.x-li.source.x)/2 - 8) + "," +
-                    (li.source.y + (li.target.y-li.source.y)/2 - 8) + ")")
-            })
+            // link.data(links, function(li, i){
+            //     li.icon.attr("transform", "translate(" +
+            //         (li.source.x + (li.target.x-li.source.x)/2 - 8) + "," +
+            //         (li.source.y + (li.target.y-li.source.y)/2 - 8) + ")")
+            // })
         }
 
         function dragstarted(d) {
