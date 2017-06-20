@@ -396,7 +396,7 @@ define(function(require){
                             highlightLocationsByTimeSpan)
                     })
             }
-            if(timeMode == 1) {
+            if(timeMode == 2) {
                 var dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
                 var weeklyStats = pipeline()
@@ -440,7 +440,7 @@ define(function(require){
                         color: 'user',
                     }
                 })
-            }else if(timeMode == 2) {
+            }else if(timeMode == 1) {
                 var dailyStats = pipeline()
                 .match({
                     user: {$in: people},

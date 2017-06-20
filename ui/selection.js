@@ -86,7 +86,6 @@ define(function(require){
             }
         })
 
-
         var relatedPeople = new List({
             container: views.related.body,
             types: ['divided', 'selection'],
@@ -170,7 +169,7 @@ define(function(require){
                 })
             })
 
-            subjects.get(0).className += ' selected'
+            subjects.get(0).className += ' selected';
 
             data.activityTotal.forEach(function(d){
                 relatedPeople.append({

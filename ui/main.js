@@ -49,10 +49,14 @@ return function(webSocket) {
         header: {height: 0.07, style: {backgroundColor: '#FFF'}}
     })
 
+    var hlContainer = document.getElementById('page-sidebar');
+    hlContainer.style.padding = '10px';
+    hlContainer.style.paddingTop = '6em';
+    hlContainer.innerHTML = '<h3>Provenance</h3>';
     var hl = new List({
-        container: 'page-sidebar',
+        container: hlContainer,
         id: 'igraph-history',
-        types: ['selection']
+        types: ['divided']
     });
 
     var np = new NotePanel({
