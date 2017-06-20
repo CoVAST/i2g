@@ -42,7 +42,7 @@ define(function(require){
         let onSelect = (d, r) => {
             selection.onSelect.call(this, d, r);
             igraph.append({
-                nodes: {label: 'Subject'+d, type: "people", pos: [100,100], value: 0},
+                nodes: {label: d, labelPrefix: 'Person', type: "people", pos: [100,100], value: 0},
                 links: []
             });
         }

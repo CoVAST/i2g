@@ -1,5 +1,6 @@
 define(function(require) {
-    var logos = require('./icons');
+    var logos = require('./icons'),
+        pipeline = require('p4/core/pipeline');
     return function(arg) {
         'use strict';
         var options = arg || {},
@@ -312,11 +313,10 @@ define(function(require) {
 
         function labelNode(d) {
             var label = (d.hasOwnProperty('label')) ? d.label : d.id;
-            if(d.type=='people')
-                label = 'P' + label;
             if(label.length > 20)
                 label = label.slice(0, 7) + '...';
-
+            if(d.hasOwnProperty('labelPrefix'))
+                label = d.labelPrefix + label;
             nodeLabels[d.id].text(label);
         }
 
@@ -433,10 +433,10 @@ define(function(require) {
             var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
             newNodes.forEach(function(newNode){
                 var pos = newNode.pos || [width/2, height/2];
-                // if(!newNode.hasOwnProperty('id'))
-                    newNode.id = nodeCounter++;
+                newNode.id = nodeCounter++;
                 if(!newNode.hasOwnProperty('datalink'))
                     newNode.datalink = false;
+                newNode.tag = newNode.label;
                 newNode.x = pos[0];
                 newNode.y = pos[1];
                 nodeHash[newNode.id] = newNode;
@@ -497,6 +497,7 @@ define(function(require) {
 
         function removeLink(linkId) {
             var removedLink = links.splice(linkId,1)[0];
+            if(removeLink.hasOwnProperty('icon'))
             removedLink.icon.remove();
             addHistory({
                 action: 'Remove link',
@@ -601,7 +602,16 @@ define(function(require) {
             return otGraph;
         }
 
-        otGraph.getNodes = function() { return nodes;};
+        otGraph.getNodes = function(query) {
+            console.log('ALL NODES :', nodes);
+            if(typeof query === 'undefined')
+                return nodes;
+            else {
+                return pipeline()
+                    .match(query)
+                    (nodes);
+            }
+        };
         otGraph.getLinks = function() { return links;};
 
         return otGraph;

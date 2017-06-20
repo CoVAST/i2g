@@ -133,57 +133,34 @@ return function(arg) {
             cMaxLong = Math.max(c[0].lng, c[1].lng);
 
         d.box = {lat: [cMinLat, cMaxLat], lng: [cMinLong, cMaxLong]};
-        d.label = "Location " + areas.length;
-
-            //
-            // var selectedLocations =
-            //         toLocations(subjectGeos).filter(function(a){
-            //     return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
-            // })
-            // // console.log(selectedLocations);
-            // var links = pipeline()
-            // .group({
-            //     $by: ['user'],
-            //     value: {'location': '$count'}
-            // })
-            // (selectedLocations);
-            // areas.push(d);
-            // links.forEach(function(li){
-            //     li.source = li.user;
-            //     li.target = d.label;
-            // })
-            // igraph.addNodes({
-            //     label: d.label,
-            //     type: "location",
-            //     pos: [0,0],
-            //     value: selectedLocations.length
-            // })
-            // .addLinks(links)
-            // .update();
+        d.label = areas.length;
+        d.labelPrefix = 'Location';
 
         var selectedLocations =
                 toLocations(subjectGeos).filter(function(a){
             return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
         })
-        // console.log(selectedLocations);
         var links = pipeline()
         .group({
             $by: ['user'],
             value: {'location': '$count'}
         })
         (selectedLocations);
+        // console.log(links);
         areas.push(d);
-        links.forEach(function(li){
-            li.source = li.user;
-            li.target = d.label;
-        })
         igraph.addNodes({
-            id: d.label,
+            label: d.label,
             type: "location",
             pos: [0,0],
             value: selectedLocations.length
-        })
-        .addLinks(links)
+        }).update();
+
+        links.forEach(function(li){
+            li.source = igraph.getNodes({type: 'people', tag: li.user})[0];
+            li.target = igraph.getNodes({type: 'location', tag: d.label})[0];
+        });
+        // console.log(links);
+        igraph.addLinks(links)
         .update();
     })
 
