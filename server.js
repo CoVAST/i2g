@@ -65,6 +65,7 @@ io.on('connection', function (socket) {
 
     socket.on('push', function(graph) {
         socket.user.graph = graph;
+        console.log(graph);
         if(largeDisplay !== null) {
             var graph = {links: [], nodes:[]};
             users.forEach(function(user){

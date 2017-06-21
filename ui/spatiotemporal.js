@@ -261,8 +261,8 @@ return function(arg) {
 
             extraReults.forEach(function(res){
                 newLinks.push({
-                    source: res.user,
-                    target: res.area,
+                    source: igraph.findNode({type: 'people', tag: res.user}),
+                    target: igraph.findNode({type: 'location', tag: res.area}),
                     value: res.value,
                     dest: res.area
                 });

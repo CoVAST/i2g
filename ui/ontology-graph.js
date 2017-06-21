@@ -29,7 +29,7 @@ define(function(require) {
             };
 
         function addHistory(hist) {
-            if(trackHistory) {
+            if(trackHistory && typeof historyList != 'undefined') {
                 history.push(hist);
                 var histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'link';
                 historyList.append({
@@ -586,8 +586,8 @@ define(function(require) {
             nodeHash = {};
             nodes.forEach(function(n){
                 nodeHash[n.id] = n;
-                n.fx = null;
-                n.fy = null;
+                n.fx = n.x;
+                n.fy = n.y;
             })
             links = graph.links.map(function(sl){
                 return {
