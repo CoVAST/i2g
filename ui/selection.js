@@ -58,7 +58,7 @@ define(function(require){
         });
 
         views.related = new Panel({
-            padding: 20,
+            padding: 10,
             container: selection.cell('list-related-people'),
             id: "panel-related-people",
             title: "Related People",
@@ -79,33 +79,35 @@ define(function(require){
             console.log(this.value);
         })
 
-        var subjects = new List({
+        var subjectList = new List({
             container: views.subject.body,
-            types: ['selection'],
-            onselect: function(d) {
-                console.log(d);
+            types: ['selection', 'single'],
+            onselect: function(subjectId) {
+                populateRelatedPeople(data.subjects[subjectId]);
             }
         })
+
+        var selectedSubjectID = 0, selected = {};
 
         var relatedPeople = new List({
             container: views.related.body,
             types: ['divided', 'selection'],
             selectedColor: 'purple',
-            onselect: function(d) {
+            onselect: function(index) {
+                let d = data.relatedPersonIds[index];
                 var r = pipeline()
                 .match({
                     user: d
                 })
                 (data.records);
+                selected[d] = !selected[d];
                 onSelect.call(this, d, r);
             }
         });
 
-        var selectedSubjectID = 0, selected = [];
-
         ajax.getAll([
-            {url: '/data/test-relationship-small.csv', dataType: 'text'},
-            {url: '/data/test-geo280k-small.csv', dataType: 'text'}
+            {url: '/data/test-relationship.csv', dataType: 'text'},
+            {url: '/data/test-geo280k.csv', dataType: 'text'}
         ]).then(function(text){
             data.relationship = dataStruct({
                 array: dsv(text[0], '\t'),
@@ -125,18 +127,27 @@ define(function(require){
                 d.hour = d.time.getHours();
             })
 
-            var subjects = pipeline()
-            .group({
-                $by: 'source',
-                connection: {target: '$count'}
-            })
-            (data.relationship);
+            let subjects = R.reduce((acc, obj) => {
+                if (!acc[obj.source])
+                    acc[obj.source] = [];
+                acc[obj.source].push(obj.target);
+                return acc;
+            }, {}, data.relationship);
+            data.subjects = subjects;
+
+            // var subjects = pipeline()
+            // .group({
+            //     $by: 'source',
+            //     connection: {target: '$count'}
+            // })
+            // (data.relationship);
 
             var activityTotal = pipeline()
             .group({
                 $by: 'user',
                 count: {'location': '$count'}
             })(data.records)
+            data.activityTotal = activityTotal;
             // console.log(activityTotal);
 
             selection.update({
@@ -161,25 +172,53 @@ define(function(require){
 
         selection.update = function(data) {
 
-            data.subjects.forEach(function(d, i){
-                subjects.append({
-                    header: 'Subject ' + i,
+            R.forEachObjIndexed((subject, key) => {
+                subjectList.append({
+                    header: 'Subject ' + key,
                     icon: 'big spy',
-                    text: data.subjects[i].connection + ' connections, ' +
-                            data.activityTotal[i].count + ' activtiies'
+                    text: subject.length + ' connections, ' + data.activityTotal[key].count + ' activities'
                 })
-            })
+            }, data.subjects);
 
-            subjects.get(0).className += ' selected';
+            // data.subjects.forEach(function(d, i){
+            //     subjects.append({
+            //         header: 'Subject ' + i,
+            //         icon: 'big spy',
+            //         text: data.subjects[i].connection + ' connections, ' +
+            //                 data.activityTotal[i].count + ' activtiies'
+            //     })
+            // })
 
-            data.activityTotal.forEach(function(d){
+            subjectList.setSelectedItemIds([0]);
+            populateRelatedPeople(data.subjects[0]);
+
+            // data.activityTotal.forEach(function(d){
+            //     relatedPeople.append({
+            //         header: 'Related Person ' + d.user,
+            //         text: d.count + ' activtiies',
+            //         icon: 'user mid'
+            //     })
+            // });
+
+        }
+
+        let populateRelatedPeople = (personIds) => {
+            data.relatedPersonIds = personIds;
+            relatedPeople.clear();
+            let selectedItemIds = [];
+            R.forEach(personId => {
+                let d = data.activityTotal[personId];
                 relatedPeople.append({
-                    header: 'Related Person ' + d.user + ' (' +
-                        d.count + ' activtiies)',
+                    header: 'Related Person ' + d.user,
+                    text: d.count + ' activities',
                     icon: 'user mid'
-                })
-            });
-
+                });
+                if (selected[personId]) {
+                    let id = $(relatedPeople).children().length - 1;
+                    selectedItemIds.push(id);
+                }
+            }, personIds);
+            relatedPeople.setSelectedItemIds(selectedItemIds);
         }
 
 
