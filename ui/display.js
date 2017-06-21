@@ -83,7 +83,8 @@ define(function(require){
                         domain: [0, 1],
                         graphId: name + '_igraph',
                         colorScheme: colorScheme,
-                        graph:  {links: [], nodes:[]}
+                        graph:  {links: [], nodes:[]},
+                        graphName: name,
                     });
                     gg.remake(graphs[name])
                 }

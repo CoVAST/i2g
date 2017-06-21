@@ -77,13 +77,13 @@ io.on('connection', function (socket) {
                 console.log(name, users);
                 if(graphs.hasOwnProperty(name)) {
                     graphs[name].nodes.forEach(function(d){
-                        d.id += nodesPerUser;
+                        d.id = d.label;
                         d._user = name;
                     });
                     graphs[name].links.forEach(function(d){
                         d._user = name;
-                        d.source.id += nodesPerUser;
-                        d.target.id += nodesPerUser
+                        d.source.id = d.source.label;
+                        d.target.id = d.target.label;
                     });
                     nodesPerUser += graphs[name].nodes.length;
                     graph.nodes = graph.nodes.concat(graphs[name].nodes);
