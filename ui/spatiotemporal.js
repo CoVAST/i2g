@@ -307,36 +307,56 @@ return function(arg) {
         })
     }
 
-
-    let highlightLocationsByTimeSpan = timeSpan => {
-        // console.log(timeSpan);
-        let filterSubjectGeos = R.mapObjIndexed((geos, subjectKey) => {
-            let filtered = R.filter(loc => {
+    let filterSubjectGeosByTimeSpan = R.curry((subjectGeos, timeSpan) => {
+        return R.mapObjIndexed((geos, subjectKey) => {
+            return R.filter(loc => {
                 return loc.time.getTime() >= timeSpan[0].getTime()
                     && loc.time.getTime() < timeSpan[1].getTime();
             }, geos.locations);
-            let locObjs = R.map(loc => {
-                let fillColor = colorMap(subjectKey);
-                let color = tinycolor(fillColor).complement().lighten(20).toHexString();
-                // console.log(color);
-                return {
-                    latlng: [ loc.lat, loc.long ],
-                    options: {
-                        color: color,
-                        fillColor: fillColor,
-                        opacity: colorScheme.mapHighlightOpacity,
-                        fillOpacity: colorScheme.mapHighlightOpacity
-                    }
-                };
-            }, filtered);
-            return locObjs;
-        });
+        }, subjectGeos);
+    });
+
+    let convertSubjectLocsToSubjectLocObjs =
+            R.mapObjIndexed((geos, subjectKey) => {
+        let fillColor = colorMap(subjectKey);
+        return R.map(loc => {
+            let color =
+                    tinycolor(fillColor)
+                        .complement().lighten(20).toHexString();
+            return {
+                latlng: [ loc.lat, loc.long ],
+                options: {
+                    color: color,
+                    fillColor: fillColor,
+                    opacity: colorScheme.mapHighlightOpacity,
+                    fillOpacity: colorScheme.mapHighlightOpacity
+                }
+            };
+        }, geos);
+    });
+
+    let highlightLocationsByTimeSpan = timeSpan => {
+        let filteredSubjectLocs = 
+                filterSubjectGeosByTimeSpan(subjectGeos, timeSpan);
+        // generate paths
+        let sortedSubjectLocs =
+                R.map(R.sortBy(R.prop('time')), filteredSubjectLocs);
+        let pathObjs = R.mapObjIndexed((locs, subjectKey) => {
+            return {
+                options: {
+                    color: colorMap(subjectKey),
+                    opacity: 0.5
+                },
+                latlngs: R.map(loc => [loc.lat, loc.long], locs)
+            }
+        }, sortedSubjectLocs);
+        appLayout.map.highlightPaths(pathObjs);
+        // highlight locations
         let locObjs = R.pipe(
-                filterSubjectGeos,
+                convertSubjectLocsToSubjectLocObjs,
                 R.toPairs,
                 R.map(R.prop(1)),
-                R.flatten)(subjectGeos);
-        // console.log(locObjs);
+                R.flatten)(filteredSubjectLocs);
         appLayout.map.highlightLocations(locObjs);
     }
 

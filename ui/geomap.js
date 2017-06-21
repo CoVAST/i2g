@@ -7,7 +7,8 @@ return function geoLocation(options) {
     var relatedLocations = new L.LayerGroup();
     var primaryLocations = new L.LayerGroup();
     var importantLocations = new L.LayerGroup();
-    var highlightLayer = new L.LayerGroup();
+    var highlightPathsLayer = new L.LayerGroup();
+    var highlightLocationsLayer = new L.LayerGroup();
     var circleRadius = 5;
 
     var mbAttr = 'Map data &copy; ' +
@@ -27,7 +28,8 @@ return function geoLocation(options) {
             "Primary Locations": primaryLocations,
             "Related People": relatedLocations,
             "Important Locations": importantLocations,
-            "Highlight Locations": highlightLayer
+            "Highlight Locations": highlightLocationsLayer,
+            "Highlight Paths": highlightPathsLayer,
         };
     // important locations
     var importantGeoColor = colorScheme.area;
@@ -222,7 +224,8 @@ return function geoLocation(options) {
             primaryLocations,
             relatedLocations,
             importantLocations,
-            highlightLayer
+            highlightPathsLayer,
+            highlightLocationsLayer
         ],
         contextmenu: true,
         contextmenuWidth: 140,
@@ -276,9 +279,17 @@ return function geoLocation(options) {
         })
     }
 
+    function highlightPaths(pathObjs) {
+        highlightPathsLayer.clearLayers();
+        return R.map(pathObj => {
+            return L.polyline(pathObj.latlngs, pathObj.options)
+                .addTo(highlightPathsLayer);
+        }, pathObjs);
+    }
+
     function highlightLocations(locObjs) {
         if (R.isEmpty(locObjs)) {
-            highlightLayer.clearLayers();
+            highlightLocationsLayer.clearLayers();
             // primaryLocations.invoke('setStyle', {
             //     fillOpacity: 0.5
             // });
@@ -290,13 +301,13 @@ return function geoLocation(options) {
         //     });
         // });
 
-        let nNewCircles = locObjs.length - highlightLayer.getLayers().length;
+        let nNewCircles = locObjs.length - highlightLocationsLayer.getLayers().length;
         if (nNewCircles > 0) {
             for (let i = 0; i < nNewCircles; ++i) {
-                L.circleMarker([0, 0], { radius: circleRadius }).addTo(highlightLayer);
+                L.circleMarker([0, 0], { radius: circleRadius }).addTo(highlightLocationsLayer);
             }
         }
-        let layers = highlightLayer.getLayers();
+        let layers = highlightLocationsLayer.getLayers();
         // console.log(layers);
         for (let i = 0; i < locObjs.length; ++i) {
             layers[i].setLatLng(locObjs[i].latlng);
@@ -306,26 +317,15 @@ return function geoLocation(options) {
             layers[i].setStyle({ opacity: 0, fillOpacity: 0 });
         }
 
-        // highlightLayer.clearLayers();
+        // highlightLocationsLayer.clearLayers();
         // return R.map(loc => {
         //     let options = R.clone(loc.options);
         //     /// TODO: also check other properties.
         //     if (R.isNil(options.radius)) options.radius = circleRadius;
         //     // console.log(options);
-        //     return L.circleMarker(loc.latlng, options).addTo(highlightLayer)
+        //     return L.circleMarker(loc.latlng, options).addTo(highlightLocationsLayer)
         // }, locObjs);
     }
-
-    // map.on('contextmenu', function() {
-    //     console.log('contextmenu');
-    // })
-
-    // // add marker on map
-    // var markCount = 0;
-    // map.on('dblclick', function(e){
-    //     var marker = new L.marker(e.latlng).addTo(map);
-    //     markCount += 1;
-    // });
 
     return {
         relatedLocations: relatedLocations,
@@ -335,6 +335,7 @@ return function geoLocation(options) {
         addLocations: addLocations,
         removeLocations: removeLocations,
         highlightLocations: highlightLocations,
+        highlightPaths: highlightPaths,
         flyToBounds: R.bind(map.flyToBounds, map),
         flyTo: R.bind(map.flyTo, map)
     }
