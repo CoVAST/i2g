@@ -181,15 +181,9 @@ define(function(require){
             });
 
         }
-
-
-
         selection.result = function() {
             return result;
         }
-
-
-
 
         return selection;
     }

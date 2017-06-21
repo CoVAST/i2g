@@ -44,35 +44,57 @@ app.use("/p4",  express.static(srcDir.p4));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-var users = [],
+var users = {},
+    graphs = {},
     largeDisplay = null;
 
 io.on('connection', function (socket) {
     socket.on('add user', function (userInfo) {
         socket.user = userInfo;
-        console.log(userInfo);
-        users.push(socket.user);
-
+        users[userInfo.name] = socket.user;
         socket.emit('login', {
-            numUsers: users.length
+            numUsers: Object.keys(users).length
         });
+        console.log(users);
     });
 
     socket.on('large display', function(displayInfo) {
         largeDisplay = socket;
+        largeDisplay.emit('update', {
+            users: users,
+            graphs: graphs
+        });
         console.log('Large Display connected');
     });
 
     socket.on('push', function(graph) {
-        socket.user.graph = graph;
-        console.log(graph);
+        graphs[socket.user.name] = graph;
+        var nodesPerUser = 0;
+        // console.log(graph);
         if(largeDisplay !== null) {
             var graph = {links: [], nodes:[]};
-            users.forEach(function(user){
-                graph.nodes = graph.nodes.concat(user.graph.nodes);
-                graph.links = graph.links.concat(user.graph.links);
-            })
-            largeDisplay.emit('update', graph)
+            for(var name in users) {
+                console.log(name, users);
+                if(graphs.hasOwnProperty(name)) {
+                    graphs[name].nodes.forEach(function(d){
+                        d.id += nodesPerUser;
+                        d._user = name;
+                    });
+                    graphs[name].links.forEach(function(d){
+                        d._user = name;
+                        d.source.id += nodesPerUser;
+                        d.target.id += nodesPerUser
+                    });
+                    nodesPerUser += graphs[name].nodes.length;
+                    graph.nodes = graph.nodes.concat(graphs[name].nodes);
+                    graph.links = graph.links.concat(graphs[name].links);
+                }
+            }
+            console.log(graphs);
+            largeDisplay.emit('update', {
+                users: users,
+                graphs: graphs
+            });
         }
     });
 

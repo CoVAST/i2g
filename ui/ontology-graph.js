@@ -13,6 +13,7 @@ define(function(require) {
             notePanel = options.notePanel || null,
             onselect = options.onselect || function() {},
             historyList = options.historyList,
+            graphId = options.graphId || 'igraph-svg',
             colorScheme = options.colorScheme;
 
         var otGraph = {},
@@ -44,7 +45,7 @@ define(function(require) {
             nodeCounter = 0;
 
         var svg = d3.select(container).append('svg:svg');
-        svg.attr("width", width).attr("height", height).attr('id', 'igraph-svg');
+        svg.attr("width", width).attr("height", height).attr('id', graphId);
 
         svg.append("svg:defs").append("svg:marker")
               .attr("id",'end')
@@ -432,7 +433,8 @@ define(function(require) {
             var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
             newNodes.forEach(function(newNode){
                 var pos = newNode.pos || [width/2, height/2];
-                newNode.id = nodeCounter++;
+                if(!newNode.hasOwnProperty('id'))
+                    newNode.id = nodeCounter++;
                 if(!newNode.hasOwnProperty('datalink'))
                     newNode.datalink = false;
                 newNode.tag = newNode.label;
@@ -589,6 +591,7 @@ define(function(require) {
                 n.fx = n.x;
                 n.fy = n.y;
             })
+            // retart();
             links = graph.links.map(function(sl){
                 return {
                     source: nodeHash[sl.source.id],
