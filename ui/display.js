@@ -4,6 +4,7 @@ define(function(require){
         Button = require('vastui/button');
 
     var iGraph = require('./ontology-graph');
+    var colorScheme = require('./color-scheme');
 
     return function(webSocket) {
         var appLayout = new Layout({
@@ -47,6 +48,7 @@ define(function(require){
             width: views.mid.innerWidth,
             height: views.mid.innerHeight,
             domain: [0, 1],
+            colorScheme: colorScheme,
             graph: {nodes: [], links: []}
         });
 

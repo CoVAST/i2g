@@ -12,6 +12,7 @@ var arrays = require('p4/core/arrays'),
     pipeline = require('p4/core/pipeline');
 
 var ontoGraph = require('./ontology-graph');
+var colorScheme = require('./color-scheme');
 
 return function(webSocket) {
 
@@ -24,14 +25,6 @@ return function(webSocket) {
     var areas = [],
         datetimes = [];
 
-    var colorScheme = {
-        colors: ['#EC644B', '#446CB3', '#4ECDC4', '#F7CA18', '#F89406'],
-        semantic: '#2ABEB3',
-        area: '#2ABEB3',
-        time: '#4183D7',
-        mapHighlight: '#F39C12',
-        mapHighlightOpacity: 0.75
-    }
 
     var colorMap = d3.scaleOrdinal(d3.schemeCategory10);
 
