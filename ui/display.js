@@ -12,17 +12,17 @@ define(function(require){
             container: 'page-main',
             cols: [
                 {
-                    width: 0.2,
+                    width: 0.35,
                     id: 'col-left'
                 },
                 {
-                    width: 0.6,
+                    width: 0.65,
                     id: 'col-mid'
                 },
-                {
-                    width: 0.2,
-                    id: 'col-right'
-                },
+                // {
+                //     width: 0.2,
+                //     id: 'col-right'
+                // },
             ]
         });
 
@@ -53,74 +53,45 @@ define(function(require){
         });
 
 
-        views.right = new Panel({
-            container: appLayout.cell('col-right'),
-            id: "col-right-view",
-            // title: "Info Graph",
-            // header: {height: 40, style: {backgroundColor: '#FFF'}}
-        });
+
+        // views.right = new Panel({
+        //     container: appLayout.cell('col-right'),
+        //     id: "col-right-view",
+        //     // title: "Info Graph",
+        //     // header: {height: 40, style: {backgroundColor: '#FFF'}}
+        // });
 
         appLayout.views = views;
 
-
         webSocket.emit('large display', {});
-        webSocket.on('update', function(graph){
-            console.log(graph);
-            ig.remake(graph);
+        webSocket.on('update', function(data){
+            console.log(data);
+            var graphs = data.graphs,
+                users = Object.keys(graphs),
+                graph = {links: [], nodes:[]};
+
+            if(users.length){
+                views.left.clear();
+                for(var name in graphs) {
+                    graph.nodes = graph.nodes.concat(graphs[name].nodes);
+                    graph.links = graph.links.concat(graphs[name].links);
+
+                    var gg = iGraph({
+                        container: views.left.body,
+                        width: views.left.innerWidth,
+                        height: views.left.innerWidth,
+                        domain: [0, 1],
+                        graphId: name + '_igraph',
+                        colorScheme: colorScheme,
+                        graph:  {links: [], nodes:[]},
+                        graphName: name,
+                    });
+                    gg.remake(graphs[name])
+                }
+                ig.removeLinks({all:true});
+                ig.remake(graph);
+            }
         })
-
-        // layouts.people = new Layout({
-        //     margin: 10,
-        //     id: 'view-people',
-        //     container: "domain-vis",
-        //     cols: [
-        //         {
-        //             width: 0.5,
-        //             id: 'view-people-subject'
-        //         },
-        //         {
-        //             width: 0.5,
-        //             id: 'view-people-related'
-        //         },
-        //     ]
-        // })
-
-        // layouts.datetime = new Layout({
-        //     margin: 10,
-        //     id: 'view-datetime',
-        //     container: "domain-vis",
-        //     rows: [
-        //         {
-        //             width: 0.7,
-        //             id: 'view-datetime-stats'
-        //         },
-        //         {
-        //             width: 0.3,
-        //             id: 'view-datetime-plot'
-        //         },
-        //     ]
-        // })
-
-        // layouts.location = new Layout({
-        //     margin: 10,
-        //     container: "domain-vis",
-        //     rows: [
-        //         {
-        //             width: 0.7,
-        //             id: 'view-locaiton-map'
-        //         },
-        //         {
-        //             width: 0.3,
-        //             id: 'view-location-datetime'
-        //         },
-        //     ]
-        // })
-
-        // layouts.provenance = new Layout({
-        //     margin: 10,
-        //     container: "domain-vis"
-        // })
-
         return appLayout;
     }
 })

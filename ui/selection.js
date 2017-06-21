@@ -220,15 +220,9 @@ define(function(require){
             }, personIds);
             relatedPeople.setSelectedItemIds(selectedItemIds);
         }
-
-
-
         selection.result = function() {
             return result;
         }
-
-
-
 
         return selection;
     }

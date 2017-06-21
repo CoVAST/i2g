@@ -13,6 +13,8 @@ define(function(require) {
             notePanel = options.notePanel || null,
             onselect = options.onselect || function() {},
             historyList = options.historyList,
+            graphId = options.graphId || 'igraph-svg',
+            graphName = options.graphName || '',
             colorScheme = options.colorScheme;
 
         var otGraph = {},
@@ -44,7 +46,7 @@ define(function(require) {
             nodeCounter = 0;
 
         var svg = d3.select(container).append('svg:svg');
-        svg.attr("width", width).attr("height", height).attr('id', 'igraph-svg');
+        svg.attr('id', graphId).attr("width", width).attr("height", height);
 
         svg.append("svg:defs").append("svg:marker")
               .attr("id",'end')
@@ -58,7 +60,7 @@ define(function(require) {
             .append("svg:path")
             //   .attr("stroke", "red")
             //   .attr("stroke", "none")
-              .attr("fill", "steelblue")
+              .attr("fill", "purple")
             //   .attr("transform", "scale(0.05)")
             //   .attr("d", logos('info'));
               .attr("d", "M0,-5L10,0L0,5");
@@ -432,12 +434,15 @@ define(function(require) {
             var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
             newNodes.forEach(function(newNode){
                 var pos = newNode.pos || [width/2, height/2];
-                newNode.id = nodeCounter++;
+                if(!newNode.hasOwnProperty('id'))
+                    newNode.id = nodeCounter++;
                 if(!newNode.hasOwnProperty('datalink'))
                     newNode.datalink = false;
                 newNode.tag = newNode.label;
                 newNode.x = pos[0];
                 newNode.y = pos[1];
+                if(graphName!==null)
+                    newNode.id = graphName + newNode.id;
                 nodeHash[newNode.id] = newNode;
 
                 addNodeIcon(newNode);
@@ -455,10 +460,14 @@ define(function(require) {
             var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
             newLinks.forEach(function(li){
                 li.id = links.length;
-                if(typeof li.source !== 'object')
-                    li.source = nodeHash[li.source];
-                if(typeof li.target !== 'object')
-                    li.target = nodeHash[li.target];
+                if(typeof li.source !== 'object') {
+                    var sourceId = (graphName===null) ? li.source : graphName + li.source;
+                    li.source = nodeHash[sourceId];
+                }
+                if(typeof li.target !== 'object') {
+                    var targetId = (graphName===null) ? li.target : graphName + li.target;
+                    li.target = nodeHash[targetId];
+                }
 
                 if(!li.hasOwnProperty('datalink')) li.datalink = false;
                 links.push(li);
@@ -589,6 +598,7 @@ define(function(require) {
                 n.fx = n.x;
                 n.fy = n.y;
             })
+            // retart();
             links = graph.links.map(function(sl){
                 return {
                     source: nodeHash[sl.source.id],
