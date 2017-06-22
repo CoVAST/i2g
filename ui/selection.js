@@ -87,6 +87,9 @@ define(function(require){
             }
         })
 
+        views.subject.showLoading();
+        views.related.showLoading();
+
         var selectedSubjectID = 0, selected = {};
 
         var relatedPeople = new List({
@@ -179,7 +182,7 @@ define(function(require){
                     text: subject.length + ' connections, ' + data.activityTotal[key].count + ' activities'
                 })
             }, data.subjects);
-
+            views.subject.hideLoading();
             // data.subjects.forEach(function(d, i){
             //     subjects.append({
             //         header: 'Subject ' + i,
@@ -191,6 +194,9 @@ define(function(require){
 
             subjectList.setSelectedItemIds([0]);
             populateRelatedPeople(data.subjects[0]);
+
+
+            views.related.hideLoading();
 
             // data.activityTotal.forEach(function(d){
             //     relatedPeople.append({

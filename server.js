@@ -44,6 +44,8 @@ app.use("/p4",  express.static(srcDir.p4));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+var provenance = [];
+
 var users = {},
     graphs = {},
     largeDisplay = null;
@@ -62,15 +64,14 @@ io.on('connection', function (socket) {
         largeDisplay = socket;
         largeDisplay.emit('update', {
             users: users,
-            graphs: graphs
+            graphs: graphs,
+            logs: provenance
         });
         console.log('Large Display connected');
     });
 
-    socket.on('push', function(graph) {
-        graphs[socket.user.name] = graph;
-        var nodesPerUser = 0;
-        // console.log(graph);
+    socket.on('push', function(data) {
+        graphs[socket.user.name] = data.graph;
         if(largeDisplay !== null) {
             var graph = {links: [], nodes:[]};
             for(var name in users) {
@@ -85,15 +86,23 @@ io.on('connection', function (socket) {
                         d.source.id = d.source.label;
                         d.target.id = d.target.label;
                     });
-                    nodesPerUser += graphs[name].nodes.length;
+
                     graph.nodes = graph.nodes.concat(graphs[name].nodes);
                     graph.links = graph.links.concat(graphs[name].links);
                 }
             }
+            var log = {
+                user: socket.user.name,
+                note: data.note,
+                graph: graph,
+                datetime: new Date(),
+            };
+            provenance.push(log);
             console.log(graphs);
             largeDisplay.emit('update', {
                 users: users,
-                graphs: graphs
+                graphs: graphs,
+                logs: [log]
             });
         }
     });

@@ -336,7 +336,7 @@ return function(arg) {
     });
 
     let highlightLocationsByTimeSpan = timeSpan => {
-        let filteredSubjectLocs = 
+        let filteredSubjectLocs =
                 filterSubjectGeosByTimeSpan(subjectGeos, timeSpan);
         // generate paths
         let sortedSubjectLocs =
@@ -509,10 +509,11 @@ return function(arg) {
                     var newNode = {
                         label: newNodeId,
                         type: 'time',
+                        labelPrefix: 'Hour',
                         pos: [0, views.map.innerHeight],
                         value: links.map((d)=>d.count).reduce((a,b)=>a+b)
                     };
-                    onSelect({hours: d}, newNode);
+                    onSelect({hour: d}, newNode);
                 },
                 vmap: {
                     x: 'hour',

@@ -140,15 +140,22 @@ return function(webSocket) {
         types: ['teal', 'large'],
         size: '12px',
         onclick: function() {
-            var graph = {
-                nodes: igraph.getNodes(),
-                links: igraph.getLinks()
-            };
-            console.log('push graph to server', graph);
-            webSocket.emit('push', graph);
+            $('#commit-note').val('');
+            $('#commit-modal').modal('show');
         }
     }))
 
+    $("#confirm-commit").click(function(){
+        var graph = {
+            nodes: igraph.getNodes(),
+            links: igraph.getLinks()
+        };
+        console.log('push graph to server', graph, );
+        webSocket.emit('push', {
+            graph: graph,
+            note: $('#commit-note').val()
+        });
+    })
 
     $('#graph-layout').transition('fade left');
 
@@ -157,7 +164,6 @@ return function(webSocket) {
         igraph: igraph,
         colorScheme: colorScheme
     });
-
 
     let subjectLocations = {};
     selection.onSelect = function(subjectKey, locations) {

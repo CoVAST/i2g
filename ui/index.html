@@ -9,9 +9,6 @@
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"/>
     <!-- <meta name="description" content="">
     <meta name="author" content="">
-
-
-
     <link rel="icon" href="../../favicon.ico"> -->
     <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' /> -->
     <link rel="stylesheet" href="/npm/leaflet/dist/leaflet.css" />
@@ -73,12 +70,12 @@
         </div>
         <a  href="#panel-data-selection"
             class="item active">
-          <i class="users large teal icon"></i>Selection
+          <i class="database large teal icon"></i>Selection
         </a>
         <a  href="#graph-layout" class="item">
           <i class="marker large teal icon"></i>Analysis
         </a>
-        <a href="#page-collaboration" class="item">
+        <a href="#page-collaboration" class="item" id="switch-collaboration">
           <i class="universal access large teal icon"></i>Collaboration
         </a>
         <div class="right menu">
@@ -100,11 +97,31 @@
 
       </div>
       <div class="pusher">
+          <div id="page-secondary"></div>
           <div id="page-main"></div>
       </div>
 
+      <div class="ui small modal" id="commit-modal">
+        <div class="content">
+          <div class="ui form">
+            <div class="field">
+              <label>Note/Message</label>
+              <textarea id="commit-note" name="name"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">
+              Cancel
+            </div>
+            <div id="confirm-commit" class="ui positive right labeled icon button">Commit
+              <i class="checkmark icon"></i>
+            </div>
 
-      <div class="ui small modal">
+        </div>
+      </div>
+
+      <div class="ui small modal" id="login-modal">
         <div class="header">
           Collaborative Visual Analytic System
         </div>
@@ -113,7 +130,7 @@
             <div class="field">
               <label>Analyst Name</label>
               <input id="login-modal-name" type="text" name="name"
-                  placeholder="Stephy">
+                  placeholder="Your Name">
             </div>
           </div>
         </div>
@@ -125,7 +142,7 @@
     <script src="npm/requirejs/require.js"></script>
     <script>
         var webSocket = io();
-        require(["main"], function(main) {
+        require(["main", "display"], function(main, display) {
             var pageHeaderHeight =  $('#page-header').height();
 
             $('.ui.sidebar')
@@ -134,18 +151,19 @@
                   closable: false
                 })
 
-            $("#page-main")
+            $("#page-main,#page-secondary")
                 .css({
-                    height: $("body").height() - pageHeaderHeight ,
-                    // 'margin-top': pageHeaderHeight + 5 + 'px'
+                    height: $("body").height() - pageHeaderHeight,
                     'margin-top': pageHeaderHeight + 'px'
                 });
-
+            $('#page-secondary').transition('fade left');
             $(".page-menu > a.item").click(function(){
-                $(".page-menu > a.item.active").each(function(menuID){
+                $(".page-menu > a.item.active").each(function(menuID,i){
                     $(this.getAttribute('href')).transition('fade left');
-                    $(this).removeClass('active')
+                    $(this).removeClass('active');
                 })
+
+                $('#page-secondary').hide();
                 $(this).addClass('active');
                 $(this.getAttribute('href')).transition('fade left');
             })
@@ -153,7 +171,10 @@
             main(webSocket);
             $('.cv-page').not('.cv-page-active').hide();
             $('.ui.dropdown').dropdown();
-
+            display(webSocket, 'page-secondary');
+            $('#switch-collaboration').click(function(){
+                    $('#page-secondary').transition('fade left');
+            })
             let setUserName = function(name) {
                 webSocket.emit('add user',{name: name});
 
@@ -178,7 +199,7 @@
             $('#login').click(hideModalAndSetUserName);
             let username = sessionStorage.getItem('username');
             if (!username) {
-                $('.ui.modal').modal({closable: false}).modal('show');
+                $('#login-modal').modal({closable: false}).modal('show');
             } else {
                 setUserName(username);
             }

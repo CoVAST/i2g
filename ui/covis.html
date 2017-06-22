@@ -20,6 +20,9 @@
         border-bottom: 4px solid teal;
     }
 
+    .nodeLabels {
+        font-size: 1.5em;
+    }
     /*.selected.item  {
         border: 3px solid teal;
     }*/
@@ -61,7 +64,7 @@
             $("#page-main")
                 .css("height", $("body").height() - $('#page-header')
                 .height());
-            main(webSocket);
+            main(webSocket, 'page-main', 1.5);
             // $('#logout-action').
         })
 

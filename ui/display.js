@@ -1,22 +1,25 @@
 define(function(require){
     var Layout = require('vastui/layout'),
         Panel = require('vastui/panel'),
-        Button = require('vastui/button');
+        Button = require('vastui/button'),
+        List = require('vastui/list');
 
     var iGraph = require('./ontology-graph');
     var colorScheme = require('./color-scheme');
 
-    return function(webSocket) {
+    return function(webSocket, container, scale) {
+        var container = container || 'page-main',
+            scale = scale || 1;
         var appLayout = new Layout({
             margin: 10,
-            container: 'page-main',
+            container: container,
             cols: [
                 {
-                    width: 0.35,
+                    width: 0.3,
                     id: 'col-left'
                 },
                 {
-                    width: 0.65,
+                    width: 0.7,
                     id: 'col-mid'
                 },
                 // {
@@ -31,11 +34,14 @@ define(function(require){
         views.left = new Panel({
             container: appLayout.cell('col-left'),
             id: "col-left-view",
+            padding: 25,
             // style:{border: 0},
             // header: {height: 0.05, border: 0}
         });
 
-        views.left.append('<h1 style="text-align:center; color:teal;">CoVA</h1>');
+        if(container == 'page-main')
+            views.left.append('<h1 style="text-align:center; color:teal;">CoVA</h1>');
+
 
         views.mid = new Panel({
             container: appLayout.cell('col-mid'),
@@ -49,44 +55,55 @@ define(function(require){
             height: views.mid.innerHeight,
             domain: [0, 1],
             colorScheme: colorScheme,
-            graph: {nodes: [], links: []}
+            graph: {nodes: [], links: []},
+            scale: scale,
         });
 
-
-
-        // views.right = new Panel({
-        //     container: appLayout.cell('col-right'),
-        //     id: "col-right-view",
-        //     // title: "Info Graph",
-        //     // header: {height: 40, style: {backgroundColor: '#FFF'}}
-        // });
+        var allGraphs = [];
+        var logList = new List({
+            container: views.left.body,
+            header: "History",
+            types: ['selection' , 'divided', 'single'],
+            onselect: function(d) {
+                console.log(allGraphs[d]);
+                ig.removeLinks({all:1})
+                    .removeNodes({all:1});
+                ig.remake(allGraphs[d])
+            }
+        })
 
         appLayout.views = views;
 
         webSocket.emit('large display', {});
         webSocket.on('update', function(data){
-            console.log(data);
+            data.logs.forEach(function(log){
+                logList.append({
+                    header: log.datetime + ' @' + log.user,
+                    icon: 'big browser',
+                    text: log.note
+                })
+            })
+            allGraphs = allGraphs.concat(data.logs.map(function(d){return d.graph;}));
             var graphs = data.graphs,
                 users = Object.keys(graphs),
                 graph = {links: [], nodes:[]};
 
             if(users.length){
-                views.left.clear();
+                // views.left.clear();
                 for(var name in graphs) {
                     graph.nodes = graph.nodes.concat(graphs[name].nodes);
                     graph.links = graph.links.concat(graphs[name].links);
-
-                    var gg = iGraph({
-                        container: views.left.body,
-                        width: views.left.innerWidth,
-                        height: views.left.innerWidth,
-                        domain: [0, 1],
-                        graphId: name + '_igraph',
-                        colorScheme: colorScheme,
-                        graph:  {links: [], nodes:[]},
-                        graphName: name,
-                    });
-                    gg.remake(graphs[name])
+                    // var gg = iGraph({
+                    //     container: views.left.body,
+                    //     width: views.left.innerWidth,
+                    //     height: views.left.innerWidth,
+                    //     domain: [0, 1],
+                    //     graphId: name + '_igraph',
+                    //     colorScheme: colorScheme,
+                    //     graph:  {links: [], nodes:[]},
+                    //     graphName: name,
+                    // });
+                    // gg.remake(graphs[name])
                 }
                 ig.removeLinks({all:true});
                 ig.remake(graph);

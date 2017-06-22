@@ -15,6 +15,7 @@ define(function(require) {
             historyList = options.historyList,
             graphId = options.graphId || 'igraph-svg',
             graphName = options.graphName || '',
+            scale = options.scale || 1,
             colorScheme = options.colorScheme;
 
         var otGraph = {},
@@ -33,9 +34,10 @@ define(function(require) {
         function addHistory(hist) {
             if(trackHistory && typeof historyList != 'undefined') {
                 history.push(hist);
-                var histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'link';
+                var histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
+                console.log(hist.data);
                 historyList.append({
-                    header: hist.action + ' ' + hist.label,
+                    header: hist.action + ' ' + (hist.data.label || hist.data.id),
                     icon: histIcon,
                     text: hist.data.detail || ''
                 })
@@ -93,7 +95,7 @@ define(function(require) {
         var linkSize = d3.scalePow()
             .exponent(0.2)
             .domain([0, 3000])
-            .range([1, 6]);
+            .range([1*scale, 6*scale]);
 
         var simulation = d3.forceSimulation(nodes)
             .force("charge", d3.forceManyBody().strength(-1000))
@@ -304,8 +306,9 @@ define(function(require) {
             if (!nodeLabels.hasOwnProperty(d.id)) {
 
                 nodeLabels[d.id] = nodeInfo.append("text")
+                    .attr("class", "nodeLabels")
                     .attr("dx", 20)
-                    .attr("dy", ".35em")
+                    // .attr("dy", ".35em")
                     .attr("x", d.x)
                     .attr("y", d.y);
                 labelNode(d);
@@ -329,12 +332,12 @@ define(function(require) {
         }
 
         function addNodeIcon(d) {
-            if(!nodeIcons.hasOwnProperty(d.id)){
+            if(!nodeIcons.hasOwnProperty(d.id) || nodeIcons[d.id] === null){
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
 
-                nodeIcons[d.id].append("path")
-                    .attr("transform", "scale(0.1)")
+                nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
+                    .attr("transform", "scale(" + scale * 0.1 + ")")
                     .attr("d", logos(d.icon || d.type))
                     .attr("fill", nodeColor(d))
             }
@@ -377,12 +380,13 @@ define(function(require) {
                         d3.select(thisNode).attr('stroke', 'orange');
                         console.log(nodeHash[thisNodeId]);
                         notePanel.setNote({
-                            label: nodeHash[thisNodeId].label,
+                            label: nodeHash[thisNodeId].labelPrefix+nodeHash[thisNodeId].label,
                             detail: nodeHash[thisNodeId].detail
                         })
                         notePanel.show();
                         notePanel.onsave = function() {
                             var info = notePanel.getNote();
+                            info.labelPrefix = '';
                             otGraph.modifyNode(thisNodeId, info);
                             d3.select(thisNode).attr('stroke', 'transparent');
                         }
@@ -497,10 +501,15 @@ define(function(require) {
                 action: 'Remove node',
                 data: nodeHash[nodeId]
             });
-            nodeLabels[nodeId].remove();
+            nodeIcons[nodeId]._icon.remove();
             nodeIcons[nodeId].remove();
+            nodeLabels[nodeId].remove();
+            delete nodeIcons[nodeId];
             delete nodeLabels[nodeId];
             delete nodeHash[nodeId];
+            nodes = nodes.filter(function(d){
+                d.id != nodeId;
+            })
         }
 
         function removeLink(linkId) {
@@ -510,7 +519,7 @@ define(function(require) {
             addHistory({
                 action: 'Remove link',
                 data: removedLink
-            })
+            });
         }
 
         otGraph.removeNodes = function(query) {
@@ -591,21 +600,24 @@ define(function(require) {
         }
 
         otGraph.remake = function(graph) {
-            nodes = graph.nodes;
-            nodeHash = {};
-            nodes.forEach(function(n){
-                nodeHash[n.id] = n;
-                n.fx = n.x;
-                n.fy = n.y;
+            // nodes = graph.nodes;
+            // nodeHash = {};
+
+            graph.nodes.forEach(function(n){
+                n.fx = null;
+                n.fy = null;
             })
-            // retart();
-            links = graph.links.map(function(sl){
+            otGraph.addNodes(graph.nodes);
+            restart();
+
+            var newLinks = graph.links.map(function(sl){
                 return {
                     source: nodeHash[sl.source.id],
                     target: nodeHash[sl.target.id],
                     value: sl.value,
                 };
             });
+            otGraph.addLinks(newLinks);
 
             restart();
             return otGraph;
@@ -621,6 +633,7 @@ define(function(require) {
                     (nodes);
             }
         };
+
         otGraph.findNode = function(query) {
             return otGraph.getNodes(query)[0];
         }
