@@ -113,7 +113,7 @@ io.on('connection', function (socket) {
     // });
 });
 
-require('./dataroutes.js').setupRoutes(app);
+//require('./dataroutes.js').setupRoutes(app);
 
 
 server.listen(port, host, function(){
