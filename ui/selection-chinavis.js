@@ -14,8 +14,8 @@ var ajax = require('p4/io/ajax'),
     stats = require('p4/dataopt/stats');
 
 return function(arg) {
-	var options = arg || {},
-		container = options.container,
+    var options = arg || {},
+        container = options.container,
         igraph = options.igraph,
         colorScheme = options.colorScheme;
 
@@ -38,7 +38,7 @@ return function(arg) {
         }).update()
     }
 
-	var appLayout = new Layout({
+    var appLayout = new Layout({
         // margin: 5,
         // padding: 0,
         id: 'panel-data-selection',
@@ -94,7 +94,7 @@ return function(arg) {
     appLayout.onSelect = options.onselect || logFunc('messagesPopulated');
     appLayout.messagesPopulated = logFunc('messagesPopulated');
     appLayout.messageClicked = (msgObj) => {
-    	// console.log(msgObj);
+        // console.log(msgObj);
         let pid = msgObj.content;
         let locs = R.map(metaToLoc(msgObj.content), msgObj.metas);
         onSelect(pid, locs);
@@ -121,31 +121,31 @@ return function(arg) {
     let currSenders = [];
 
     let setCurrDate = dateId => {
-    	currDate = dates[dateId].date;
+        currDate = dates[dateId].date;
         views.words.showLoading();
-    	let wordsLoading = loadWords(currDate);
-    	wordsLoading.then(populateWordList);
+        let wordsLoading = loadWords(currDate);
+        wordsLoading.then(populateWordList);
         views.senders.showLoading();
-    	let sendersLoading = loadSenders(currDate);
-    	sendersLoading.then(populateSenderList);
+        let sendersLoading = loadSenders(currDate);
+        sendersLoading.then(populateSenderList);
         views.sms.showLoading();
-    	Promise.all([ wordsLoading, sendersLoading ])
-    		.then(results => loadMessages(currDate, [], []))
-    		.then(populateMessages);
+        Promise.all([ wordsLoading, sendersLoading ])
+            .then(results => loadMessages(currDate, [], []))
+            .then(populateMessages);
     }
     let setCurrWords = ids => {
-    	let words = R.map(id => wordCounts[id][0], ids);
-    	wordList.setSelectedItemIds(ids);
-    	currWords = words;
+        let words = R.map(id => wordCounts[id][0], ids);
+        wordList.setSelectedItemIds(ids);
+        currWords = words;
     }
     let setCurrSenders = ids => {
-    	let senders = R.map(id => senderCounts[id][0], ids);
-    	senderList.setSelectedItemIds(ids);
-    	currSenders = senders;
+        let senders = R.map(id => senderCounts[id][0], ids);
+        senderList.setSelectedItemIds(ids);
+        currSenders = senders;
     }
     let updateMessages = () => {
         loadWordSenderMessages(currDate, currWords, currSenders);
-    	// loadMessages(currDate, currWords, currSenders)
+        // loadMessages(currDate, currWords, currSenders)
         //     .then(populateMessages);
     }
 
@@ -188,16 +188,16 @@ return function(arg) {
     });
     views.words.header.append(createLinkClear('cv-text-words-clear'));
     $('#cv-text-words-clear').click(() => {
-    	setCurrWords([]);
-    	updateMessages();
+        setCurrWords([]);
+        updateMessages();
     })
     let wordList = new List({
         container: views.words.body,
         types: ['selection'],
         onselect: () => {
-        	let ids = wordList.getSelectedItemIds();
-        	setCurrWords(ids);
-        	updateMessages();
+            let ids = wordList.getSelectedItemIds();
+            setCurrWords(ids);
+            updateMessages();
         }
     });
 
@@ -214,16 +214,16 @@ return function(arg) {
     });
     views.senders.header.append(createLinkClear('cv-text-senders-clear'));
     $('#cv-text-senders-clear').click(() => {
-    	setCurrSenders([]);
-    	updateMessages();
+        setCurrSenders([]);
+        updateMessages();
     })
     let senderList = new List({
         container: views.senders.body,
         types: ['selection'],
         onselect: () => {
-        	let ids = senderList.getSelectedItemIds();
-        	setCurrSenders(ids);
-        	updateMessages();
+            let ids = senderList.getSelectedItemIds();
+            setCurrSenders(ids);
+            updateMessages();
         }
     });
 
@@ -249,9 +249,9 @@ return function(arg) {
     })
 
     let datesLoading = ajax.get({ url: '/chinavis/dates' })
-    		.then(array => {
-    	dates = array;
-    	return dates;
+            .then(array => {
+        dates = array;
+        return dates;
     });
     datesLoading.then(dates => {
         dateList.clear();
@@ -282,7 +282,7 @@ return function(arg) {
         .then(() => dateList.setSelectedItemIds([0]));
 
     let loadWords = dateString => ajax.get({
-    	url: '/chinavis/wordcounts/' + dateString
+        url: '/chinavis/wordcounts/' + dateString
     });
     let wordCountToEl = wordCount => {
         return '<span class="cv-text-words-word">'
@@ -290,7 +290,7 @@ return function(arg) {
              + '</span>';
     };
     let populateWordList = array => {
-    	wordCounts = array;
+        wordCounts = array;
         wordList.clear();
         let selectedIds = [];
         R.forEach(wordCount => {
@@ -320,7 +320,7 @@ return function(arg) {
     }
 
     let loadSenders = dateString => ajax.get({
-    	url: '/chinavis/sendercounts/' + dateString
+        url: '/chinavis/sendercounts/' + dateString
     });
     let senderCountToEl = senderCount => {
         return '<span class="cv-text-senders-word">'
@@ -328,7 +328,7 @@ return function(arg) {
              + '</span>';
     }
     let populateSenderList = array => {
-    	senderCounts = array;
+        senderCounts = array;
         senderList.clear();
         let selectedIds = [];
         R.forEach(senderCount => {
@@ -379,9 +379,9 @@ return function(arg) {
             })
     }
     let loadMessages = (dateString, words, senders) => {
-    	views.sms.showLoading();
-    	return ajax.get({
-        	url: '/chinavis/messages?parameters='
+        views.sms.showLoading();
+        return ajax.get({
+            url: '/chinavis/messages?parameters='
                     + encodeURIComponent(JSON.stringify({
                 date: dateString,
                 words: words,
@@ -390,14 +390,14 @@ return function(arg) {
         });
     };
     let populateMessages = messages => {
-    	smsList.clear();
-    	msgObjs = messages;
-    	R.forEach(msgObj => {
-    		smsList.append({
-    			text: msgObj.content
-    		})
-    	}, messages);
-    	views.sms.hideLoading();
+        smsList.clear();
+        msgObjs = messages;
+        R.forEach(msgObj => {
+            smsList.append({
+                text: msgObj.content
+            })
+        }, messages);
+        views.sms.hideLoading();
         $.contextMenu({
             selector: '#panel-sms .list .item',
             items: {
@@ -411,7 +411,7 @@ return function(arg) {
                 }
             }
         })
-    	appLayout.messagesPopulated(msgObjs);
+        appLayout.messagesPopulated(msgObjs);
     }
 
     return appLayout;

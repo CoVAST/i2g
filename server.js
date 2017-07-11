@@ -37,7 +37,7 @@ app.get("/data/:dataSrc", (req, res) => {
 })
 
 app.use("/vastui", express.static(srcDir.davi));
-app.use("/semantic", express.static('./semantic'));
+app.use("/semantic", express.static('./davi/semantic'));
 app.use("/i2v", express.static(srcDir.i2v));
 app.use("/p4",  express.static(srcDir.p4));
 
@@ -113,7 +113,7 @@ io.on('connection', function (socket) {
     // });
 });
 
-//require('./dataroutes.js').setupRoutes(app);
+require('./dataroutes.js').setupRoutes(app);
 
 
 server.listen(port, host, function(){
