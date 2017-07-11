@@ -367,7 +367,7 @@ return function(arg) {
             onSelect = options.onselect;
 
         views.timeline.clear();
-        if(data.length == 0)return;
+        if(data.length === 0) return;
         if(timeMode == 0) {
             var timespan = stats.domains(data, ['time']).time,
                 duration = timespan[1] - timespan[0];
