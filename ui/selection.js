@@ -16,8 +16,7 @@ define(function(require){
         var options = arg || {},
             // container = options.container || 'domain-vis',
             colorScheme = options.colorScheme,
-            igraph = options.igraph
-            spatiotemporal = arg.spatiotemporal;    //July: Add from main.js
+            igraph = options.igraph;
 
         var data = {},
             result;
@@ -91,12 +90,7 @@ define(function(require){
             header: {height: 40, style: {backgroundColor: '#FFF'}}
         });
 
-        selection.onMultiSelect = pidLocsArray => {
-            let pidLocsToPair = pidLocs => [pidLocs.pid, pidLocs.locs];
-            subjectLocations =
-                    R.pipe(R.map(pidLocsToPair), R.fromPairs)(pidLocsArray);
-            spatiotemporal.setSubjects(subjectLocations);
-        }   //July: Localized function for selection.onMultiSelect
+        selection.onMultiSelect = () => {console.log("Undefined onMultiSelect in Main.")};
 
         //July: Clear Button
         views.related.header.append(createLinkClear('cv-text-related-clear'));
@@ -104,7 +98,7 @@ define(function(require){
             // let arr = relatedPeople.getSelectedItemIds();
             selected = {};
             relatedPeople.clearSelected();
-            selection.onMultiSelect([]);    //Local: selection.onMultiSelect() TODO 
+            selection.onMultiSelect([]);    //Local: selection.onMultiSelect()
         })
 
 
