@@ -52,6 +52,7 @@ define(function(require){
 
         //July: For RClick Menu
         let addNodeToOntology = (id, type, props, icon) => {
+            igraph.showRecHist(-1);
             igraph.addNodes({
                     label: id,
                     type: type,

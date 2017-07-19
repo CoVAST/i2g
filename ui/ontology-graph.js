@@ -1,6 +1,9 @@
 define(function(require) {
     var logos = require('./icons'),
-        pipeline = require('p4/core/pipeline');
+        pipeline = require('p4/core/pipeline'),
+        histrec = require('./history');
+    var histIdx = 0,
+        curTimestamp = 0;
     return function(arg) {
         'use strict';
         var options = arg || {},
@@ -22,18 +25,21 @@ define(function(require) {
             nodes = graph.nodes,
             links = graph.links;
 
-        var history = [],
-            trackHistory = true,
-                historyIcons = {
+        var trackHistory = true,
+            historyIcons = {
                 location: 'marker',
                 people: 'user',
                 datetime: 'wait',
                 time: 'wait'
             };
 
+        let logFunc = (str) => () => console.log(str);
+
+        let histRec = new histrec();
+
         function addHistory(hist) {
+            console.log("Index: " + histIdx);
             if(trackHistory && typeof historyList != 'undefined') {
-                history.push(hist);
                 var histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
                 console.log(hist.data);
                 historyList.append({
@@ -42,7 +48,154 @@ define(function(require) {
                     text: hist.data.detail || ''
                 })
             }
+            var timestamp = histIdx;   //HistIdx begins from 0, corresponding to List ids.
+            curTimestamp = histIdx;
+            histIdx++;
+            //Here, to show the latest history first
+            //if(curTimestamp != maxTimestamp) otGraph.showRecHist(maxTimestamp);
+            histRec.addRecord(timestamp, hist);
         };
+
+        function silentAddLink(li){
+            if(typeof(li.id) === "undefined") li.id = links.length;
+            if(typeof li.source !== 'object') {
+                var sourceId = (graphName===null) ? li.source : graphName + li.source;
+                li.source = nodeHash[sourceId];
+            }
+            if(typeof li.target !== 'object') {
+                var targetId = (graphName===null) ? li.target : graphName + li.target;
+                li.target = nodeHash[targetId];
+            }
+
+            if(!li.hasOwnProperty('datalink')) li.datalink = false;
+            links[li.id] = li;
+            otGraph.update();
+        }
+        function silentAddNode(newNode, id){
+            var pos = newNode.pos || [width/2, height/2];
+            if(!newNode.hasOwnProperty('id'))
+                newNode.id = nodeCounter++;
+            if(!newNode.hasOwnProperty('datalink'))
+                newNode.datalink = false;
+            newNode.tag = newNode.label;
+            newNode.x = pos[0];
+            newNode.y = pos[1];
+            if(graphName!==null)
+                newNode.id = graphName + newNode.id;
+            nodeHash[newNode.id] = newNode;
+
+            addNodeIcon(newNode);
+            addNodeLabel(newNode);
+            otGraph.update();
+        }
+        function silentRemoveLink(linkId){
+            //var removedLink = links.splice(linkId, 1)[0];
+            var removedLink = links[linkId];
+            if(removeLink.hasOwnProperty('icon'))
+                removedLink.icon.remove();
+            otGraph.update();
+            links[linkId] = null;
+        }
+        function silentRemoveNode(nodeId){
+            nodeIcons[nodeId]._icon.remove();
+            nodeIcons[nodeId].remove();
+            nodeLabels[nodeId].remove();
+            delete nodeIcons[nodeId];
+            delete nodeLabels[nodeId];
+            delete nodeHash[nodeId];
+            nodes = nodes.filter(function(d){
+                return d.id != nodeId;
+            })
+            otGraph.update();
+        }
+
+        otGraph.traceCurTime = function(){
+            console.log("Trace to timestamp: " + curTimestamp);
+            histRec.reviseRecToCurrent(curTimestamp);
+            histIdx = curTimestamp + 1;
+            let cnt = 0;
+            while(historyList.children.length - 1 > curTimestamp) {
+                cnt++;
+                historyList.remove(historyList.children.length - 1);  //Something like this
+            }
+        }
+        otGraph.showRecHist = function(idx){ //To show recorded history
+            if(historyList.children.length == 0)return;
+            if(idx === -1){
+                idx = historyList.children.length - 1;
+            }
+            var histFetch = histRec.fetchRecord(idx, curTimestamp);
+            var histline = histFetch.histline;
+            if(histFetch.choice === "undo"){
+                for(var i = histline.length - 1; i >= 0; i--){
+                    if(histline[i].revAction === "Add link"){
+                        silentAddLink({
+                            id: histline[i].hist.data.id,
+                            source: histline[i].hist.data.source,
+                            target: histline[i].hist.data.target,
+                            value: histline[i].hist.data.value,
+                            datalink: histline[i].hist.data.datalink
+                        });
+                        otGraph.update();
+                    }else if(histline[i].revAction === "Add node"){
+                        silentAddNode({
+                            id: histline[i].hist.data.id,
+                            label: histline[i].hist.data.tag,
+                            type: histline[i].hist.data.type,
+                            fx: histline[i].hist.data.x,
+                            fy: histline[i].hist.data.y,
+                            value: histline[i].hist.data.value,
+                            datalink: histline[i].hist.data.datalink
+                        });
+                        otGraph.update();
+                    }else if(histline[i].revAction === "Remove link"){
+                        //let l = links[links.length - 1];
+                        silentRemoveLink(histline[i].hist.data.id);
+                        otGraph.update();
+                    }else if(histline[i].revAction === "Remove node"){
+                        //let n = nodes[nodes.length - 1];
+                        silentRemoveNode(histline[i].hist.data.id);
+                        otGraph.update();
+                    }else{
+                        logFunc("Histline.action not defined");
+                    }
+                }
+            }else if(histFetch.choice === "redo"){
+                for(var i = 0; i < histline.length; i++){
+                    if(histline[i].hist.action === "Add link"){
+                        silentAddLink({
+                            id: histline[i].hist.data.id,
+                            source: histline[i].hist.data.source,
+                            target: histline[i].hist.data.target,
+                            value: histline[i].hist.data.value,
+                            datalink: histline[i].hist.data.datalink
+                        });
+                        otGraph.update();
+                    }else if(histline[i].hist.action === "Add node"){
+                        silentAddNode({
+                            id: histline[i].hist.data.id,
+                            label: histline[i].hist.data.tag,
+                            type: histline[i].hist.data.type,
+                            fx: histline[i].hist.data.x,
+                            fy: histline[i].hist.data.y,
+                            value: histline[i].hist.data.value,
+                            datalink: histline[i].hist.data.datalink
+                        });
+                        otGraph.update();
+                    }else if(histline[i].hist.action === "Remove link"){
+                        silentRemoveLink(histline[i].hist.data.id);
+                        otGraph.update();
+                    }else if(histline[i].hist.action === "Remove node"){
+                        silentRemoveNode(histline[i].hist.data.id);
+                        otGraph.update();
+                    }else{
+                        logFunc("Histline.action not defined");
+                    }
+                }
+            }
+            curTimestamp = idx;
+            otGraph.update();
+        }
 
         var maxLinkValue = 0,
             nodeCounter = 0;
@@ -209,16 +362,16 @@ define(function(require) {
 
             // Apply the general update pattern to the links.
             //
-            links = links.filter(function(li){
-                return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
+            var denseLinks = links.filter(function(li){
+                return li && nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
             });
 
-            link = link.data(links, function(d) {
+            link = link.data(denseLinks, function(d) {
                 return d.source.id + "-" + d.target.id;
             });
             link.exit().remove();
 
-            maxLinkValue = d3.max(links.map((d)=>d.value));
+            maxLinkValue = d3.max(denseLinks.map((d)=>d.value));
             linkSize.domain([0, maxLinkValue]);
             link = link.enter()
                 .append("path")
@@ -237,7 +390,7 @@ define(function(require) {
             // })
             // Update and restart the simulation.
             simulation.nodes(nodes);
-            simulation.force("link").links(links).iterations(10);
+            simulation.force("link").links(denseLinks).iterations(10);
             simulation.alphaTarget(0.3).restart();
         }
 
@@ -292,12 +445,18 @@ define(function(require) {
             d.fy = d3.event.y;
             nodeLabels[d.id].attr("x", d.fx);
             nodeLabels[d.id].attr("y", d.fy);
+            histRec.updateHistory(d.id, d.fx, d.fy);  //Strange Responding Stop
+            nodeHash[d.id].x = d.fx;
+            nodeHash[d.id].y = d.fy;
         }
 
         function dragended(d) {
             // if (!d3.event.active) simulation.alphaTarget(0);
             //   this.style.fill = selectionColor(d.id);
+
+            
             onselect.call(this, d);
+
             //   d.fx = null;
             //   d.fy = null;
         }
@@ -345,16 +504,16 @@ define(function(require) {
 
         function addLinkIcon(d) {
 
-                links[d.id].icon = icons.append("g")
-                    .attr("pointer-events", "none");
-                links[d.id].icon.attr("transform", "translate(" +
-                    (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
-                    (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
+            links[d.id].icon = icons.append("g")
+                .attr("pointer-events", "none");
+            links[d.id].icon.attr("transform", "translate(" +
+                (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
+                (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
 
-                links[d.id].icon.append("path")
-                    .attr("transform", "scale(0.05)")
-                    .attr("d", logos('info'))
-                    .attr("fill", 'red');
+            links[d.id].icon.append("path")
+                .attr("transform", "scale(0.05)")
+                .attr("d", logos('info'))
+                .attr("fill", 'red');
         }
 
 
@@ -370,11 +529,10 @@ define(function(require) {
                     var thisNode = this[0],
                         thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
-                        d3.select(thisNode).remove();
-                        nodeLabels[thisNodeId].remove();
-                        nodeIcons[thisNodeId].remove();
-                        delete nodeLabels[thisNodeId];
-                        delete nodeHash[thisNodeId];
+                        otGraph.showRecHist(-1);
+                        historyList.clearSelected();
+                        historyList.setSelectedItemIds([historyList.children.length - 1]);
+                        removeNode(thisNodeId, "alarm");
                         restart();
                     } else if(key == 'annotate') {
                         d3.select(thisNode).attr('stroke', 'orange');
@@ -394,6 +552,13 @@ define(function(require) {
                             d3.select(thisNode).attr('stroke', 'transparent');
                         }
                     } else if(key == 'addLink'){
+                        otGraph.showRecHist(-1);
+                        historyList.clearSelected();
+                        historyList.setSelectedItemIds([historyList.children.length - 1]);
+                        if(!nodeHash[thisNodeId]){
+                            alert("Relevant node has been deleted.");
+                            return;
+                        }
                         linkSource = nodeHash[thisNodeId];
                         linkTarget = null;
                         tempLink
@@ -419,8 +584,11 @@ define(function(require) {
                     var thisLink = this[0],
                         thisLinkId = thisLink.__data__.id;
                     if(key == 'removeLink') {
+                        otGraph.showRecHist(-1);
+                        historyList.clearSelected();
+                        historyList.setSelectedItemIds([historyList.children.length - 1]);
+                        removeLink(thisLinkId, "alarm");
                         d3.select(thisLink).remove();
-                        removeLink(thisLinkId);
                     } else if(key == 'annotate') {
 
                     }
@@ -437,48 +605,29 @@ define(function(require) {
         otGraph.addNodes = function(newNodes) {
             var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
             newNodes.forEach(function(newNode){
-                var pos = newNode.pos || [width/2, height/2];
-                if(!newNode.hasOwnProperty('id'))
-                    newNode.id = nodeCounter++;
-                if(!newNode.hasOwnProperty('datalink'))
-                    newNode.datalink = false;
-                newNode.tag = newNode.label;
-                newNode.x = pos[0];
-                newNode.y = pos[1];
-                if(graphName!==null)
-                    newNode.id = graphName + newNode.id;
-                nodeHash[newNode.id] = newNode;
-
-                addNodeIcon(newNode);
-                addNodeLabel(newNode);
-
+                silentAddNode(newNode);
                 addHistory({
                     action: 'Add node',
                     data: newNode
                 });
             })
+            historyList.clearSelected();
+            historyList.setSelectedItemIds([historyList.children.length - 1]);
             return otGraph;
         }
 
         otGraph.addLinks = function(newLinks){
             var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
             newLinks.forEach(function(li){
-                li.id = links.length;
-                if(typeof li.source !== 'object') {
-                    var sourceId = (graphName===null) ? li.source : graphName + li.source;
-                    li.source = nodeHash[sourceId];
+                if(li){
+                    silentAddLink(li);
+                    addHistory({
+                        action: 'Add link',
+                        data: li
+                    });
+                    historyList.clearSelected();
+                    historyList.setSelectedItemIds([historyList.children.length - 1]);
                 }
-                if(typeof li.target !== 'object') {
-                    var targetId = (graphName===null) ? li.target : graphName + li.target;
-                    li.target = nodeHash[targetId];
-                }
-
-                if(!li.hasOwnProperty('datalink')) li.datalink = false;
-                links.push(li);
-                addHistory({
-                    action: 'Add link',
-                    data: li
-                })
             })
             return otGraph;
         };
@@ -496,7 +645,23 @@ define(function(require) {
             }
         }
 
-        function removeNode(nodeId) {
+        function removeNode(nodeId, choice) {
+            cascadingRemoveNode(nodeId, choice);
+            historyList.clearSelected();
+            historyList.setSelectedItemIds([historyList.children.length - 1]);
+        }
+
+        function cascadingRemoveNode(nodeId, choice){
+            if(!nodeHash[nodeId] && choice === "alarm"){
+                alert("Relevant Node has been deleted.");
+                return;
+            }
+            for(var i = links.length - 1; i >= 0; i--){  //Cascading deletion for relevant edges
+                if(links[i] && (links[i].source.id === nodeId || links[i].target.id === nodeId)){
+                    removeLink(i);
+                }
+            }
+
             addHistory({
                 action: 'Remove node',
                 data: nodeHash[nodeId]
@@ -508,18 +673,23 @@ define(function(require) {
             delete nodeLabels[nodeId];
             delete nodeHash[nodeId];
             nodes = nodes.filter(function(d){
-                d.id != nodeId;
+                return d.id != nodeId;
             })
+            otGraph.update();
         }
 
-        function removeLink(linkId) {
-            var removedLink = links.splice(linkId,1)[0];
-            if(removeLink.hasOwnProperty('icon'))
-            removedLink.icon.remove();
+        function removeLink(linkId, choice) {
+            if(!links[linkId] && choice === "alarm"){
+                alert("Relevant Link has been deleted.");
+                return;
+            }
             addHistory({
                 action: 'Remove link',
-                data: removedLink
+                data: links[linkId]
             });
+            silentRemoveLink(linkId);
+            historyList.clearSelected();
+            historyList.setSelectedItemIds([historyList.children.length - 1]);
         }
 
         otGraph.removeNodes = function(query) {
@@ -549,6 +719,8 @@ define(function(require) {
                     removeNode(nid);
                 });
             }
+            historyList.clearSelected();
+            historyList.setSelectedItemIds([historyList.children.length - 1]);
             return otGraph;
         }
 
@@ -563,12 +735,12 @@ define(function(require) {
                     linkIds = query.id;
                 } else if(query.type) {
                     linkIds = links.filter(function(li){
-                        return li.type !== query.type;
+                        return li && li.type !== query.type;
                     })
                     .map(function(n){ return li.id });
                 } else if(query.datalink) {
                     linkIds = links.filter(function(li){
-                        return li.datalink !== query.datalink;
+                        return li && li.datalink !== query.datalink;
                     })
                     .map(function(li){ return li.id });
                 }

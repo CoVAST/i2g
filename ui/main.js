@@ -62,10 +62,16 @@ return function(webSocket) {
     hlContainer.style.padding = '10px';
     hlContainer.style.paddingTop = '6em';
     hlContainer.innerHTML = '<h3>Provenance</h3>';
+
     var hl = new List({
         container: hlContainer,
         id: 'igraph-history',
-        types: ['divided']
+        types: ['selection', 'single'],
+        //What is types: ['divided'] for?
+        onselect: (id) => {
+            console.log("Show hist at timestamp " + id);
+            igraph.showRecHist(id);
+        }
     });
 
     var np = new NotePanel({
@@ -96,6 +102,7 @@ return function(webSocket) {
 
     function newNodeAdd(ntype) {
         return function() {
+            igraph.showRecHist(-1);
             igraph.addNodes({
                 label: 'new ' + ntype,
                 type: ntype,
@@ -119,16 +126,23 @@ return function(webSocket) {
             {name: 'Communication', icon: 'phone teal', onclick: newNodeAdd('phone')}
         ]
     });
+
     nodeChoices.style.marginRight = '0.5em';
     nodeChoices.style.position = 'absolute';
     nodeChoices.style.top = '10px';
     nodeChoices.style.left = '10px';
 
+    // traceBackBtn.style.marginRight = '0.7em';
+    // traceBackBtn.style.position = 'absolute';
+    // traceBackBtn.style.top = '10px';
+    // console.log(graphPanel.innerWidth)
+    // traceBackBtn.style.left = '' + (graphPanel.innerWidth - 150) + 'px';
+
     graphPanel.append(nodeChoices);
 
     graphPanel.header.append(new Button({
         label: 'Provenance',
-        types: ['large'],
+        types: ['teal', 'large'],
         size: '12px',
         onclick: function() {
             $('.ui.sidebar').sidebar('toggle');
@@ -136,8 +150,17 @@ return function(webSocket) {
     }))
 
     graphPanel.header.append(new Button({
+        label: 'TraceBack',
+        types: ['blue','large'],
+        size: '12px',
+        onclick: function() {
+            igraph.traceCurTime();
+        }
+    }));
+
+    graphPanel.header.append(new Button({
         label: 'Share',
-        types: ['teal', 'large'],
+        types: ['red', 'large'],
         size: '12px',
         onclick: function() {
             $('#commit-note').val('');
