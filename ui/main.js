@@ -71,6 +71,17 @@ return function(webSocket) {
         onselect: (id) => {
             console.log("Show hist at timestamp " + id);
             igraph.showRecHist(id);
+            spatiotemporal.map.onRenew();
+
+            var visData = igraph.fetchVisData(id);
+            spatiotemporal.removeAllSubjects();
+            spatiotemporal.removeAllAreas();
+            if(!!visData && !!visData.totalData){
+                for(var eachKey in visData.totalData){
+                    spatiotemporal.addSubject(visData.totalData[eachKey]);
+                }
+            }
+            if(!!visData) spatiotemporal.map.loadMap(visData, true);    
         }
     });
 
@@ -100,7 +111,7 @@ return function(webSocket) {
     });
     var map = spatiotemporal.map;
 
-    function newNodeAdd(ntype) {
+    function newUninfoNodeAdd(ntype) {
         return function() {
             igraph.showRecHist(-1);
             igraph.addNodes({
@@ -118,12 +129,12 @@ return function(webSocket) {
     var nodeChoices = new Dropdown({
         label: "+Node",
         items: [
-            {name: 'Custom node', icon: 'circle teal', onclick: newNodeAdd('custom')},
-            {name: 'Person', icon: 'user teal', onclick: newNodeAdd('people')},
-            {name: 'Location', icon: 'marker teal', onclick: newNodeAdd('location')},
-            {name: 'Money', icon: 'usd teal', onclick: newNodeAdd('money')},
-            {name: 'Datetime', icon: 'wait teal', onclick: newNodeAdd('time')},
-            {name: 'Communication', icon: 'phone teal', onclick: newNodeAdd('phone')}
+            {name: 'Custom node', icon: 'circle teal', onclick: newUninfoNodeAdd('custom')},
+            {name: 'Person', icon: 'user teal', onclick: newUninfoNodeAdd('people')},
+            {name: 'Location', icon: 'marker teal', onclick: newUninfoNodeAdd('location')},
+            {name: 'Money', icon: 'usd teal', onclick: newUninfoNodeAdd('money')},
+            {name: 'Datetime', icon: 'wait teal', onclick: newUninfoNodeAdd('time')},
+            {name: 'Communication', icon: 'phone teal', onclick: newUninfoNodeAdd('phone')}
         ]
     });
 
@@ -188,23 +199,54 @@ return function(webSocket) {
         colorScheme: colorScheme
     });
 
-    let subjectLocations = {};
+    let subjectLocations = {};  //Only for subject-related people's location record
     selection.onSelect = function(subjectKey, locations) {
         if (R.has(subjectKey, subjectLocations)) {
             /// FIXME: this is not the best way to toggle selection.
             delete subjectLocations[subjectKey];
+            delete selection.totalData[subjectKey]; //TODO don't know whether 'let' domain hides subjectLocation, thus a new dict is used
             spatiotemporal.removeSubject(subjectKey);
             return;
         }
         // add subject to spatiotemporal panel
         subjectLocations[subjectKey] = locations;
         spatiotemporal.addSubject(subjectKey, locations);
+        selection.totalData[subjectKey] = locations;
     }
     selection.onMultiSelect = pidLocsArray => {
         let pidLocsToPair = pidLocs => [pidLocs.pid, pidLocs.locs];
         subjectLocations =
                 R.pipe(R.map(pidLocsToPair), R.fromPairs)(pidLocsArray);
         spatiotemporal.setSubjects(subjectLocations);
+    }
+
+    selection.onAddToConceptMap = () => {
+        return spatiotemporal.areas.slice(0);   //Deep copy
+    }
+    areaCnt = 0;
+    spatiotemporal.onAddToConceptMap = (d, value) => {
+        igraph.showRecHist(-1);
+        let curData = d;
+        let areas = selection.onAddToConceptMap();
+        let visData ={
+            curData: curData,
+            totalData: selection.totalData,
+            mapZoom: {
+                center: map.getCenter(),
+                zoom: map.getZoom(),
+            },
+            areas: areas
+        }
+        igraph.addNodes({
+            label: 'RealAddress ' + areaCnt,
+            labelPrefix: '',
+            icon: 'location',
+            type: 'location',
+            pos: [100,100],
+            visData: visData,
+            value: value
+        }).update();
+        areaCnt++;
     }
     map.flyTo(selection.mapCenter, selection.mapZoom);
 }

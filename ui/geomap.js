@@ -2,7 +2,7 @@ define(function(){
 
 return function geoLocation(options) {
     var options = options || {};
-    var onAdd = options.onadd || function() {};
+    var onAdd = options.onadd || function() {console.log("spatiotemporal onadd callback hasn't been defined yet.")};
     var colorScheme = options.colorScheme;
     var relatedLocations = new L.LayerGroup();
     var primaryLocations = new L.LayerGroup();
@@ -34,6 +34,7 @@ return function geoLocation(options) {
     // important locations
     var importantGeoColor = colorScheme.area;
     importantGeos = [];
+
     var removeImportantGeo = (geo) => {
         var index = importantGeos.indexOf(geo);
         if (index > -1) {
@@ -41,12 +42,29 @@ return function geoLocation(options) {
             importantLocations.removeLayer(geo.leaflet);
         }
     }
+
+    var removeImportantGeos = (geos) => {
+        geos = Array.isArray(geos)? geos : [geos];
+        geos.forEach(function(geo){
+            removeImportantGeo(geo);
+        });
+    }
+
     let setCursorToCrosshair = () => map._container.style.cursor = 'crosshair';
     let resetCursor = () => map._container.style.cursor = '';
     let prepareAddImportantLocation = (e) => {
         setCursorToCrosshair();
         map.on('click',  addImportantLocation);
     }
+
+    var addImportantGeos = (geos) => {
+        geos = Array.isArray(geos)? geos : [geos];
+        geos.forEach(function(geo){
+            importantGeos.push(geo);
+            geo.leaflet.addTo(importantLocations);
+        })
+    }
+
     var addImportantLocation = (e) => {
         //console.log('addImportantLocation');
         var geo = {
@@ -63,14 +81,13 @@ return function geoLocation(options) {
                     separator: true,
                     index: 0
                 }]
-            }).addTo(importantLocations)
+            })
         }
         geo.leaflet.addContextMenuItem({
             text: "Remove",
             index: 0,
             callback: removeImportantGeo.bind(this, geo)
         })
-        importantGeos.push(geo);
         map.off('click', addImportantLocation);
         resetCursor();
         onAdd.call(this, geo);
@@ -337,7 +354,11 @@ return function geoLocation(options) {
         highlightLocations: highlightLocations,
         highlightPaths: highlightPaths,
         flyToBounds: R.bind(map.flyToBounds, map),
-        flyTo: R.bind(map.flyTo, map)
+        flyTo: R.bind(map.flyTo, map),
+        removeImportantGeos: removeImportantGeos,
+        addImportantGeos: addImportantGeos,
+        getZoom: () => map.getZoom(),
+        getCenter: () => map.getCenter(),
     }
 }
 

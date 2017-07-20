@@ -51,7 +51,7 @@ define(function(require){
         }
 
         //July: For RClick Menu
-        let addNodeToOntology = (id, type, props, icon) => {
+        let addNodeToOntology = (id, type, props, visData, icon) => {
             igraph.showRecHist(-1);
             igraph.addNodes({
                     label: id,
@@ -59,6 +59,7 @@ define(function(require){
                     icon: icon,
                     pos: [100,100],
                     value: 0,
+                    visData: visData,
                     props: props
             }).update()
         }
@@ -127,9 +128,25 @@ define(function(require){
                     addToOntologyGraph: {
                         name: "Add to Concept Map",
                         callback: function(key, opt){
-                            let id = this.parent().children().index(this);
-                            addNodeToOntology(
-                                    "Sub " + id, 'signal', id);
+                            // let id = this.parent().children().index(this) - 1;
+                            // let curData = pipeline()
+                            //             .match({
+                            //                 user: this.parent().children().index(this)
+                            //             })
+                            //             (data.records);
+                            // let locs = selection.onAddToConceptMap();
+                            // let visData = {
+                            //     curData: curData,
+                            //     totalData: selection.totalData,
+                            //     mapZoom: {
+                            //         center: selection.mapCenter,
+                            //         zoom: selected.mapZoom,
+                            //         locs: locs
+                            //     },
+
+                            // }
+                            // addNodeToOntology(
+                            //         "Person " + personIds[id], 'people', personIds[id], visData);
                         }
                     }
                 }
@@ -282,9 +299,24 @@ define(function(require){
                     addToOntologyGraph: {
                         name: "Add to Concept Map",
                         callback: function(key, opt){
-                            let id = this.parent().children().index(this);
+                            let id = data.relatedPersonIds[this.parent().children().index(this)] - 1;
+                            let curData = pipeline()
+                                        .match({
+                                            user: this.parent().children().index(this)
+                                        })
+                                        (data.records);
+                            let areas = selection.onAddToConceptMap();
+                            let visData = {
+                                curData: curData,
+                                totalData: selection.totalData,
+                                mapZoom: {
+                                    center: selection.mapCenter,
+                                    zoom: selected.mapZoom
+                                },
+                                areas: areas
+                            }
                             addNodeToOntology(
-                                    "Person " + personIds[id], 'people', personIds[id]);
+                                    "Person " + personIds[id], 'people', personIds[id], visData);
                         }
                     }
                 }
@@ -293,7 +325,7 @@ define(function(require){
         selection.result = function() {
             return result;
         }
-
+        selection.totalData = {};
         return selection;
     }
 

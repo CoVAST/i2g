@@ -80,7 +80,7 @@ return function(arg) {
     let subjectGeos = {};
     let people = [];
     let datetimes = [];
-    let areas = [];
+    appLayout.areas = [];
     appLayout.setSubjects = subjectLocations => {
         // clear locations
         R.forEachObjIndexed(
@@ -115,6 +115,7 @@ return function(arg) {
         // update timeline
         updateTimeline();
     }
+
     appLayout.removeSubject = (subjectKey) => {
         people.splice(people.indexOf(subjectKey), 1);
         // remove locations from map
@@ -124,45 +125,85 @@ return function(arg) {
         updateTimeline();
     }
 
+    appLayout.removeAllSubjects = () => {
+        people = [];    //TODO: Memory Leak?
+        for(var eachKey in subjectGeos){
+            appLayout.map.removeLocations(subjectGeos[eachKey].mapObjs);
+            delete subjectGeos[eachKey];
+        }
+        updateTimeline();
+    }
+
+    appLayout.removeAllAreas = () => {
+        appLayout.map.removeImportantGeos(appLayout.areas);
+        appLayout.areas = [];
+    }
+
+    appLayout.map.loadMap = function(visData, aboutToFly){
+        if(aboutToFly === true){
+            appLayout.map.flyTo(visData.mapZoom.center, visData.mapZoom.zoom);
+        }
+        appLayout.map.addImportantGeos(visData.areas);
+        appLayout.areas = visData.areas.slice(0);
+        // console.log("Here we need to load map.");
+    }
+
+    appLayout.map.onRenew = function(){
+        appLayout.removeAllSubjects();
+        appLayout.removeAllAreas();
+        var latestData = igraph.fetchVisData(-1);
+        if(!!latestData && !!latestData.totalData){
+            for(var eachKey in latestData.totalData){
+                appLayout.addSubject(latestData.totalData[eachKey]);
+            }
+        }
+        if(!!latestData)appLayout.map.loadMap(latestData);
+    }
+
     appLayout.map.onadd(function(d){
-
-        var c = d.coordinates,
-            cMinLat = Math.min(c[0].lat, c[1].lat),
-            cMaxLat = Math.max(c[0].lat, c[1].lat),
-            cMinLong = Math.min(c[0].lng, c[1].lng),
-            cMaxLong = Math.max(c[0].lng, c[1].lng);
-
-        d.box = {lat: [cMinLat, cMaxLat], lng: [cMinLong, cMaxLong]};
-        d.label = areas.length;
-        d.labelPrefix = 'Location';
-
-        var selectedLocations =
-                toLocations(subjectGeos).filter(function(a){
-            return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
-        })
-        var links = pipeline()
-        .group({
-            $by: ['user'],
-            value: {'location': '$count'}
-        })
-        (selectedLocations);
+        var selectedNum = 0;
+        if(d.type == 'rect'){
+            var c = d.coordinates,
+                cMinLat = Math.min(c[0].lat, c[1].lat),
+                cMaxLat = Math.max(c[0].lat, c[1].lat),
+                cMinLong = Math.min(c[0].lng, c[1].lng),
+                cMaxLong = Math.max(c[0].lng, c[1].lng);
+                var selectedLocations =
+                    toLocations(subjectGeos).filter(function(a){
+                        return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
+                    })
+            var links = pipeline()
+            .group({
+                $by: ['user'],
+                value: {'location': '$count'}
+            })
+            (selectedLocations);
+            d.box = {lat: [cMinLat, cMaxLat], lng: [cMinLong, cMaxLong]};
+            d.label = appLayout.areas.length;
+            d.labelPrefix = 'Location';
+            selectedNum = selectedLocations.length;
+        }else if(d.type == 'point'){    //very temporary
+            selectedNum = 0;
+        }
+        
         // console.log(links);
-        areas.push(d);
-        igraph.addNodes({
-            label: d.label,
-            labelPrefix: 'Location ',
-            type: "location",
-            pos: [0,0],
-            value: selectedLocations.length
-        }).update();
+        // 
+        appLayout.map.onRenew();
 
-        links.forEach(function(li){
-            li.source = igraph.findNode({type: 'people', tag: li.user});
-            li.target = igraph.findNode({type: 'location', tag: d.label});
-        });
-        // console.log(links);
-        igraph.addLinks(links)
-        .update();
+        appLayout.map.addImportantGeos(d);
+        appLayout.areas.push(d);
+
+        appLayout.onAddToConceptMap(d, selectedNum);
+
+        if(!!links){
+            links.forEach(function(li){
+                li.source = igraph.findNode({type: 'people', tag: li.user});
+                li.target = igraph.findNode({type: 'location', tag: d.label});
+            });
+            // console.log(links);
+            igraph.addLinks(links)
+            .update();
+        }
     })
 
     /// TODO: consider defining class Rect.
@@ -295,7 +336,7 @@ return function(arg) {
                 let areasToLinks =
                         R.pipe(
                             R.map(generateLinks(allLocs)(d)), R.flatten);
-                let newLinks = areasToLinks(areas);
+                let newLinks = areasToLinks(appLayout.areas);
 
                 console.log(newLinks);
 

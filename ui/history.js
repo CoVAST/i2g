@@ -60,6 +60,13 @@ define(function(require){
 				}
 			}
 		}
+		this.fetchSpecificRecord = function(timestamp){
+			if(historyRecord.length === 0) return null;
+			if(timestamp === -1){
+				timestamp = historyRecord.length - 1; 
+			}
+			return historyRecord[timestamp].hist.data;
+		}
 	};
 	return histRec;
 })

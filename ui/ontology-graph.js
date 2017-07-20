@@ -119,6 +119,13 @@ define(function(require) {
                 historyList.remove(historyList.children.length - 1);  //Something like this
             }
         }
+        
+        otGraph.fetchVisData = function(idx){
+            // console.log(histRec.fetchSpecificRecord(idx));
+            if(histRec.fetchSpecificRecord(idx) === null) return null;
+            return histRec.fetchSpecificRecord(idx).visData;
+        }
+
         otGraph.showRecHist = function(idx){ //To show recorded history
             if(historyList.children.length == 0)return;
             if(idx === -1){
