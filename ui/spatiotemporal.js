@@ -162,7 +162,7 @@ return function(arg) {
 
     appLayout.map.onadd(function(d){
         var selectedNum = 0;
-        if(d.type == 'rect'){
+        if(d.type === 'rect'){
             var c = d.coordinates,
                 cMinLat = Math.min(c[0].lat, c[1].lat),
                 cMaxLat = Math.max(c[0].lat, c[1].lat),
@@ -172,18 +172,27 @@ return function(arg) {
                     toLocations(subjectGeos).filter(function(a){
                         return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
                     })
-            var links = pipeline()
-            .group({
-                $by: ['user'],
-                value: {'location': '$count'}
-            })
-            (selectedLocations);
+            var links;
+            if(selectedLocations.length != 0){
+                links = pipeline()
+                .group({
+                    $by: ['user'],
+                    value: {'location': '$count'}
+                })
+                (selectedLocations);
+            }else{
+                links = [];
+            }
             d.box = {lat: [cMinLat, cMaxLat], lng: [cMinLong, cMaxLong]};
             d.label = appLayout.areas.length;
             d.labelPrefix = 'Location';
             selectedNum = selectedLocations.length;
-        }else if(d.type == 'point'){    //very temporary
+        }else if(d.type === 'point'){    //very temporary
             selectedNum = 0;
+        }else if(d.type === 'polyline'){
+            selectedNum = 0;
+        }else if(d.type === 'polygon'){
+            //TODO: how to make selection
         }
         
         // console.log(links);
@@ -195,7 +204,7 @@ return function(arg) {
 
         appLayout.onAddToConceptMap(d, selectedNum);
 
-        if(!!links){
+        if(!!links && links.length > 0){
             links.forEach(function(li){
                 li.source = igraph.findNode({type: 'people', tag: li.user});
                 li.target = igraph.findNode({type: 'location', tag: d.label});

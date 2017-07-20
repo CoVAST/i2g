@@ -218,7 +218,6 @@ return function geoLocation(options) {
         //console.log('doneAddImportantRect');
         let theRect = this;
         theRect.coordinates[1] = e.latlng;
-        importantGeos.push(theRect);
         theRect.leaflet.addContextMenuItem({
             text: "Remove",
             index: 0,
