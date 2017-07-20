@@ -76,11 +76,12 @@ return function(webSocket) {
             var visData = igraph.fetchVisData(id);
             spatiotemporal.removeAllSubjects();
             spatiotemporal.removeAllAreas();
+            //JULY 20 WILL BEGIN HERE! Other entrance of renew needs add following part.
             if(!!visData && !!visData.totalData){
                 for(var eachKey in visData.totalData){
-                    spatiotemporal.addSubject(visData.totalData[eachKey]);
+                    spatiotemporal.addSubject(eachKey, visData.totalData[eachKey]);
                 }
-            }
+            } 
             if(!!visData) spatiotemporal.map.loadMap(visData, true);    
         }
     });
