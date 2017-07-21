@@ -97,16 +97,25 @@ define(function(require) {
             links[linkId] = null;
         }
         function silentRemoveNode(nodeId){
-            nodeIcons[nodeId]._icon.remove();
-            nodeIcons[nodeId].remove();
-            nodeLabels[nodeId].remove();
-            delete nodeIcons[nodeId];
-            delete nodeLabels[nodeId];
-            delete nodeHash[nodeId];
-            nodes = nodes.filter(function(d){
-                return d.id != nodeId;
-            })
-            otGraph.update();
+            //nodeIcons[nodeId]._icon.transition().remove();
+            let d = nodeHash[nodeId]
+            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .duration(500)
+                        .attr("transform", "scale(" + scale * 0.001 + ")");
+            setTimeout(()=>{
+                nodeIcons[nodeId].remove();
+                nodeLabels[nodeId].remove();
+                delete nodeIcons[nodeId];
+                delete nodeLabels[nodeId];
+                delete nodeHash[nodeId];
+                nodes = nodes.filter(function(d){
+                    return d.id != nodeId;
+                })
+                otGraph.update();
+            }, 500);
         }
 
         otGraph.traceCurTime = function(){
@@ -331,27 +340,73 @@ define(function(require) {
                 .on('click', function(d){
                     // d.fx = d3.mouse(this)[0];
                     // d.fy = d3.mouse(this)[1];
-                // console.log('clicked on node', d.id);
-                if(linkSource !== null && linkTarget === null) {
-                        linkTarget = d;
-                        console.log(linkTarget);
-                        otGraph.addLinks({
-                            source: linkSource,
-                            target: linkTarget,
-                            value: 2,
-                            datalink: false
-                        })
+                    // console.log('clicked on node', d.id);
+                    if(linkSource !== null && linkTarget === null) {
+                            linkTarget = d;
+                            console.log(linkTarget);
+                            otGraph.addLinks({
+                                source: linkSource,
+                                target: linkTarget,
+                                value: 2,
+                                datalink: false
+                            })
 
-                        linkSource = linkTarget = null;
-                        tempLink
-                            .attr('stroke-width', 0)
-                            .attr('x1', 0)
-                            .attr('y1', 0)
-                            .attr('x2', 0)
-                            .attr('y2', 0);
+                            linkSource = linkTarget = null;
+                            tempLink
+                                .attr('stroke-width', 0)
+                                .attr('x1', 0)
+                                .attr('y1', 0)
+                                .attr('x2', 0)
+                                .attr('y2', 0);
 
-                        restart();
+                            restart();
+                    }else{
+                        // let thisNode = this;
+                        // let thisNodeId = d.id;
+                        // if(d3.select(thisNode).attr('stroke') == 'orange'){
+                        //     d3.select(thisNode).attr('stroke', 'transparent');
+                        //     notePanel.hide();
+                        // }else{
+                        //     d3.select(thisNode).attr('stroke', 'orange');
+                        //     console.log(nodeHash[thisNodeId]);
+                        //     notePanel.setNote({
+                        //         label: nodeHash[thisNodeId].labelPrefix+nodeHash[thisNodeId].label,
+                        //         detail: nodeHash[thisNodeId].detail
+                        //     })
+                        //     notePanel.show();
+                        //     notePanel.onsave = function() {
+                        //         var info = notePanel.getNote();
+                        //         info.labelPrefix = '';
+                        //         otGraph.modifyNode(thisNodeId, info);
+                        //         d3.select(thisNode).attr('stroke', 'transparent');
+                        //     }
+                        //     notePanel.oncancel = function() {
+                        //         d3.select(thisNode).attr('stroke', 'transparent');
+                        //     }
+                        // }
+                        //otGraph.onCallRespondingMap();
                     }
+                })
+                .on('mouseover', function(d){
+                    // console.log("mouseover");
+                    nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .ease(d3.easeBounce)
+                        .duration(400)
+                        .attr("transform", "scale(" + scale * 0.115 + ")");
+                    this.style.cursor='hand';
+                })
+                .on('mouseout', function(d){
+                    // console.log("mouseout");
+                    nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .ease(d3.easeBounce)
+                        .duration(400)
+                        .attr("transform", "scale(" + scale * 0.1 + ")");
                 })
                 .call(d3.drag()
                     .on("start", dragstarted)
@@ -503,9 +558,16 @@ define(function(require) {
                     .attr("pointer-events", "none");
 
                 nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
-                    .attr("transform", "scale(" + scale * 0.1 + ")")
+                    .attr("transform", "scale(" + scale * 0.001 + ")")
                     .attr("d", logos(d.icon || d.type))
                     .attr("fill", nodeColor(d))
+                nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
+                    .attr("d", logos(d.icon || d.type))
+                    .attr("fill", nodeColor(d))
+                    .transition()
+                    .ease(d3.easeBounce)
+                    .duration(500)
+                    .attr("transform", "scale(" + scale * 0.1 + ")");
             }
         }
 
@@ -673,16 +735,25 @@ define(function(require) {
                 action: 'Remove node',
                 data: nodeHash[nodeId]
             });
-            nodeIcons[nodeId]._icon.remove();
-            nodeIcons[nodeId].remove();
-            nodeLabels[nodeId].remove();
-            delete nodeIcons[nodeId];
-            delete nodeLabels[nodeId];
-            delete nodeHash[nodeId];
-            nodes = nodes.filter(function(d){
-                return d.id != nodeId;
-            })
-            otGraph.update();
+            let d = nodeHash[nodeId];
+            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .duration(500)
+                        .attr("transform", "scale(" + scale * 0.001 + ")");
+            setTimeout(()=>{
+                nodeIcons[nodeId].remove();
+                nodeLabels[nodeId].remove();
+                delete nodeIcons[nodeId];
+                delete nodeLabels[nodeId];
+                delete nodeHash[nodeId];
+                nodes = nodes.filter(function(d){
+                    return d.id != nodeId;
+                })
+                otGraph.update();
+            }, 500);
+
         }
 
         function removeLink(linkId, choice) {
