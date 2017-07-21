@@ -103,6 +103,10 @@ return function(webSocket) {
         colorScheme: colorScheme
     });
 
+    igraph.onCallRespondingMap = function(nodeId){
+        spatiotemporal.markIdLocation(nodeId);
+    }
+
     var spatiotemporal = require('./spatiotemporal')({
         container: ui.cell('page-right'),
         mapZoom: 2,

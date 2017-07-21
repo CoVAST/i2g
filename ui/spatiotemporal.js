@@ -258,6 +258,14 @@ return function(arg) {
         console.log(minmax);
         return minmax;
     }
+    var lastId = -1;
+    appLayout.markIdLocation = (id) => {
+        if(lastId >= 0){
+            appLayout.map.cancelMarkGeo(appLayout.areas[lastId])
+        }
+        lastId = id;
+        appLayout.map.markGeo(appLayout.areas[id]);
+    }
 
     let flyToLocations = (locs) => {
         let minmax = calcLocsRect(locs);

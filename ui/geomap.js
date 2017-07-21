@@ -339,7 +339,18 @@ return function geoLocation(options) {
         //     return L.circleMarker(loc.latlng, options).addTo(highlightLocationsLayer)
         // }, locObjs);
     }
-
+    function markGeo(geo){
+        removeImportantGeos(geo);
+        geo.leaflet.options.color = '#FE2E2E';
+        geo.leaflet.options.fillColor = '#FE642E';
+        addImportantGeos(geo);
+    }
+    function cancelMarkGeo(geo){
+        removeImportantGeos(geo);
+        geo.leaflet.options.color = colorScheme.area;
+        geo.leaflet.options.fillColor = colorScheme.area;
+        addImportantGeos(geo);
+    }
     return {
         relatedLocations: relatedLocations,
         primaryLocations: primaryLocations,
@@ -355,6 +366,8 @@ return function geoLocation(options) {
         addImportantGeos: addImportantGeos,
         getZoom: () => map.getZoom(),
         getCenter: () => map.getCenter(),
+        markGeo: markGeo,
+        cancelMarkGeo: cancelMarkGeo,
     }
 }
 

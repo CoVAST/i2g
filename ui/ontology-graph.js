@@ -384,7 +384,7 @@ define(function(require) {
                         //         d3.select(thisNode).attr('stroke', 'transparent');
                         //     }
                         // }
-                        //otGraph.onCallRespondingMap();
+                        otGraph.onCallRespondingMap(d.id);
                     }
                 })
                 .on('mouseover', function(d){
