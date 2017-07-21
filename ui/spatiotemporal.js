@@ -207,7 +207,16 @@ return function(arg) {
         if(!!visData) appLayout.map.loadMap(visData);  
         appLayout.map.addImportantGeos(d);
         appLayout.areas.push(d);
-
+        d.leaflet.addContextMenuItem({
+            text: "Remove",
+            index: 0,
+            callback: appLayout.map.removeImportantGeos.bind(this, d)
+        })
+        d.leaflet.addContextMenuItem({
+            text: "Hide",
+            index: 0,
+            callback: appLayout.map.removeImportantGeos.bind(this, d)
+        })
         appLayout.onAddToConceptMap(d, selectedNum);
 
         // if(!!links && links.length > 0){

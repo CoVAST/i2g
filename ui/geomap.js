@@ -83,11 +83,7 @@ return function geoLocation(options) {
                 }]
             })
         }
-        geo.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, geo)
-        })
+
         map.off('click', addImportantLocation);
         resetCursor();
         onAdd.call(this, geo);
@@ -107,7 +103,7 @@ return function geoLocation(options) {
                     separator: true,
                     index: 0
                 }]
-            }).addTo(importantLocations)
+            })
         };
         map.on('click', addingImportantPath, thePath);
         map.on('dblclick', doneAddImportantPath, thePath);
@@ -120,11 +116,11 @@ return function geoLocation(options) {
     let doneAddImportantPath = function(e) {
         let thePath = this;
         importantGeos.push(thePath);
-        thePath.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, thePath)
-        });
+        // thePath.leaflet.addContextMenuItem({
+        //     text: "Remove",
+        //     index: 0,
+        //     callback: removeImportantGeo.bind(this, thePath)
+        // });
         resetCursor();
         map.doubleClickZoom.enable();
         map.off('click', addingImportantPath, thePath);
@@ -153,6 +149,7 @@ return function geoLocation(options) {
         map.on('click', addingImportantPolygon, thePolygon);
         map.on('dblclick', doneAddImportantPolygon, thePolygon);
         // isAddingImportantPolygon = true;
+        // onAdd.call(this, thePolygon);
     }
     var addingImportantPolygon = function(e) {
         let thePolygon = this;
@@ -162,11 +159,11 @@ return function geoLocation(options) {
     var doneAddImportantPolygon = function(e) {
         let thePolygon = this;
         importantGeos.push(thePolygon);
-        thePolygon.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, thePolygon)
-        })
+        // thePolygon.leaflet.addContextMenuItem({
+        //     text: "Remove",
+        //     index: 0,
+        //     callback: removeImportantGeo.bind(this, thePolygon)
+        // })
         resetCursor();
         map.doubleClickZoom.enable();
         map.off('click', addingImportantPolygon, thePolygon);
@@ -203,7 +200,7 @@ return function geoLocation(options) {
                 separator: true,
                 index: 0
             }]
-        }).addTo(importantLocations)
+        })
         L.DomEvent.stop(e);
     }
     var addingImportantRect = function(e) {
@@ -218,11 +215,11 @@ return function geoLocation(options) {
         //console.log('doneAddImportantRect');
         let theRect = this;
         theRect.coordinates[1] = e.latlng;
-        theRect.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, theRect)
-        });
+        // theRect.leaflet.addContextMenuItem({
+        //     text: "Remove",
+        //     index: 0,
+        //     callback: removeImportantGeo.bind(this, theRect)
+        // });
         resetCursor();
         map.off('mousedown', startAddImportantRect, theRect);
         map.off('mousemove', addingImportantRect, theRect);
