@@ -890,6 +890,25 @@ define(function(require) {
 
         otGraph.getLinks = function() { return links;};
 
+        otGraph.ontologyGraphRespond = function(nodeId){
+            let d = nodeHash[nodeId];
+            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
+                    .attr("d", logos(d.icon || d.type))
+                    .attr("fill", nodeColor(d))
+                    .transition()
+                    .ease(d3.easeBounce)
+                    .duration(100)
+                    .attr("transform", "scale(" + scale * 0.15 + ")");
+            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
+                    .attr("d", logos(d.icon || d.type))
+                    .attr("fill", nodeColor(d))
+                    .transition()
+                    .ease(d3.easeBounce)
+                    .duration(400)
+                    .attr("transform", "scale(" + scale * 0.1 + ")")
+                    .delay(100);
+        }
+
         return otGraph;
     }
 })

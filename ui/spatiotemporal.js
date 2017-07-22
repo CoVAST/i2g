@@ -207,6 +207,15 @@ return function(arg) {
         if(!!visData) appLayout.map.loadMap(visData);  
         appLayout.map.addImportantGeos(d);
         appLayout.areas.push(d);
+        d.leaflet.on('click', function(){
+            id = appLayout.areas.indexOf(d);
+            if(lastId >= 0){
+                appLayout.map.cancelMarkGeo(appLayout.areas[lastId])
+            }
+            lastId = id;
+            appLayout.map.markGeo(d);
+            appLayout.onCallRespondingOntologyGraph(id);
+        });
         d.leaflet.addContextMenuItem({
             text: "Remove",
             index: 0,

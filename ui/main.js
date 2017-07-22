@@ -114,6 +114,10 @@ return function(webSocket) {
         colorScheme: colorScheme,
         colorMap: colorMap
     });
+
+    spatiotemporal.onCallRespondingOntologyGraph = function(nodeId){
+        igraph.ontologyGraphRespond(nodeId);
+    }
     var map = spatiotemporal.map;
 
     function newUninfoNodeAdd(ntype) {
