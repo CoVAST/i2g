@@ -139,6 +139,45 @@
         </div>
       </div>
 
+      <div class="ui small modal" id="infocard-modal">
+        <div class="header">
+          Adding an ontology to Insight Graph
+        </div>
+        <div class="content">
+          <div class="ui form">
+            <div class="field">
+              <label>Ontology Name</label>
+              <input id="infocard-modal-name" type="text" name="name"
+                  placeholder="Name">
+            </div>
+            <div class="field">
+              <label>Reason</label>
+              <input id="infocard-modal-reason" type="text" name="reason"
+                  placeholder="Your reason for the ontology">
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <div id="submit" class="ui green button">Submit</div>
+        </div>
+      </div>
+
+      <div class="ui basic modal", id = "infocard-alert">
+        <div class="ui icon header">
+          <i class="archive icon"></i>
+          Alert
+        </div>
+        <div class="content">
+          <p>Your ontology needs a name.</p>
+        </div>
+        <div class="actions">
+          <div class="ui green ok inverted button">
+            <i class="checkmark icon"></i>
+            Okay
+          </div>
+        </div>
+      </div>
+
     <script src="npm/requirejs/require.js"></script>
     <script>
         var webSocket = io();

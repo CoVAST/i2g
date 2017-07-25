@@ -340,10 +340,14 @@ return function geoLocation(options) {
         // }, locObjs);
     }
     function markGeo(geo){
-        removeImportantGeos(geo);
-        geo.leaflet.options.color = '#FE2E2E';
-        geo.leaflet.options.fillColor = '#FE642E';
-        addImportantGeos(geo);
+        if(geo.type == 'point'){
+            geo.leaflet.bindPopup("<b>" + geo.name + "</b><br>" + geo.reason + "</br>").openPopup();
+        }else{
+            removeImportantGeos(geo);
+            geo.leaflet.options.color = '#FE2E2E';
+            geo.leaflet.options.fillColor = '#FE642E';
+            addImportantGeos(geo);
+        }
     }
     function cancelMarkGeo(geo){
         removeImportantGeos(geo);

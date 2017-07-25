@@ -247,7 +247,8 @@ return function(webSocket) {
             areas: areas
         }
         igraph.addNodes({
-            label: 'RealAddress ' + areaCnt,
+            label: d.name,
+            reason: d.reason,
             labelPrefix: '',
             icon: 'location',
             type: 'location',
