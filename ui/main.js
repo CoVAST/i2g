@@ -77,9 +77,9 @@ return function(webSocket) {
             spatiotemporal.removeAllSubjects();
             spatiotemporal.removeAllAreas();
             //JULY 20 WILL BEGIN HERE! Other entrance of renew needs add following part.
-            if(!!visData && !!visData.totalData){
-                for(var eachKey in visData.totalData){
-                    spatiotemporal.addSubject(eachKey, visData.totalData[eachKey]);
+            if(!!visData && !!visData.totalDataIdxs){
+                for(var i = 0 ; i < visData.totalDataIdxs.length; i++){
+                    spatiotemporal.addSubject(visData.totalDataIdxs[i], selection.fetchRealData(totalData));
                 }
             } 
             if(!!visData) spatiotemporal.map.loadMap(visData, true);    
@@ -202,7 +202,7 @@ return function(webSocket) {
 
     $('#graph-layout').transition('fade left');
 
-    var selection = require('/selection')({
+    var selection = require('/selection')({ 
         // container: 'domain-vis',
         igraph: igraph,
         colorScheme: colorScheme
@@ -213,14 +213,14 @@ return function(webSocket) {
         if (R.has(subjectKey, subjectLocations)) {
             /// FIXME: this is not the best way to toggle selection.
             delete subjectLocations[subjectKey];
-            delete selection.totalData[subjectKey]; //TODO don't know whether 'let' domain hides subjectLocation, thus a new dict is used
+            //delete selection.totalData[subjectKey]; //TODO don't know whether 'let' domain hides subjectLocation, thus a new dict is used
             spatiotemporal.removeSubject(subjectKey);
             return;
         }
         // add subject to spatiotemporal panel
         subjectLocations[subjectKey] = locations;
         spatiotemporal.addSubject(subjectKey, locations);
-        selection.totalData[subjectKey] = locations;
+        //selection.totalData[subjectKey] = locations;
     }
     selection.onMultiSelect = pidLocsArray => {
         let pidLocsToPair = pidLocs => [pidLocs.pid, pidLocs.locs];
@@ -229,8 +229,11 @@ return function(webSocket) {
         spatiotemporal.setSubjects(subjectLocations);
     }
 
-    selection.onAddToConceptMap = () => {
-        return spatiotemporal.areas.slice(0);   //Deep copy
+    selection.onAddToConceptMap = () => {   //To erase corresponding leaflet -- then to restore by simpler data in geomap
+        for(var i = 0; i < spatiotemporal.areas.length; i++){
+            spatiotemporal.areas[i].leaflet = null;
+        }
+        return spatiotemporal.areas;
     }
     areaCnt = 0;
     spatiotemporal.onAddToConceptMap = (d, value) => {
@@ -238,8 +241,8 @@ return function(webSocket) {
         let curData = d;
         let areas = selection.onAddToConceptMap();
         let visData ={
-            curData: curData,
-            totalData: selection.totalData,
+            //curData: curData,
+            //totalData: selection.totalData,
             mapZoom: {
                 center: map.getCenter(),
                 zoom: map.getZoom(),

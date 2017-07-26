@@ -355,6 +355,27 @@ return function geoLocation(options) {
         geo.leaflet.options.fillColor = colorScheme.area;
         addImportantGeos(geo);
     }
+
+    function fillAreasLeafletByData(areas){
+        if(areas.length === 0){
+            return;
+        }
+        for(var i = 0; i < areas.length; i++){
+            areas[i].leaflet = L.marker(areas[i].coordinates, {
+                    color: 'none',
+                    fillColor: importantGeoColor,
+                    // weight: 1,
+                    fillOpacity: 0.5,
+                    radius: 10,
+                    contextmenu: true,
+                    contextmenuItems: [{
+                        separator: true,
+                        index: 0
+                    }]
+                })
+            }
+        return areas;
+    }
     return {
         relatedLocations: relatedLocations,
         primaryLocations: primaryLocations,
@@ -372,6 +393,7 @@ return function geoLocation(options) {
         getCenter: () => map.getCenter(),
         markGeo: markGeo,
         cancelMarkGeo: cancelMarkGeo,
+        fillAreasLeafletByData: fillAreasLeafletByData,
     }
 }
 

@@ -135,7 +135,7 @@ return function(arg) {
     }
 
     appLayout.removeAllAreas = () => {
-        appLayout.map.removeImportantGeos(appLayout.areas);
+        appLayout.map.removeImportantGeos(appLayout.map.fillAreasLeafletByData(appLayout.areas));
         appLayout.areas = [];
     }
 
@@ -144,7 +144,7 @@ return function(arg) {
         if(aboutToFly === true){
             appLayout.map.flyTo(visData.mapZoom.center, visData.mapZoom.zoom);
         }
-        appLayout.map.addImportantGeos(visData.areas);
+        appLayout.map.addImportantGeos(appLayout.map.fillAreasLeafletByData(visData.areas));
         appLayout.areas = visData.areas.slice(0);
         // console.log("Here we need to load map.");
     }
@@ -214,6 +214,8 @@ return function(arg) {
                     callback: appLayout.map.removeImportantGeos.bind(this, submit_d)
                 })
                 appLayout.onAddToConceptMap(submit_d, selectedNum);
+                node_name.val('');
+                node_reason.val('');
             }
         });
         

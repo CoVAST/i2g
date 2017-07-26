@@ -857,7 +857,9 @@ define(function(require) {
                 n.fx = null;
                 n.fy = null;
             })
-            otGraph.addNodes(graph.nodes);
+            for(var i = 0; i < graph.nodes.length; i++){
+                silentAddNode(graph.nodes[i]);
+            }
             restart();
 
             var newLinks = graph.links.map(function(sl){
@@ -867,7 +869,9 @@ define(function(require) {
                     value: sl.value,
                 };
             });
-            otGraph.addLinks(newLinks);
+            for(var i = 0; i < newLinks.length; i++){
+                silentAddLink(newLinks[i]);
+            }
 
             restart();
             return otGraph;

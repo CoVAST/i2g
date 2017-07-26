@@ -307,8 +307,8 @@ define(function(require){
                                         (data.records);
                             let areas = selection.onAddToConceptMap();
                             let visData = {
-                                curData: curData,
-                                totalData: selection.totalData,
+                                //curData: curData,
+                                //totalDataIdxs: selection.totalDataIdxs,
                                 mapZoom: {
                                     center: selection.mapCenter,
                                     zoom: selected.mapZoom
@@ -325,7 +325,7 @@ define(function(require){
         selection.result = function() {
             return result;
         }
-        selection.totalData = {};
+        selection.totalDataIdxs = {};
         return selection;
     }
 
