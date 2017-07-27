@@ -67,7 +67,6 @@ return function(webSocket) {
         container: hlContainer,
         id: 'igraph-history',
         types: ['selection', 'single'],
-        //What is types: ['divided'] for?
         onselect: (id) => {
             console.log("Show hist at timestamp " + id);
             igraph.showRecHist(id);
@@ -76,7 +75,6 @@ return function(webSocket) {
             var visData = igraph.fetchVisData(id);
             spatiotemporal.removeAllSubjects();
             spatiotemporal.removeAllAreas();
-            //JULY 20 WILL BEGIN HERE! Other entrance of renew needs add following part.
             if(!!visData && !!visData.totalDataIdxs){
                 for(var i = 0 ; i < visData.totalDataIdxs.length; i++){
                     spatiotemporal.addSubject(visData.totalDataIdxs[i], selection.fetchRealData(totalData));

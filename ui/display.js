@@ -6,6 +6,7 @@ define(function(require){
 
     var iGraph = require('./ontology-graph');
     var colorScheme = require('./color-scheme');
+    var gitTree = require('./gitTree')
 
     return function(webSocket, container, scale) {
         var container = container || 'page-main',
@@ -60,15 +61,27 @@ define(function(require){
         });
 
         var allGraphs = [];
+        //July 26 will start here// Loglist means left-historylist
+        //To add new history list and ontology response
+        var logTree = new gitTree({
+            container: views.left.body,
+            header: "History",
+            width: 300,
+            height: 500,
+            onselect: function(d){
+                
+            }
+        })
+        
         var logList = new List({
             container: views.left.body,
             header: "History",
             types: ['selection' , 'divided', 'single'],
             onselect: function(d) {
                 console.log(allGraphs[d]);
-                ig.removeLinks({all:1})
-                    .removeNodes({all:1});
-                ig.remake(allGraphs[d])
+                // ig.removeLinks({all:1})
+                //     .removeNodes({all:1});
+                // ig.remake(allGraphs[d])
             }
         })
 
