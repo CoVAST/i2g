@@ -16,7 +16,7 @@ define(function(require) {
         var nodeCounter = 0;
 
         /************ Tree Structure ************/
-        var Node = function(userId, position, fathers, action, duration){
+        var Node = function(userId, fathers, action, duration, datetime, reason, nodename){
             //Calculate weight
             var weight = 0.0;
             if(!fathers) weight = 1;
@@ -40,7 +40,10 @@ define(function(require) {
                 children: [],
                 fathers: fathers,
                 action: action,
-                duration: duration
+                duration: duration,
+                datetime: datetime,
+                reason: reason,
+                nodename: nodename
             }
             node.checkout = function(infos){
                 return graph.checkout(node, infos);
@@ -49,11 +52,12 @@ define(function(require) {
         }
 
         /************ Global Parameters ************/
-        var Root = new Node(0, {x: null, y: null}, null, "Root");    // Mark 0 as root/merge/...(which is structural-part) node
+        var Root = new Node(0, null, "Root", 0, null, null, "Root");    // Mark 0 as root/merge/...(which is structural-part) node
         var RecalPos = true;
         var fullVerticalStep = 40;
         var graph = svg;
         var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
+        var userDict = {};
 
         /************ Private Functions ************/
 
@@ -115,15 +119,15 @@ define(function(require) {
             infos = Array.isArray(infos)? infos : [infos];
             var rst = [];
             for(var i = 0; i < infos.length; i++){
-                var node = new Node(infos[i].userId, {x: null, y: null}, [beginNode], infos[i].action, infos[i].duration);
+                var node = new Node(infos[i].userId, [beginNode], infos[i].action, infos[i].duration, infos[i].datetime, infos[i].reason, infos[i].nodename);
                 beginNode.children.push(node);
                 rst.push(node);
             }
             return rst;
         }
 
-        graph.merge = function(mergeNodes){
-            var node = new Node(0, {x: null, y: null}, mergeNodes, "merge", 0);
+        graph.merge = function(mergeNodes, mergeReason){
+            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).Date(), mergeReason, "Merge");
             for(var i = 0; i < mergeNodes.length; i++){
                 mergeNodes[i].children.push(node);
                 if(mergeNodes[i].duration > node.duration){
@@ -239,6 +243,26 @@ define(function(require) {
             }
             drawFrom(Root);
         }
+        graph.append(pullState, info){
+            // datetime
+            // username
+            // nodesInfo
+            let temp = pullState;
+            if(!userDict[info.username]){
+                userDict[info.username] = userDict.length + 1;
+            }
+            let userId = userDict[info.username];
+            for(var i = 0; i < info.nodesInfo.length; i++){
+                temp = temp.checkout({
+                    userId: userId,
+                    datetime: datetime,
+                    action: info.nodesInfo[i].action,
+                    duration: info.nodesInfo[i].duration,
+                    nodename: info.nodesInfo[i].nodename,
+                    reason: info.nodesInfo[i].reason
+                );
+            }
+        }
 
         /************ Example ************/
         var InfoA = {
@@ -274,7 +298,7 @@ define(function(require) {
         var InfoA2 = {
             // username: "Alan",
             userId: 1,
-            duration: 300,  //second
+            duration: 100,  //second
             action: "Add Node 7",
         }
         graph.findByUserIdAmong(3, graph.checkout(Root, [InfoA, InfoB, InfoC])).checkout([InfoC2]);
@@ -289,3 +313,7 @@ define(function(require) {
     }
 
 })
+
+
+// TODO: graph.pull -- should pass out a state as symbol
+// TODO: log.append not here but share part

@@ -73,27 +73,27 @@ define(function(require){
             }
         })
         
-        var logList = new List({
-            container: views.left.body,
-            header: "History",
-            types: ['selection' , 'divided', 'single'],
-            onselect: function(d) {
-                console.log(allGraphs[d]);
-                // ig.removeLinks({all:1})
-                //     .removeNodes({all:1});
-                // ig.remake(allGraphs[d])
-            }
-        })
+        // var logList = new List({
+        //     container: views.left.body,
+        //     header: "History",
+        //     types: ['selection' , 'divided', 'single'],
+        //     onselect: function(d) {
+        //         console.log(allGraphs[d]);
+        //         // ig.removeLinks({all:1})
+        //         //     .removeNodes({all:1});
+        //         // ig.remake(allGraphs[d])
+        //     }
+        // })
 
         appLayout.views = views;
 
         webSocket.emit('large display', {});
         webSocket.on('update', function(data){
             data.logs.forEach(function(log){
-                logList.append({
-                    header: log.datetime + ' @' + log.user,
-                    icon: 'big browser',
-                    text: log.note
+                logTree.append({
+                    datetime: log.datetime,
+                    username: log.username,
+                    nodesInfo: log.nodesInfo
                 })
             })
             allGraphs = allGraphs.concat(data.logs.map(function(d){return d.graph;}));
