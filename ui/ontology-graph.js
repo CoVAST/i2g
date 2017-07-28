@@ -33,6 +33,8 @@ define(function(require) {
                 time: 'wait'
             };
 
+        var PullPoint = null;
+
         let logFunc = (str) => () => console.log(str);
 
         let histRec = new histrec();

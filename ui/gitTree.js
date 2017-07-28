@@ -33,8 +33,8 @@ define(function(require) {
                 userId: userId,
                 nodeId: nodeCounter++,
                 position: {
-                    x: position.x,
-                    y: position.y
+                    x: null,
+                    y: null
                 },
                 weight: weight,
                 children: [],
@@ -58,6 +58,7 @@ define(function(require) {
         var graph = svg;
         var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
         var userDict = {};
+        var userCounter = 0;
 
         /************ Private Functions ************/
 
@@ -127,7 +128,7 @@ define(function(require) {
         }
 
         graph.merge = function(mergeNodes, mergeReason){
-            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).Date(), mergeReason, "Merge");
+            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, "Merge");
             for(var i = 0; i < mergeNodes.length; i++){
                 mergeNodes[i].children.push(node);
                 if(mergeNodes[i].duration > node.duration){
@@ -243,13 +244,14 @@ define(function(require) {
             }
             drawFrom(Root);
         }
-        graph.append(pullState, info){
+
+        graph.insert = function(pullState, info){
             // datetime
             // username
             // nodesInfo
             let temp = pullState;
             if(!userDict[info.username]){
-                userDict[info.username] = userDict.length + 1;
+                userDict[info.username] = ++userCounter;
             }
             let userId = userDict[info.username];
             for(var i = 0; i < info.nodesInfo.length; i++){
@@ -260,7 +262,7 @@ define(function(require) {
                     duration: info.nodesInfo[i].duration,
                     nodename: info.nodesInfo[i].nodename,
                     reason: info.nodesInfo[i].reason
-                );
+                });
             }
         }
 

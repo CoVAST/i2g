@@ -90,10 +90,11 @@ define(function(require){
         webSocket.emit('large display', {});
         webSocket.on('update', function(data){
             data.logs.forEach(function(log){
-                logTree.append({
+                console.log(data.logs);
+                logTree.insert(null, {  //null as pull state
                     datetime: log.datetime,
-                    username: log.username,
-                    nodesInfo: log.nodesInfo
+                    username: log.user,
+                    //nodesInfo: log.nodesInfo
                 })
             })
             allGraphs = allGraphs.concat(data.logs.map(function(d){return d.graph;}));
