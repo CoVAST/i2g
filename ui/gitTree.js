@@ -27,9 +27,9 @@ define(function(require) {
                     weight += fathers[i].weight;
                 }
             }
-            //Formatted fathers
+            //Formatize fathers
             fathers = Array.isArray? fathers : [fathers];
-            return {
+            var node = {
                 userId: userId,
                 nodeId: nodeCounter++,
                 position: {
@@ -42,12 +42,18 @@ define(function(require) {
                 action: action,
                 duration: duration
             }
+            node.checkout = function(infos){
+                return graph.checkout(node, infos);
+            }
+            return node;
         }
+
         /************ Global Parameters ************/
         var Root = new Node(0, {x: null, y: null}, null, "Root");    // Mark 0 as root/merge/...(which is structural-part) node
         var RecalPos = true;
         var fullVerticalStep = 40;
         var graph = svg;
+        var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
 
         /************ Private Functions ************/
 
@@ -56,6 +62,7 @@ define(function(require) {
             else if(node.fathers.length === 1){
                 node.weight = node.fathers[0].weight / node.fathers[0].children.length;
             }else{
+                node.weight = 0;
                 for(var i = 0; i < node.fathers.length; i++){
                     node.weight += node.fathers[i].weight;
                 }
@@ -90,19 +97,34 @@ define(function(require) {
             }
             return null;
         }
+        function findNodesByUserIdFrom(userId, node){
+            var curNode = node;
+            var rstArray = [];
+            if(curNode.userId === userId){
+                rstArray.push(node);
+            }
+            for(var i = 0; i < curNode.children.length; i++){
+                let rst = findNodesByUserIdFrom(userId, curNode.children[i]);
+                if(rst.length != 0) rstArray = rstArray.concat(rst);
+            }
+            return rstArray;
+        }
 
         /************ Public Functions ************/
-        graph.checkout = function(beginNode, info){    //Both single and multiple node(s) supported
-            info = Array.isArray(info)? info : [info];
-            for(var i = 0; i < info.length; i++){
-                var node = new Node(info.userId, {x: null, y: null}, [beginNode], info.action, info.duration);
+        graph.checkout = function(beginNode, infos){    //Both single and multiple node(s) supported
+            infos = Array.isArray(infos)? infos : [infos];
+            var rst = [];
+            for(var i = 0; i < infos.length; i++){
+                var node = new Node(infos[i].userId, {x: null, y: null}, [beginNode], infos[i].action, infos[i].duration);
                 beginNode.children.push(node);
+                rst.push(node);
             }
+            return rst;
         }
 
         graph.merge = function(mergeNodes){
             var node = new Node(0, {x: null, y: null}, mergeNodes, "merge", 0);
-            for(var i = 0; i > info.length; i++){
+            for(var i = 0; i < mergeNodes.length; i++){
                 mergeNodes[i].children.push(node);
                 if(mergeNodes[i].duration > node.duration){
                     node.duration = mergeNodes[i].duration;
@@ -113,6 +135,30 @@ define(function(require) {
 
         graph.findNodeById = function(nodeId){
             return findNodeByIdFrom(nodeId, Root);
+        }
+
+        graph.findLatestNodeByUserId = function(userId){
+            var curNode = Root;
+            let rstArray = findNodesByUserIdFrom(userId, curNode);
+            let max = 0;
+            let record = null;
+            for(var i = 0; i < rstArray.length; i++){
+                if(max < rstArray[i].nodeId){
+                    record = rstArray[i];
+                    max = rstArray[i].nodeId;
+                }
+            }
+            return record;
+        }
+
+        graph.findByUserIdAmong = function(userId, nodes){
+            var rst = nodes.filter(function(d){
+                  return d.userId === userId;
+            })
+            if(rst.length > 1){
+                console.log("Multiple branches own this same userId, which is not supported");
+            }
+            return rst[0];
         }
 
         graph.refresh = function(){
@@ -134,7 +180,7 @@ define(function(require) {
                     if(node.fathers.length > 1){
                         for(var i = 0; i < node.fathers.length; i++){
                             if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
-                            posX = node.fathers[i].position.x;
+                            posX += node.fathers[i].position.x;
                         }
                         posX = posX / node.fathers.length;
                         node.position.x = posX;
@@ -149,7 +195,7 @@ define(function(require) {
                         }
                         previousLength = previousLength * width;
                         let posX = fatherStartX + previousLength + node.weight * width / 2;
-                        let posY = node.fathers[0].position.y + fullVerticalStep;
+                        let posY = node.fathers[0].position.y + fullVerticalStep * node.duration * durationStepConst;
                         node.position.x = posX;
                         node.position.y = posY;
                     }
@@ -193,8 +239,6 @@ define(function(require) {
             }
             drawFrom(Root);
         }
-        /************ Entrance ************/
-        graph.refresh() ;
 
         /************ Example ************/
         var InfoA = {
@@ -203,8 +247,41 @@ define(function(require) {
             duration: 100,  //second
             action: "Add Node 1",
         }
-        graph.checkout(Root, [InfoA, InfoA, InfoA]);
-        graph.checkout(graph.findNodeById(3), [InfoA]);
+        var InfoB = {
+            // username: "Alan",
+            userId: 2,
+            duration: 200,  //second
+            action: "Add Node 2",
+        }
+        var InfoC = {
+            // username: "Alan",
+            userId: 3,
+            duration: 200,  //second
+            action: "Add Node 3",
+        }
+        var InfoC2 = {
+            // username: "Alan",
+            userId: 3,
+            duration: 300,  //second
+            action: "Add Node 4",
+        }
+        var InfoB2 = {
+            // username: "Alan",
+            userId: 2,
+            duration: 200,  //second
+            action: "Add Node 6",
+        }
+        var InfoA2 = {
+            // username: "Alan",
+            userId: 1,
+            duration: 300,  //second
+            action: "Add Node 7",
+        }
+        graph.findByUserIdAmong(3, graph.checkout(Root, [InfoA, InfoB, InfoC])).checkout([InfoC2]);
+        graph.findNodeById(2).checkout([InfoB2]);
+        graph.findLatestNodeByUserId(1).checkout([InfoA2]);
+        graph.merge([graph.merge([graph.findLatestNodeByUserId(1), graph.findLatestNodeByUserId(2)]),graph.findLatestNodeByUserId(3)])
+
         RecalPos = true;
         graph.refresh();
 
