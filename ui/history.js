@@ -60,12 +60,18 @@ define(function(require){
 				}
 			}
 		}
+		this.fetchAllRecords = function(){
+			return historyRecord.slice(0);
+		}
 		this.fetchSpecificRecord = function(timestamp){
 			if(historyRecord.length === 0) return null;
 			if(timestamp === -1){
 				timestamp = historyRecord.length - 1; 
 			}
 			return historyRecord[timestamp].hist.data;
+		}
+		this.clear = function(){
+			historyRecord.length = [];
 		}
 	};
 	return histRec;

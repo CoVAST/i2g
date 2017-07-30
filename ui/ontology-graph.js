@@ -33,7 +33,7 @@ define(function(require) {
                 time: 'wait'
             };
 
-        var PullPoint = null;
+        var PullPoint = 0;  //Root as default
 
         let logFunc = (str) => () => console.log(str);
 
@@ -527,7 +527,6 @@ define(function(require) {
 
         function addNodeLabel(d) {
             if (!nodeLabels.hasOwnProperty(d.id)) {
-
                 nodeLabels[d.id] = nodeInfo.append("text")
                     .attr("class", "nodeLabels")
                     .attr("dx", 20)
@@ -558,7 +557,6 @@ define(function(require) {
             if(!nodeIcons.hasOwnProperty(d.id) || nodeIcons[d.id] === null){
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
-
                 nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
                     .attr("transform", "scale(" + scale * 0.001 + ")")
                     .attr("d", logos(d.icon || d.type))
@@ -913,6 +911,27 @@ define(function(require) {
                     .duration(400)
                     .attr("transform", "scale(" + scale * 0.1 + ")")
                     .delay(100);
+        }
+
+        otGraph.getIncrements = function(){
+            return histRec.fetchAllRecords();
+        }
+
+        otGraph.onPull = function(pulledGraph, pullPoint){
+            PullPoint = pullPoint;
+            allReset();
+            nodes = pulledGraph.nodes;
+            links = pulledGraph.links;
+        }
+
+        otGraph.pullState = function(){
+            return PullPoint;
+        }
+
+        function allReset(){
+            histIdx = 0;
+            curTimestamp = 0;
+            histRec.clear();
         }
 
         return otGraph;

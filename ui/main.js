@@ -187,13 +187,14 @@ return function(webSocket) {
     }))
 
     $("#confirm-commit").click(function(){
-        var graph = {
-            nodes: igraph.getNodes(),
-            links: igraph.getLinks()
-        };
-        console.log('push graph to server', graph, );
+        // var graph = {
+        //     nodes: igraph.getNodes(),
+        //     links: igraph.getLinks()
+        // };
+        var increments = igraph.getIncrements();
         webSocket.emit('push', {
-            graph: graph,
+            pullStateId: igraph.pullState(),
+            increments: increments,
             note: $('#commit-note').val()
         });
     })

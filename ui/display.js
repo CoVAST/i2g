@@ -60,9 +60,6 @@ define(function(require){
             scale: scale,
         });
 
-        var allGraphs = [];
-        //July 26 will start here// Loglist means left-historylist
-        //To add new history list and ontology response
         var logTree = new gitTree({
             container: views.left.body,
             header: "History",
@@ -72,57 +69,46 @@ define(function(require){
                 
             }
         })
-        
-        // var logList = new List({
-        //     container: views.left.body,
-        //     header: "History",
-        //     types: ['selection' , 'divided', 'single'],
-        //     onselect: function(d) {
-        //         console.log(allGraphs[d]);
-        //         // ig.removeLinks({all:1})
-        //         //     .removeNodes({all:1});
-        //         // ig.remake(allGraphs[d])
-        //     }
-        // })
 
         appLayout.views = views;
 
         webSocket.emit('large display', {});
-        webSocket.on('update', function(data){
-            data.logs.forEach(function(log){
-                console.log(data.logs);
-                logTree.insert(null, {  //null as pull state
-                    datetime: log.datetime,
-                    username: log.user,
-                    //nodesInfo: log.nodesInfo
-                })
-            })
-            allGraphs = allGraphs.concat(data.logs.map(function(d){return d.graph;}));
-            var graphs = data.graphs,
-                users = Object.keys(graphs),
-                graph = {links: [], nodes:[]};
-
-            if(users.length){
-                // views.left.clear();
-                for(var name in graphs) {
-                    graph.nodes = graph.nodes.concat(graphs[name].nodes);
-                    graph.links = graph.links.concat(graphs[name].links);
-                    // var gg = iGraph({
-                    //     container: views.left.body,
-                    //     width: views.left.innerWidth,
-                    //     height: views.left.innerWidth,
-                    //     domain: [0, 1],
-                    //     graphId: name + '_igraph',
-                    //     colorScheme: colorScheme,
-                    //     graph:  {links: [], nodes:[]},
-                    //     graphName: name,
-                    // });
-                    // gg.remake(graphs[name])
+        webSocket.on('update', function(datas){
+            console.log(datas.logs);
+            let logs = Array.isArray(datas.logs)? datas.logs : [datas.logs];
+            for(var j = 0; j < logs.length; j++){
+                var tempInfos = [];
+                for(var i = 0; i < logs[j].increments.length; i++){
+                    if(logs[j].increments[i].hist.action.indexOf("node") !== -1){
+                        tempInfos.push({
+                            action: logs[j].increments[i].hist.action,
+                            reason: logs[j].increments[i].hist.data.reason,
+                            nodename: logs[j].increments[i].hist.data.label,
+                            duration: logs[j].increments[i].hist.data.duration || 200,
+                            data: logs[j].increments[i].hist.data.visData.curData || null,
+                            datetime: logs[j].increments[i].hist.data.datetime || "2017-XX-XX"
+                        });
+                    }else{
+                        tempInfos.push({
+                            action: logs[j].increments[i].hist.action,
+                            reason: logs[j].increments[i].hist.data.reason || "Relevant",
+                            nodename: logs[j].increments[i].hist.data.label,
+                            data: "Link",
+                            duration: logs[j].increments[i].hist.data.duration || 200,
+                            datetime: logs[j].increments[i].hist.data.datetime || "2017-XX-XX"
+                        });
+                    }
                 }
-                ig.removeLinks({all:true});
-                ig.remake(graph);
+                logTree.insert(0, {  //0 : pull state
+                    datetime: logs[j].datetime,
+                    commitReason: logs[j].commitReason,
+                    userId: logs[j].userId,
+                    nodesInfo: tempInfos
+                });
             }
-        })
+            
+
+        });
         return appLayout;
     }
 })

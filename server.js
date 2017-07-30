@@ -46,14 +46,18 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 var provenance = [];
 
-var users = {},
-    graphs = {},
-    largeDisplay = null;
+var users = {};
+var largeDisplay = null;
+
+var userIdDict = {};
 
 io.on('connection', function (socket) {
     socket.on('add user', function (userInfo) {
         socket.user = userInfo;
-        users[userInfo.name] = socket.user;
+        if(!userIdDict[userInfo.name]){
+            users[userInfo.name] = socket.user;
+            userIdDict[userInfo.name] = Object.keys(userIdDict).length + 1;
+        }
         socket.emit('login', {
             numUsers: Object.keys(users).length
         });
@@ -63,46 +67,26 @@ io.on('connection', function (socket) {
     socket.on('large display', function(displayInfo) {
         largeDisplay = socket;
         largeDisplay.emit('update', {
-            users: users,
-            graphs: graphs,
             logs: provenance
         });
         console.log('Large Display connected');
     });
 
     socket.on('push', function(data) {
-        graphs[socket.user.name] = data.graph;
         if(largeDisplay !== null) {
-            var graph = {links: [], nodes:[]};
-            for(var name in users) {
-                console.log(name, users);
-                if(graphs.hasOwnProperty(name)) {
-                    graphs[name].nodes.forEach(function(d){
-                        d.id = d.label;
-                        d._user = name;
-                    });
-                    graphs[name].links.forEach(function(d){
-                        d._user = name;
-                        d.source.id = d.source.label;
-                        d.target.id = d.target.label;
-                    });
-
-                    graph.nodes = graph.nodes.concat(graphs[name].nodes);
-                    graph.links = graph.links.concat(graphs[name].links);
-                }
-            }
+            let userId = userIdDict[socket.user.name];
             var log = {
-                user: socket.user.name,
-                note: data.note,
-                graph: graph,
-                datetime: new Date(),
+                pullStateId: data.pullStateId,
+                userId: userId,
+                commitReason: data.note,
+                increments: data.increments,
+                datetime: new Date()
             };
             provenance.push(log);
-            console.log(graphs);
+            console.log(provenance);
+            console.log("Update");
             largeDisplay.emit('update', {
-                users: users,
-                graphs: graphs,
-                logs: [log]
+                logs: log
             });
         }
     });

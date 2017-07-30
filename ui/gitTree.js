@@ -17,18 +17,20 @@ define(function(require) {
 
         /************ Tree Structure ************/
         var Node = function(userId, fathers, action, duration, datetime, reason, nodename){
+            //Formatize fathers
             //Calculate weight
             var weight = 0.0;
             if(!fathers) weight = 1;
-            else if(fathers.length === 1){
-                weight = fathers[0].weight / fathers[0].children.length;
-            }else{
-                for(var i = 0; i < fathers.length; i++){
-                    weight += fathers[i].weight;
+            else{
+                fathers = Array.isArray(fathers)? fathers : [fathers];
+                if(fathers.length === 1){
+                    weight = fathers[0].weight / fathers[0].children.length;
+                }else{
+                    for(var i = 0; i < fathers.length; i++){
+                        weight += fathers[i].weight;
+                    }
                 }
             }
-            //Formatize fathers
-            fathers = Array.isArray? fathers : [fathers];
             var node = {
                 userId: userId,
                 nodeId: nodeCounter++,
@@ -57,10 +59,18 @@ define(function(require) {
         var fullVerticalStep = 40;
         var graph = svg;
         var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
-        var userDict = {};
-        var userCounter = 0;
+        
+        var Repository = [];
+        var stampId = 0;    //Each merge creates a timestamp
+        repoSave(); //Initial saving
 
         /************ Private Functions ************/
+        function repoSave(){
+            let str = JSON.stringify(Root);
+            let restore = JSON.parse(str);
+            Repository[stampId] = restore;
+            stampId++;
+        }
 
         function refillWeightFrom(node){
             if(!node.fathers) node.weight = 1;
@@ -120,7 +130,7 @@ define(function(require) {
             infos = Array.isArray(infos)? infos : [infos];
             var rst = [];
             for(var i = 0; i < infos.length; i++){
-                var node = new Node(infos[i].userId, [beginNode], infos[i].action, infos[i].duration, infos[i].datetime, infos[i].reason, infos[i].nodename);
+                var node = new Node(infos[i].userId, beginNode, infos[i].action, infos[i].duration, infos[i].datetime, infos[i].reason, infos[i].nodename);
                 beginNode.children.push(node);
                 rst.push(node);
             }
@@ -227,8 +237,8 @@ define(function(require) {
                         .y((d) => { return d.y; })
                         .curve(d3.curveCatmullRom.alpha(0.5));
 
-                var lineData=[  {"x":beginNode.position.x,   "y":beginNode.position.y},  
-                                {"x":endNode.position.x,  "y":endNode.position.y}   ];
+                var lineData=[  {"x": beginNode.position.x,   "y": beginNode.position.y},  
+                                {"x": endNode.position.x,     "y": endNode.position.y}   ];
                 svg.append("path")
                     .attr("d", curveFunction(lineData))
                     .attr("stroke","black")
@@ -236,80 +246,92 @@ define(function(require) {
                     .attr("stroke-width",2)
                     .attr("fill","none");
             }
+            svg.selectAll("circle").remove();
+            svg.selectAll("path").remove();
 
             if(RecalPos){
                 refillWeightFrom(Root);
                 refillPositionFrom(Root);
-                RecalPos = false;
+                RecalPos = true;    //TODO Later revise
             }
             drawFrom(Root);
         }
 
-        graph.insert = function(pullState, info){
+        graph.insert = function(pullStamp, info){
             // datetime
             // username
             // nodesInfo
-            let temp = pullState;
-            if(!userDict[info.username]){
-                userDict[info.username] = ++userCounter;
-            }
-            let userId = userDict[info.username];
+            let temp = [];
+            temp.push(graph.findNodeById(Repository[pullStamp].nodeId));    
+            // A temporary method
+            // In order to obtain the handler of a node,
+            // however, repo things are deep copy. Now, only
+            // use id to find hanlder, which is possibly not
+            // able to support some complex structure
+
+
             for(var i = 0; i < info.nodesInfo.length; i++){
-                temp = temp.checkout({
-                    userId: userId,
-                    datetime: datetime,
+                temp = graph.checkout(temp[0], {
+                    userId: info.userId,
+                    datetime: info.datetime,
                     action: info.nodesInfo[i].action,
                     duration: info.nodesInfo[i].duration,
                     nodename: info.nodesInfo[i].nodename,
-                    reason: info.nodesInfo[i].reason
+                    reason: info.nodesInfo[i].reason,
+                    data: info.nodesInfo[i].data
                 });
             }
+            graph.refresh();
+        }
+
+        graph.pull = function(){
+            return stampId;
         }
 
         /************ Example ************/
-        var InfoA = {
-            // username: "Alan",
-            userId: 1,
-            duration: 100,  //second
-            action: "Add Node 1",
-        }
-        var InfoB = {
-            // username: "Alan",
-            userId: 2,
-            duration: 200,  //second
-            action: "Add Node 2",
-        }
-        var InfoC = {
-            // username: "Alan",
-            userId: 3,
-            duration: 200,  //second
-            action: "Add Node 3",
-        }
-        var InfoC2 = {
-            // username: "Alan",
-            userId: 3,
-            duration: 300,  //second
-            action: "Add Node 4",
-        }
-        var InfoB2 = {
-            // username: "Alan",
-            userId: 2,
-            duration: 200,  //second
-            action: "Add Node 6",
-        }
-        var InfoA2 = {
-            // username: "Alan",
-            userId: 1,
-            duration: 100,  //second
-            action: "Add Node 7",
-        }
-        graph.findByUserIdAmong(3, graph.checkout(Root, [InfoA, InfoB, InfoC])).checkout([InfoC2]);
-        graph.findNodeById(2).checkout([InfoB2]);
-        graph.findLatestNodeByUserId(1).checkout([InfoA2]);
-        graph.merge([graph.merge([graph.findLatestNodeByUserId(1), graph.findLatestNodeByUserId(2)]),graph.findLatestNodeByUserId(3)])
+        // var InfoA = {
+        //     // username: "Alan",
+        //     userId: 1,
+        //     duration: 100,  //second
+        //     action: "Add Node 1",
+        // }
+        // var InfoB = {
+        //     // username: "Alan",
+        //     userId: 2,
+        //     duration: 200,  //second
+        //     action: "Add Node 2",
+        // }
+        // var InfoC = {
+        //     // username: "Alan",
+        //     userId: 3,
+        //     duration: 200,  //second
+        //     action: "Add Node 3",
+        // }
+        // var InfoC2 = {
+        //     // username: "Alan",
+        //     userId: 3,
+        //     duration: 300,  //second
+        //     action: "Add Node 4",
+        // }
+        // var InfoB2 = {
+        //     // username: "Alan",
+        //     userId: 2,
+        //     duration: 200,  //second
+        //     action: "Add Node 6",
+        // }
+        // var InfoA2 = {
+        //     // username: "Alan",
+        //     userId: 1,
+        //     duration: 100,  //second
+        //     action: "Add Node 7",
+        // }
+        // graph.findByUserIdAmong(3, graph.checkout(Root, [InfoA, InfoB, InfoC])).checkout([InfoC2]);
+        // graph.findNodeById(2).checkout([InfoB2]);
+        // graph.findLatestNodeByUserId(1).checkout([InfoA2]);
+        // graph.merge([graph.merge([graph.findLatestNodeByUserId(1), graph.findLatestNodeByUserId(2)]),graph.findLatestNodeByUserId(3)])
 
-        RecalPos = true;
-        graph.refresh();
+        // RecalPos = true;
+        // graph.refresh();
 
         return graph;
     }
