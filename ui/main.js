@@ -13,6 +13,8 @@ var arrays = require('p4/core/arrays'),
 
 var ontoGraph = require('./ontology-graph');
 var colorScheme = require('./color-scheme');
+var gitTree = require('./gitTree');
+
 
 return function(webSocket) {
 
@@ -63,26 +65,33 @@ return function(webSocket) {
     hlContainer.style.paddingTop = '6em';
     hlContainer.innerHTML = '<h3>Provenance</h3>';
 
-    var hl = new List({
-        container: hlContainer,
+    var hl = new gitTree({
         id: 'igraph-history',
-        types: ['selection', 'single'],
-        onselect: (id) => {
-            console.log("Show hist at timestamp " + id);
-            igraph.showRecHist(id);
-            spatiotemporal.map.onRenew();
+        container: hlContainer,
+        width: 150,
+        height: 500
+    })
 
-            var visData = igraph.fetchVisData(id);
-            spatiotemporal.removeAllSubjects();
-            spatiotemporal.removeAllAreas();
-            if(!!visData && !!visData.totalDataIdxs){
-                for(var i = 0 ; i < visData.totalDataIdxs.length; i++){
-                    spatiotemporal.addSubject(visData.totalDataIdxs[i], selection.fetchRealData(totalData));
-                }
-            } 
-            if(!!visData) spatiotemporal.map.loadMap(visData, true);    
-        }
-    });
+    // var hl = new List({
+    //     container: hlContainer,
+    //     id: 'igraph-history',
+    //     types: ['selection', 'single'],
+    //     onselect: (id) => {
+    //         console.log("Show hist at timestamp " + id);
+    //         igraph.showRecHist(id);
+    //         spatiotemporal.map.onRenew();
+
+    //         var visData = igraph.fetchVisData(id);
+    //         spatiotemporal.removeAllSubjects();
+    //         spatiotemporal.removeAllAreas();
+    //         if(!!visData && !!visData.totalDataIdxs){
+    //             for(var i = 0 ; i < visData.totalDataIdxs.length; i++){
+    //                 spatiotemporal.addSubject(visData.totalDataIdxs[i], selection.fetchRealData(totalData));
+    //             }
+    //         } 
+    //         if(!!visData) spatiotemporal.map.loadMap(visData, true);    
+    //     }
+    // });
 
     var np = new NotePanel({
         container: 'page-sidebar',

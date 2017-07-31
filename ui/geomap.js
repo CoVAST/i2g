@@ -361,19 +361,60 @@ return function geoLocation(options) {
             return;
         }
         for(var i = 0; i < areas.length; i++){
-            areas[i].leaflet = L.marker(areas[i].coordinates, {
-                    color: 'none',
+            if(areas[i].type === 'rect'){
+                areas[i].leaflet = L.rectangle(areas[i].coordinates, {
+                    color: importantGeoColor,
+                    opacity: 0.8,
+                    weight: 1,
                     fillColor: importantGeoColor,
-                    // weight: 1,
                     fillOpacity: 0.5,
-                    radius: 10,
                     contextmenu: true,
                     contextmenuItems: [{
                         separator: true,
                         index: 0
                     }]
                 })
+            }else if (areas[i].type === 'point'){
+                areas[i].leaflet = L.marker(areas[i].coordinates, {
+                        color: 'none',
+                        fillColor: importantGeoColor,
+                        // weight: 1,
+                        fillOpacity: 0.5,
+                        radius: 10,
+                        contextmenu: true,
+                        contextmenuItems: [{
+                            separator: true,
+                            index: 0
+                        }]
+                    })
+            }else if(areas[i].type === 'polyline'){
+                areas[i].leaflet = L.polyline(areas[i].coordinates, {
+                    color: importantGeoColor,
+                    opacity: 0.8,
+                    weight: 8,
+                    contextmenu: true,
+                    contextmenuItems: [{
+                        separator: true,
+                        index: 0
+                    }]
+                })
+            }else if(areas[i].type === 'polygon'){
+                areas[i].leaflet = L.polygon(areas[i].coordinates, {
+                    color: importantGeoColor,
+                    opacity: 0.8,
+                    weight: 1,
+                    fillColor: importantGeoColor,
+                    fillOpacity: 0.5,
+                    contextmenu: true,
+                    contextmenuItems: [{
+                        separator: true,
+                        index: 0
+                    }]
+                })
+            }else{
+                console.log("Undefined type");
             }
+        }
         return areas;
     }
     return {

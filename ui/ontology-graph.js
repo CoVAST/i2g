@@ -398,7 +398,7 @@ define(function(require) {
                         .ease(d3.easeBounce)
                         .duration(400)
                         .attr("transform", "scale(" + scale * 0.115 + ")");
-                    this.style.cursor='hand';
+                    this.style.cursor='hand';   //FIXME: Revise it to .attr("style", "cursor: hand");
                 })
                 .on('mouseout', function(d){
                     // console.log("mouseout");

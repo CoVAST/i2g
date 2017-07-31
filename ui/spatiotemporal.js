@@ -191,7 +191,12 @@ return function(arg) {
                 }
                 appLayout.map.onRenew();
                 var visData = igraph.fetchVisData(-1);
-                if(!!visData) appLayout.map.loadMap(visData);  
+                if(!!visData){
+                    // for(var i = 0; i < visData.areas.length; i++){
+                    //     visData.areas[i].leaflet._latlng = visData.areas[i].coordinates;
+                    // }
+                    appLayout.map.loadMap(visData);
+                }
                 appLayout.map.addImportantGeos(submit_d);
                 appLayout.areas.push(submit_d);
                 submit_d.leaflet.on('click', function(){

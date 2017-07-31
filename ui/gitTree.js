@@ -14,9 +14,10 @@ define(function(require) {
             // types = options.types || [];
         svg.attr("width", width).attr("height", height);
         var nodeCounter = 0;
+        width = width / 2;
 
         /************ Tree Structure ************/
-        var Node = function(userId, fathers, action, duration, datetime, reason, nodename){
+        var Node = function(userId, fathers, action, duration, datetime, reason, nodename, type){
             //Formatize fathers
             //Calculate weight
             var weight = 0.0;
@@ -45,6 +46,7 @@ define(function(require) {
                 duration: duration,
                 datetime: datetime,
                 reason: reason,
+                type: type,
                 nodename: nodename
             }
             node.checkout = function(infos){
@@ -54,14 +56,17 @@ define(function(require) {
         }
 
         /************ Global Parameters ************/
-        var Root = new Node(0, null, "Root", 0, null, null, "Root");    // Mark 0 as root/merge/...(which is structural-part) node
+        var Root = new Node(0, null, "Root", 0, null, null, "Root", "Root");    // Mark 0 as root/merge/...(which is structural-part) node
         var RecalPos = true;
-        var fullVerticalStep = 40;
+        var fullVerticalStep = 20;
         var graph = svg;
         var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
         
         var Repository = [];
         var stampId = 0;    //Each merge creates a timestamp
+        var isPulling = false;
+        var isMerging = false;
+        var CurShowNode = null;
         repoSave(); //Initial saving
 
         /************ Private Functions ************/
@@ -125,12 +130,30 @@ define(function(require) {
             return rstArray;
         }
 
+        function highlightLeavesFrom(node){
+            if(node.children.length === 0){
+                node.highlight = 1;
+                return;
+            }else{
+                node.highlight = -1;
+            }
+            for(var i = 0; i < node.children.length; i++){
+                highlightLeavesFrom(node.children[i]);
+            }
+        }
+        function cancelHighlightFrom(node){
+            node.highlight = 0;
+            for(var i = 0; i < node.children.length; i++){
+                cancelHighlightFrom(node.children[i]);
+            }
+        }
+
         /************ Public Functions ************/
         graph.checkout = function(beginNode, infos){    //Both single and multiple node(s) supported
             infos = Array.isArray(infos)? infos : [infos];
             var rst = [];
             for(var i = 0; i < infos.length; i++){
-                var node = new Node(infos[i].userId, beginNode, infos[i].action, infos[i].duration, infos[i].datetime, infos[i].reason, infos[i].nodename);
+                var node = new Node(infos[i].userId, beginNode, infos[i].action, infos[i].duration, infos[i].datetime, infos[i].reason, infos[i].nodename, infos[i].type);
                 beginNode.children.push(node);
                 rst.push(node);
             }
@@ -138,7 +161,7 @@ define(function(require) {
         }
 
         graph.merge = function(mergeNodes, mergeReason){
-            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, "Merge");
+            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, "Merge", "Merge");
             for(var i = 0; i < mergeNodes.length; i++){
                 mergeNodes[i].children.push(node);
                 if(mergeNodes[i].duration > node.duration){
@@ -221,15 +244,58 @@ define(function(require) {
             }
 
             function drawCircle(node){    //One color represents one ID
-                svg.append("circle")
-                    .attr("id", node.nodeId)
-                    .attr("r", 10)
-                    .attr("stroke", colorAlloc(node.userId))
-                    .attr("stroke-width", 2)
-                    .attr("fill", colorAlloc(node.userId))
-                    .attr("fill-opacity", "0.4")
-                    .attr("stroke-opacity", "0.4")
-                    .attr("transform", "translate(" + node.position.x + "," + node.position.y + ")");
+                if(node.highlight === -1){
+                    colorId = 0;
+                    opacity = 0.1;
+                }else if(node.highlight === 1){
+                    colorId = node.userId;
+                    opacity = 0.6;
+                }else{
+                    opacity = 0.4;
+                    colorId = node.userId;
+                }
+                var circle = svg.append("circle")
+                        .attr("id", node.nodeId)
+                        .attr("r", 10)
+                        .attr("stroke", colorAlloc(colorId))
+                        .attr("stroke-width", 2)
+                        .attr("fill", colorAlloc(colorId))
+                        .attr("fill-opacity", opacity)
+                        .attr("stroke-opacity", opacity)
+                        .attr("style","cursor: hand")
+                        .attr("transform", "translate(" + node.position.x + "," + node.position.y + ")");
+                circle.on("click", ()=>{
+                    if(CurShowNode !== null){
+                        CurShowNode.transition()
+                            .ease(d3.easeBounce)
+                            .duration(400)
+                            .attr("r", 10);
+                    }
+                    circle.transition()
+                            .ease(d3.easeBounce)
+                            .duration(400)
+                            .attr("r", 15);
+                    CurShowNode = circle;
+                    showStateById(parseInt(CurShowNode.attr("id")));
+                })
+            }
+            function showStateById(id){
+                let node = graph.findNodeById(id);
+                let curNode = node;
+                let backStack = [];
+                if(curNode === null){
+                    console.log(id, "Not found");
+                    return;
+                }
+                while(curNode.fathers && curNode.fathers.length === 1){
+                    backStack.push(curNode);
+                    curNode = curNode.fathers[0];
+                }
+                if(curNode.fathers && curNode.fathers.length > 1){
+                    //merge data array
+                    //backStack.concat(mergeDataArray);
+                }
+                graph.onIGraphBuild(backStack);
             }
             function drawLink(beginNode, endNode){
                 var curveFunction = d3.line()
@@ -278,14 +344,35 @@ define(function(require) {
                     duration: info.nodesInfo[i].duration,
                     nodename: info.nodesInfo[i].nodename,
                     reason: info.nodesInfo[i].reason,
+                    type: info.nodesInfo[i].reason,
                     data: info.nodesInfo[i].data
                 });
             }
             graph.refresh();
         }
-
-        graph.pull = function(){
+        graph.onClickPull = function(){
+            if(isMerging)return;
+            if(isPulling){
+                isPulling = false;
+                cancelHighlightFrom(Root);
+            }else{
+                isPulling = true;
+                highlightLeavesFrom(Root);
+            }
+            graph.refresh();
             return stampId;
+        }
+
+        graph.onClickMerge = function(){
+            if(isPulling)return;
+            if(isMerging){
+                isMerging = false;
+                cancelHighlightFrom(Root);
+            }else{
+                isMerging = true;
+                highlightLeavesFrom(Root);
+            }
+            graph.refresh();
         }
 
         /************ Example ************/
