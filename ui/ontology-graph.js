@@ -1,12 +1,9 @@
 define(function(require) {
     var logos = require('./icons'),
-        pipeline = require('p4/core/pipeline'),
-        histrec = require('./history');
-    var histIdx = 0,
-        curTimestamp = 0;
-
+        pipeline = require('p4/core/pipeline');
     return function(arg) {
         'use strict';
+        /**************Initialization Variables***************/
         var options = arg || {},
             container = options.container || "body",
             domain = options.domain || [0, 1],
@@ -26,8 +23,9 @@ define(function(require) {
             nodes = graph.nodes,
             links = graph.links;
 
-        var trackHistory = true,
-            historyIcons = {
+        var history = [],
+            trackHistory = true,
+                historyIcons = {
                 location: 'marker',
                 people: 'user',
                 datetime: 'wait',
@@ -37,114 +35,6 @@ define(function(require) {
         var localState = historyList.Root;
         var pullStamp = 0;
 
-        let logFunc = (str) => () => console.log(str);
-
-        let histRec = new histrec();
-
-        function addHistory(hist) {
-            console.log("Index: " + histIdx);
-            if(trackHistory && typeof historyList != 'undefined') {
-                let histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
-                let info = null;
-                if(hist.action.indexOf("node") !== -1){
-                    info = {
-                        userId: 0,
-                        datetime: hist.data.datetime || "2017-XX-XX",
-                        action: hist.action,
-                        duration: hist.data.duration || 200,
-                        nodename: hist.data.label,
-                        reason: hist.data.reason,
-                        type: hist.data.type,
-                        data: hist.data.visData.curData || null
-                    };
-                }else{
-                    info = {
-                        userId: 0,
-                        source: hist.source,
-                        target: hist.target,
-                        reason: hist.data.reason || "Relevant",
-                        linkname: hist.data.label,
-                        duration: hist.data.duration || 200,
-                        datetime: hist.data.datetime || "2017-XX-XX"
-                    };
-                }
-                localState = historyList.checkout(localState, info)[0];
-                historyList.refresh();
-            }
-            var timestamp = histIdx;   //HistIdx begins from 0, corresponding to List ids.
-            curTimestamp = histIdx;
-            histIdx++;
-            histRec.addRecord(timestamp, hist);
-        };
-
-        function silentAddLink(li){
-            if(typeof(li.id) === "undefined") li.id = links.length;
-            if(typeof li.source !== 'object') {
-                var sourceId = (graphName===null) ? li.source : graphName + li.source;
-                li.source = nodeHash[sourceId];
-            }
-            if(typeof li.target !== 'object') {
-                var targetId = (graphName===null) ? li.target : graphName + li.target;
-                li.target = nodeHash[targetId];
-            }
-
-            if(!li.hasOwnProperty('datalink')) li.datalink = false;
-            links[li.id] = li;
-            otGraph.update();
-        }
-        function silentAddNode(newNode, id){
-            var pos = newNode.pos || [width/2, height/2];
-            if(!newNode.hasOwnProperty('id'))
-                newNode.id = nodeCounter++;
-            if(!newNode.hasOwnProperty('datalink'))
-                newNode.datalink = false;
-            newNode.tag = newNode.label;
-            newNode.x = pos[0];
-            newNode.y = pos[1];
-            if(graphName!==null)
-                newNode.id = graphName + newNode.id;
-            nodeHash[newNode.id] = newNode;
-
-            addNodeIcon(newNode);
-            addNodeLabel(newNode);
-            otGraph.update();
-        }
-        function silentRemoveLink(linkId){
-            //var removedLink = links.splice(linkId, 1)[0];
-            var removedLink = links[linkId];
-            if(removeLink.hasOwnProperty('icon'))
-                removedLink.icon.remove();
-            otGraph.update();
-            links[linkId] = null;
-        }
-        function silentRemoveNode(nodeId){
-            //nodeIcons[nodeId]._icon.transition().remove();
-            let d = nodeHash[nodeId]
-            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
-                        .attr("d", logos(d.icon || d.type))
-                        .attr("fill", nodeColor(d))
-                        .transition()
-                        .duration(500)
-                        .attr("transform", "scale(" + scale * 0.001 + ")");
-            setTimeout(()=>{
-                nodeIcons[nodeId].remove();
-                nodeLabels[nodeId].remove();
-                delete nodeIcons[nodeId];
-                delete nodeLabels[nodeId];
-                delete nodeHash[nodeId];
-                nodes = nodes.filter(function(d){
-                    return d.id != nodeId;
-                })
-                otGraph.update();
-            }, 500);
-        }
-        
-        otGraph.fetchVisData = function(idx){
-            // console.log(histRec.fetchSpecificRecord(idx));
-            if(histRec.fetchSpecificRecord(idx) === null) return null;
-            return histRec.fetchSpecificRecord(idx).visData;
-        }
-
         var maxLinkValue = 0,
             nodeCounter = 0;
 
@@ -152,21 +42,21 @@ define(function(require) {
         svg.attr('id', graphId).attr("width", width).attr("height", height);
 
         svg.append("svg:defs").append("svg:marker")
-            .attr("id",'end')
-            .attr("viewBox", "0 -5 10 10")
-            .attr("markerUnits", "userSpaceOnUse")
-            .attr("refX", 0)
-            .attr("refY", 0)
-            .attr("markerWidth", 15)
-            .attr("markerHeight", 15)
-            .attr("orient", "auto")
+              .attr("id",'end')
+              .attr("viewBox", "0 -5 10 10")
+               .attr("markerUnits", "userSpaceOnUse")
+              .attr("refX", 0)
+              .attr("refY", 0)
+              .attr("markerWidth", 15)
+              .attr("markerHeight", 15)
+              .attr("orient", "auto")
             .append("svg:path")
             //   .attr("stroke", "red")
             //   .attr("stroke", "none")
-            .attr("fill", "purple")
+              .attr("fill", "purple")
             //   .attr("transform", "scale(0.05)")
             //   .attr("d", logos('info'));
-            .attr("d", "M0,-5L10,0L0,5");
+              .attr("d", "M0,-5L10,0L0,5");
 
         var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -247,6 +137,40 @@ define(function(require) {
             }
         })
 
+        var visData = [];
+        /**************Local functions***************/
+
+        function addHistory(hist) {
+            if(trackHistory && typeof historyList != 'undefined') {
+                let histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
+                let info = null;
+                if(hist.action.indexOf("node") !== -1){
+                    info = {
+                        userId: 0,
+                        datetime: hist.data.datetime || "2017-XX-XX",
+                        action: hist.action,
+                        duration: hist.data.duration || 200,
+                        nodename: hist.data.label,
+                        reason: hist.data.reason,
+                        type: hist.data.type,
+                        data: hist.data.visData.curData || null
+                    };
+                }else{
+                    info = {
+                        userId: 0,
+                        source: hist.source,
+                        target: hist.target,
+                        reason: hist.data.reason || "Relevant",
+                        linkname: hist.data.label,
+                        duration: hist.data.duration || 200,
+                        datetime: hist.data.datetime || "2017-XX-XX"
+                    };
+                }
+                localState = historyList.checkout(localState, info)[0];
+                historyList.refresh();
+            }
+        };
+
         function restart() {
 
             // Apply the general update pattern to the nodes.
@@ -272,73 +196,27 @@ define(function(require) {
                 .on('click', function(d){
                     // d.fx = d3.mouse(this)[0];
                     // d.fy = d3.mouse(this)[1];
-                    // console.log('clicked on node', d.id);
-                    if(linkSource !== null && linkTarget === null) {
-                            linkTarget = d;
-                            console.log(linkTarget);
-                            otGraph.addLinks({
-                                source: linkSource,
-                                target: linkTarget,
-                                value: 2,
-                                datalink: false
-                            })
+                // console.log('clicked on node', d.id);
+                if(linkSource !== null && linkTarget === null) {
+                        linkTarget = d;
+                        console.log(linkTarget);
+                        otGraph.addLinks({
+                            source: linkSource,
+                            target: linkTarget,
+                            value: 2,
+                            datalink: false
+                        })
 
-                            linkSource = linkTarget = null;
-                            tempLink
-                                .attr('stroke-width', 0)
-                                .attr('x1', 0)
-                                .attr('y1', 0)
-                                .attr('x2', 0)
-                                .attr('y2', 0);
+                        linkSource = linkTarget = null;
+                        tempLink
+                            .attr('stroke-width', 0)
+                            .attr('x1', 0)
+                            .attr('y1', 0)
+                            .attr('x2', 0)
+                            .attr('y2', 0);
 
-                            restart();
-                    }else{
-                        // let thisNode = this;
-                        // let thisNodeId = d.id;
-                        // if(d3.select(thisNode).attr('stroke') == 'orange'){
-                        //     d3.select(thisNode).attr('stroke', 'transparent');
-                        //     notePanel.hide();
-                        // }else{
-                        //     d3.select(thisNode).attr('stroke', 'orange');
-                        //     console.log(nodeHash[thisNodeId]);
-                        //     notePanel.setNote({
-                        //         label: nodeHash[thisNodeId].labelPrefix+nodeHash[thisNodeId].label,
-                        //         detail: nodeHash[thisNodeId].detail
-                        //     })
-                        //     notePanel.show();
-                        //     notePanel.onsave = function() {
-                        //         var info = notePanel.getNote();
-                        //         info.labelPrefix = '';
-                        //         otGraph.modifyNode(thisNodeId, info);
-                        //         d3.select(thisNode).attr('stroke', 'transparent');
-                        //     }
-                        //     notePanel.oncancel = function() {
-                        //         d3.select(thisNode).attr('stroke', 'transparent');
-                        //     }
-                        // }
-                        otGraph.onCallRespondingMap(d.id);
+                        restart();
                     }
-                })
-                .on('mouseover', function(d){
-                    // console.log("mouseover");
-                    nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
-                        .attr("d", logos(d.icon || d.type))
-                        .attr("fill", nodeColor(d))
-                        .transition()
-                        .ease(d3.easeBounce)
-                        .duration(400)
-                        .attr("transform", "scale(" + scale * 0.115 + ")");
-                    this.style.cursor='hand';   //FIXME: Revise it to .attr("style", "cursor: hand");
-                })
-                .on('mouseout', function(d){
-                    // console.log("mouseout");
-                    nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
-                        .attr("d", logos(d.icon || d.type))
-                        .attr("fill", nodeColor(d))
-                        .transition()
-                        .ease(d3.easeBounce)
-                        .duration(400)
-                        .attr("transform", "scale(" + scale * 0.1 + ")");
                 })
                 .call(d3.drag()
                     .on("start", dragstarted)
@@ -356,16 +234,16 @@ define(function(require) {
 
             // Apply the general update pattern to the links.
             //
-            var denseLinks = links.filter(function(li){
-                return li && nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
+            links = links.filter(function(li){
+                return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
             });
 
-            link = link.data(denseLinks, function(d) {
+            link = link.data(links, function(d) {
                 return d.source.id + "-" + d.target.id;
             });
             link.exit().remove();
 
-            maxLinkValue = d3.max(denseLinks.map((d)=>d.value));
+            maxLinkValue = d3.max(links.map((d)=>d.value));
             linkSize.domain([0, maxLinkValue]);
             link = link.enter()
                 .append("path")
@@ -384,7 +262,7 @@ define(function(require) {
             // })
             // Update and restart the simulation.
             simulation.nodes(nodes);
-            simulation.force("link").links(denseLinks).iterations(10);
+            simulation.force("link").links(links).iterations(10);
             simulation.alphaTarget(0.3).restart();
         }
 
@@ -439,24 +317,19 @@ define(function(require) {
             d.fy = d3.event.y;
             nodeLabels[d.id].attr("x", d.fx);
             nodeLabels[d.id].attr("y", d.fy);
-            histRec.updateHistory(d.id, d.fx, d.fy);  //Strange Responding Stop
-            nodeHash[d.id].x = d.fx;
-            nodeHash[d.id].y = d.fy;
         }
 
         function dragended(d) {
             // if (!d3.event.active) simulation.alphaTarget(0);
             //   this.style.fill = selectionColor(d.id);
-
-            
             onselect.call(this, d);
-
             //   d.fx = null;
             //   d.fy = null;
         }
 
         function addNodeLabel(d) {
             if (!nodeLabels.hasOwnProperty(d.id)) {
+
                 nodeLabels[d.id] = nodeInfo.append("text")
                     .attr("class", "nodeLabels")
                     .attr("dx", 20)
@@ -487,32 +360,26 @@ define(function(require) {
             if(!nodeIcons.hasOwnProperty(d.id) || nodeIcons[d.id] === null){
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
+
                 nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
-                    .attr("transform", "scale(" + scale * 0.001 + ")")
+                    .attr("transform", "scale(" + scale * 0.1 + ")")
                     .attr("d", logos(d.icon || d.type))
                     .attr("fill", nodeColor(d))
-                nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
-                    .attr("d", logos(d.icon || d.type))
-                    .attr("fill", nodeColor(d))
-                    .transition()
-                    .ease(d3.easeBounce)
-                    .duration(500)
-                    .attr("transform", "scale(" + scale * 0.1 + ")");
             }
         }
 
         function addLinkIcon(d) {
 
-            links[d.id].icon = icons.append("g")
-                .attr("pointer-events", "none");
-            links[d.id].icon.attr("transform", "translate(" +
-                (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
-                (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
+                links[d.id].icon = icons.append("g")
+                    .attr("pointer-events", "none");
+                links[d.id].icon.attr("transform", "translate(" +
+                    (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
+                    (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
 
-            links[d.id].icon.append("path")
-                .attr("transform", "scale(0.05)")
-                .attr("d", logos('info'))
-                .attr("fill", 'red');
+                links[d.id].icon.append("path")
+                    .attr("transform", "scale(0.05)")
+                    .attr("d", logos('info'))
+                    .attr("fill", 'red');
         }
 
 
@@ -528,7 +395,11 @@ define(function(require) {
                     var thisNode = this[0],
                         thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
-                        removeNode(thisNodeId, "alarm");
+                        d3.select(thisNode).remove();
+                        nodeLabels[thisNodeId].remove();
+                        nodeIcons[thisNodeId].remove();
+                        delete nodeLabels[thisNodeId];
+                        delete nodeHash[thisNodeId];
                         restart();
                     } else if(key == 'annotate') {
                         d3.select(thisNode).attr('stroke', 'orange');
@@ -548,10 +419,6 @@ define(function(require) {
                             d3.select(thisNode).attr('stroke', 'transparent');
                         }
                     } else if(key == 'addLink'){
-                        if(!nodeHash[thisNodeId]){
-                            alert("Relevant node has been deleted.");
-                            return;
-                        }
                         linkSource = nodeHash[thisNodeId];
                         linkTarget = null;
                         tempLink
@@ -577,8 +444,8 @@ define(function(require) {
                     var thisLink = this[0],
                         thisLinkId = thisLink.__data__.id;
                     if(key == 'removeLink') {
-                        removeLink(thisLinkId, "alarm");
                         d3.select(thisLink).remove();
+                        removeLink(thisLinkId);
                     } else if(key == 'annotate') {
 
                     }
@@ -595,7 +462,21 @@ define(function(require) {
         otGraph.addNodes = function(newNodes) {
             var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
             newNodes.forEach(function(newNode){
-                silentAddNode(newNode);
+                var pos = newNode.pos || [width/2, height/2];
+                if(!newNode.hasOwnProperty('id'))
+                    newNode.id = nodeCounter++;
+                if(!newNode.hasOwnProperty('datalink'))
+                    newNode.datalink = false;
+                newNode.tag = newNode.label;
+                newNode.x = pos[0];
+                newNode.y = pos[1];
+                if(graphName!==null)
+                    newNode.id = graphName + newNode.id;
+                nodeHash[newNode.id] = newNode;
+
+                addNodeIcon(newNode);
+                addNodeLabel(newNode);
+
                 addHistory({
                     action: 'Add node',
                     data: newNode
@@ -607,13 +488,22 @@ define(function(require) {
         otGraph.addLinks = function(newLinks){
             var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
             newLinks.forEach(function(li){
-                if(li){
-                    silentAddLink(li);
-                    addHistory({
-                        action: 'Add link',
-                        data: li
-                    });
+                li.id = links.length;
+                if(typeof li.source !== 'object') {
+                    var sourceId = (graphName===null) ? li.source : graphName + li.source;
+                    li.source = nodeHash[sourceId];
                 }
+                if(typeof li.target !== 'object') {
+                    var targetId = (graphName===null) ? li.target : graphName + li.target;
+                    li.target = nodeHash[targetId];
+                }
+
+                if(!li.hasOwnProperty('datalink')) li.datalink = false;
+                links.push(li);
+                addHistory({
+                    action: 'Add link',
+                    data: li
+                })
             })
             return otGraph;
         };
@@ -631,56 +521,30 @@ define(function(require) {
             }
         }
 
-        function removeNode(nodeId, choice) {
-            cascadingRemoveNode(nodeId, choice);
-        }
-
-        function cascadingRemoveNode(nodeId, choice){
-            if(!nodeHash[nodeId] && choice === "alarm"){
-                alert("Relevant Node has been deleted.");
-                return;
-            }
-            for(var i = links.length - 1; i >= 0; i--){  //Cascading deletion for relevant edges
-                if(links[i] && (links[i].source.id === nodeId || links[i].target.id === nodeId)){
-                    removeLink(i);
-                }
-            }
-
+        function removeNode(nodeId) {
             addHistory({
                 action: 'Remove node',
                 data: nodeHash[nodeId]
             });
-            let d = nodeHash[nodeId];
-            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
-                        .attr("d", logos(d.icon || d.type))
-                        .attr("fill", nodeColor(d))
-                        .transition()
-                        .duration(500)
-                        .attr("transform", "scale(" + scale * 0.001 + ")");
-            setTimeout(()=>{
-                nodeIcons[nodeId].remove();
-                nodeLabels[nodeId].remove();
-                delete nodeIcons[nodeId];
-                delete nodeLabels[nodeId];
-                delete nodeHash[nodeId];
-                nodes = nodes.filter(function(d){
-                    return d.id != nodeId;
-                })
-                otGraph.update();
-            }, 500);
-
+            nodeIcons[nodeId]._icon.remove();
+            nodeIcons[nodeId].remove();
+            nodeLabels[nodeId].remove();
+            delete nodeIcons[nodeId];
+            delete nodeLabels[nodeId];
+            delete nodeHash[nodeId];
+            nodes = nodes.filter(function(d){
+                d.id != nodeId;
+            })
         }
 
-        function removeLink(linkId, choice) {
-            if(!links[linkId] && choice === "alarm"){
-                alert("Relevant Link has been deleted.");
-                return;
-            }
+        function removeLink(linkId) {
+            var removedLink = links.splice(linkId,1)[0];
+            if(removeLink.hasOwnProperty('icon'))
+            removedLink.icon.remove();
             addHistory({
                 action: 'Remove link',
-                data: links[linkId]
+                data: removedLink
             });
-            silentRemoveLink(linkId);
         }
 
         otGraph.removeNodes = function(query) {
@@ -724,12 +588,12 @@ define(function(require) {
                     linkIds = query.id;
                 } else if(query.type) {
                     linkIds = links.filter(function(li){
-                        return li && li.type !== query.type;
+                        return li.type !== query.type;
                     })
                     .map(function(n){ return li.id });
                 } else if(query.datalink) {
                     linkIds = links.filter(function(li){
-                        return li && li.datalink !== query.datalink;
+                        return li.datalink !== query.datalink;
                     })
                     .map(function(li){ return li.id });
                 }
@@ -768,9 +632,7 @@ define(function(require) {
                 n.fx = null;
                 n.fy = null;
             })
-            for(var i = 0; i < graph.nodes.length; i++){
-                silentAddNode(graph.nodes[i]);
-            }
+            otGraph.addNodes(graph.nodes);
             restart();
 
             var newLinks = graph.links.map(function(sl){
@@ -780,9 +642,7 @@ define(function(require) {
                     value: sl.value,
                 };
             });
-            for(var i = 0; i < newLinks.length; i++){
-                silentAddLink(newLinks[i]);
-            }
+            otGraph.addLinks(newLinks);
 
             restart();
             return otGraph;
@@ -805,48 +665,18 @@ define(function(require) {
 
         otGraph.getLinks = function() { return links;};
 
-        otGraph.ontologyGraphRespond = function(nodeId){
-            let d = nodeHash[nodeId];
-            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
-                    .attr("d", logos(d.icon || d.type))
-                    .attr("fill", nodeColor(d))
-                    .transition()
-                    .ease(d3.easeBounce)
-                    .duration(100)
-                    .attr("transform", "scale(" + scale * 0.15 + ")");
-            nodeIcons[d.id]._icon = nodeIcons[d.id].select("path")
-                    .attr("d", logos(d.icon || d.type))
-                    .attr("fill", nodeColor(d))
-                    .transition()
-                    .ease(d3.easeBounce)
-                    .duration(400)
-                    .attr("transform", "scale(" + scale * 0.1 + ")")
-                    .delay(100);
-        }
-
-        otGraph.getIncrements = function(){
-            return histRec.fetchAllRecords();
-        }
-
-        otGraph.onPull = function(pulledGraph, pullPoint){
-            PullPoint = pullPoint;
-            allReset();
-            nodes = pulledGraph.nodes;
-            links = pulledGraph.links;
-        }
-
-        otGraph.pullState = function(){
-            return PullPoint;
-        }
-
-        otGraph.onTreeResponse(node){
-            
-        }
-
-        function allReset(){
-            histIdx = 0;
-            curTimestamp = 0;
-            histRec.clear();
+        otGraph.fetchVisData = function(){
+            let ret = [];
+            let nodeRoute = historyList.backRoute(historyList.getCurShowNode());
+            if(nodeRoute.mergeNode !== null){
+                //merge id
+            }else{
+                nodeRoute = nodeRoute.nodeStack;
+            }
+            for(var i = 0; i < nodeRoute.length; i++){
+                ret.push(visData[nodeRoute[i]]);
+            }
+            return ret;
         }
 
         return otGraph;

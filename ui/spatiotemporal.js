@@ -190,7 +190,7 @@ return function(arg) {
                     selectedNum = 0;
                 }
                 appLayout.map.onRenew();
-                var visData = igraph.fetchVisData(-1);
+                var visData = igraph.fetchVisData();
                 if(!!visData){
                     // for(var i = 0; i < visData.areas.length; i++){
                     //     visData.areas[i].leaflet._latlng = visData.areas[i].coordinates;

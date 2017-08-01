@@ -72,10 +72,37 @@ return function(webSocket) {
         height: 500
     })
 
-    hl.onClickShow(node){
-        igraph.onTreeResponse(node);
+    hl.onIGraphBuild = function(infos){
+        igraph.allReset();
+        infos = Array.isArray(infos)? infos : [infos];
+        for(var i = 0; i < infos.length; i++){
+            let info = infos[i];
+            if(info.action == "Add link"){
+                igraph.addLink({
+                    source: info.source,
+                    target: info.target,
+                    // value: 2,
+                    // datalink: false
+                });
+            }else if(info.action == "Add node"){
+                igraph.addNodes({
+                    label: info.nodename,
+                    reason: info.reason,
+                    labelPrefix: '',
+                    icon: info.type,
+                    type: info.type,
+                    pos: [100,100],
+                    // visData: visData,
+                    // value: value
+                });
+            }else if(info.action == "Remove link"){
+                igraph.removeLinks(info.id)
+            }else if(info.action == "Remove node"){
+                igraph.removeNodes(info.id);
+            }
+        }
+        igraph.update();
     }
-
 
     // var hl = new List({
     //     container: hlContainer,

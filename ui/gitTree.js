@@ -151,11 +151,7 @@ define(function(require) {
                 cancelHighlightFrom(node.children[i]);
             }
         }
-        function getCurShowNode = function(){
-            if(CurShowNode === Root) return Root;
-            return findNodeById(parseInt(CurShowNode.attr("id")));
-        }
-
+        
         /************ Public Functions ************/
         graph.checkout = function(beginNode, infos){    //Both single and multiple node(s) supported
             infos = Array.isArray(infos)? infos : [infos];
@@ -285,24 +281,15 @@ define(function(require) {
                             .attr("r", 15);
                     CurShowNode = circle;
                     showStateById(parseInt(CurShowNode.attr("id")));
-                    graph.onClickShow(getCurShowNode());
                 })
             }
             function showStateById(id){
                 let node = graph.findNodeById(id);
-                let curNode = node;
-                let backStack = [];
-                if(curNode === null){
-                    console.log(id, "Not found");
-                    return;
-                }
-                while(curNode.fathers && curNode.fathers.length === 1){
-                    backStack.push(curNode);
-                    curNode = curNode.fathers[0];
-                }
-                if(curNode.fathers && curNode.fathers.length > 1){
-                    //merge data array
-                    //backStack.concat(mergeDataArray);
+                let backStack = graph.backRoute(node);
+                if(backStack.mergeNode !== null){
+                    //merge action
+                }else{
+                    backStack = backStack.nodeStack;
                 }
                 graph.onIGraphBuild(backStack);
             }
@@ -383,6 +370,29 @@ define(function(require) {
                 highlightLeavesFrom(Root);
             }
             graph.refresh();
+        }
+
+        graph.backRoute = function(node){
+            let curNode = node;
+            let backStack = [];
+            if(curNode === null){
+                console.log(id, "Not found");
+                return;
+            }
+            while(curNode.fathers && curNode.fathers.length === 1){
+                backStack.push(curNode);
+                curNode = curNode.fathers[0];
+            }
+            if(curNode.fathers && curNode.fathers.length > 1){
+                return {mergeNode: curNode, backNodes: backStack};
+            }else{
+                return {mergeNode: null, nodeStack: backStack};
+            }
+        }
+
+        graph.getCurShowNode = function(){
+            if(CurShowNode === Root) return Root;
+            return findNodeById(parseInt(CurShowNode.attr("id")));
         }
 
 
