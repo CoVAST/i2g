@@ -4,6 +4,7 @@ define(function(require) {
         histrec = require('./history');
     var histIdx = 0,
         curTimestamp = 0;
+
     return function(arg) {
         'use strict';
         var options = arg || {},
@@ -33,7 +34,8 @@ define(function(require) {
                 time: 'wait'
             };
 
-        var PullPoint = 0;  //Root as default
+        var localState = historyList.Root;
+        var pullStamp = 0;
 
         let logFunc = (str) => () => console.log(str);
 
@@ -42,19 +44,36 @@ define(function(require) {
         function addHistory(hist) {
             console.log("Index: " + histIdx);
             if(trackHistory && typeof historyList != 'undefined') {
-                var histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
-                console.log(hist.data);
-                historyList.append({
-                    header: hist.action + ' ' + (hist.data.label || hist.data.id),
-                    icon: histIcon,
-                    text: hist.data.detail || ''
-                })
+                let histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
+                let info = null;
+                if(hist.action.indexOf("node") !== -1){
+                    info = {
+                        userId: 0,
+                        datetime: hist.data.datetime || "2017-XX-XX",
+                        action: hist.action,
+                        duration: hist.data.duration || 200,
+                        nodename: hist.data.label,
+                        reason: hist.data.reason,
+                        type: hist.data.type,
+                        data: hist.data.visData.curData || null
+                    };
+                }else{
+                    info = {
+                        userId: 0,
+                        source: hist.source,
+                        target: hist.target,
+                        reason: hist.data.reason || "Relevant",
+                        linkname: hist.data.label,
+                        duration: hist.data.duration || 200,
+                        datetime: hist.data.datetime || "2017-XX-XX"
+                    };
+                }
+                localState = historyList.checkout(localState, info)[0];
+                historyList.refresh();
             }
             var timestamp = histIdx;   //HistIdx begins from 0, corresponding to List ids.
             curTimestamp = histIdx;
             histIdx++;
-            //Here, to show the latest history first
-            //if(curTimestamp != maxTimestamp) otGraph.showRecHist(maxTimestamp);
             histRec.addRecord(timestamp, hist);
         };
 
@@ -119,100 +138,11 @@ define(function(require) {
                 otGraph.update();
             }, 500);
         }
-
-        otGraph.traceCurTime = function(){
-            console.log("Trace to timestamp: " + curTimestamp);
-            histRec.reviseRecToCurrent(curTimestamp);
-            histIdx = curTimestamp + 1;
-            let cnt = 0;
-            while(historyList.children.length - 1 > curTimestamp) {
-                cnt++;
-                historyList.remove(historyList.children.length - 1);  //Something like this
-            }
-        }
         
         otGraph.fetchVisData = function(idx){
             // console.log(histRec.fetchSpecificRecord(idx));
             if(histRec.fetchSpecificRecord(idx) === null) return null;
             return histRec.fetchSpecificRecord(idx).visData;
-        }
-
-        otGraph.showRecHist = function(idx){ //To show recorded history
-            if(historyList.children.length == 0)return;
-            if(idx === -1){
-                idx = historyList.children.length - 1;
-            }
-            var histFetch = histRec.fetchRecord(idx, curTimestamp);
-            var histline = histFetch.histline;
-            if(histFetch.choice === "undo"){
-                for(var i = histline.length - 1; i >= 0; i--){
-                    if(histline[i].revAction === "Add link"){
-                        silentAddLink({
-                            id: histline[i].hist.data.id,
-                            source: histline[i].hist.data.source,
-                            target: histline[i].hist.data.target,
-                            value: histline[i].hist.data.value,
-                            datalink: histline[i].hist.data.datalink
-                        });
-                        otGraph.update();
-                    }else if(histline[i].revAction === "Add node"){
-                        silentAddNode({
-                            id: histline[i].hist.data.id,
-                            label: histline[i].hist.data.tag,
-                            type: histline[i].hist.data.type,
-                            fx: histline[i].hist.data.x,
-                            fy: histline[i].hist.data.y,
-                            value: histline[i].hist.data.value,
-                            datalink: histline[i].hist.data.datalink
-                        });
-                        otGraph.update();
-                    }else if(histline[i].revAction === "Remove link"){
-                        //let l = links[links.length - 1];
-                        silentRemoveLink(histline[i].hist.data.id);
-                        otGraph.update();
-                    }else if(histline[i].revAction === "Remove node"){
-                        //let n = nodes[nodes.length - 1];
-                        silentRemoveNode(histline[i].hist.data.id);
-                        otGraph.update();
-                    }else{
-                        logFunc("Histline.action not defined");
-                    }
-                }
-            }else if(histFetch.choice === "redo"){
-                for(var i = 0; i < histline.length; i++){
-                    if(histline[i].hist.action === "Add link"){
-                        silentAddLink({
-                            id: histline[i].hist.data.id,
-                            source: histline[i].hist.data.source,
-                            target: histline[i].hist.data.target,
-                            value: histline[i].hist.data.value,
-                            datalink: histline[i].hist.data.datalink
-                        });
-                        otGraph.update();
-                    }else if(histline[i].hist.action === "Add node"){
-                        silentAddNode({
-                            id: histline[i].hist.data.id,
-                            label: histline[i].hist.data.tag,
-                            type: histline[i].hist.data.type,
-                            fx: histline[i].hist.data.x,
-                            fy: histline[i].hist.data.y,
-                            value: histline[i].hist.data.value,
-                            datalink: histline[i].hist.data.datalink
-                        });
-                        otGraph.update();
-                    }else if(histline[i].hist.action === "Remove link"){
-                        silentRemoveLink(histline[i].hist.data.id);
-                        otGraph.update();
-                    }else if(histline[i].hist.action === "Remove node"){
-                        silentRemoveNode(histline[i].hist.data.id);
-                        otGraph.update();
-                    }else{
-                        logFunc("Histline.action not defined");
-                    }
-                }
-            }
-            curTimestamp = idx;
-            otGraph.update();
         }
 
         var maxLinkValue = 0,
@@ -222,21 +152,21 @@ define(function(require) {
         svg.attr('id', graphId).attr("width", width).attr("height", height);
 
         svg.append("svg:defs").append("svg:marker")
-              .attr("id",'end')
-              .attr("viewBox", "0 -5 10 10")
-               .attr("markerUnits", "userSpaceOnUse")
-              .attr("refX", 0)
-              .attr("refY", 0)
-              .attr("markerWidth", 15)
-              .attr("markerHeight", 15)
-              .attr("orient", "auto")
+            .attr("id",'end')
+            .attr("viewBox", "0 -5 10 10")
+            .attr("markerUnits", "userSpaceOnUse")
+            .attr("refX", 0)
+            .attr("refY", 0)
+            .attr("markerWidth", 15)
+            .attr("markerHeight", 15)
+            .attr("orient", "auto")
             .append("svg:path")
             //   .attr("stroke", "red")
             //   .attr("stroke", "none")
-              .attr("fill", "purple")
+            .attr("fill", "purple")
             //   .attr("transform", "scale(0.05)")
             //   .attr("d", logos('info'));
-              .attr("d", "M0,-5L10,0L0,5");
+            .attr("d", "M0,-5L10,0L0,5");
 
         var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -598,9 +528,6 @@ define(function(require) {
                     var thisNode = this[0],
                         thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
-                        otGraph.showRecHist(-1);
-                        historyList.clearSelected();
-                        historyList.setSelectedItemIds([historyList.children.length - 1]);
                         removeNode(thisNodeId, "alarm");
                         restart();
                     } else if(key == 'annotate') {
@@ -621,9 +548,6 @@ define(function(require) {
                             d3.select(thisNode).attr('stroke', 'transparent');
                         }
                     } else if(key == 'addLink'){
-                        otGraph.showRecHist(-1);
-                        historyList.clearSelected();
-                        historyList.setSelectedItemIds([historyList.children.length - 1]);
                         if(!nodeHash[thisNodeId]){
                             alert("Relevant node has been deleted.");
                             return;
@@ -653,9 +577,6 @@ define(function(require) {
                     var thisLink = this[0],
                         thisLinkId = thisLink.__data__.id;
                     if(key == 'removeLink') {
-                        otGraph.showRecHist(-1);
-                        historyList.clearSelected();
-                        historyList.setSelectedItemIds([historyList.children.length - 1]);
                         removeLink(thisLinkId, "alarm");
                         d3.select(thisLink).remove();
                     } else if(key == 'annotate') {
@@ -680,8 +601,6 @@ define(function(require) {
                     data: newNode
                 });
             })
-            historyList.clearSelected();
-            historyList.setSelectedItemIds([historyList.children.length - 1]);
             return otGraph;
         }
 
@@ -694,8 +613,6 @@ define(function(require) {
                         action: 'Add link',
                         data: li
                     });
-                    historyList.clearSelected();
-                    historyList.setSelectedItemIds([historyList.children.length - 1]);
                 }
             })
             return otGraph;
@@ -716,8 +633,6 @@ define(function(require) {
 
         function removeNode(nodeId, choice) {
             cascadingRemoveNode(nodeId, choice);
-            historyList.clearSelected();
-            historyList.setSelectedItemIds([historyList.children.length - 1]);
         }
 
         function cascadingRemoveNode(nodeId, choice){
@@ -766,8 +681,6 @@ define(function(require) {
                 data: links[linkId]
             });
             silentRemoveLink(linkId);
-            historyList.clearSelected();
-            historyList.setSelectedItemIds([historyList.children.length - 1]);
         }
 
         otGraph.removeNodes = function(query) {
@@ -797,8 +710,6 @@ define(function(require) {
                     removeNode(nid);
                 });
             }
-            historyList.clearSelected();
-            historyList.setSelectedItemIds([historyList.children.length - 1]);
             return otGraph;
         }
 
@@ -926,6 +837,10 @@ define(function(require) {
 
         otGraph.pullState = function(){
             return PullPoint;
+        }
+
+        otGraph.onTreeResponse(node){
+            
         }
 
         function allReset(){

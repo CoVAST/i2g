@@ -18,19 +18,22 @@ define(function(require) {
 
         /************ Tree Structure ************/
         var Node = function(userId, fathers, action, duration, datetime, reason, nodename, type){
-            //Formatize fathers
-            //Calculate weight
-            var weight = 0.0;
-            if(!fathers) weight = 1;
-            else{
+            // //Formatize fathers
+            // //Calculate weight
+            // var weight = 0.0;
+            // if(!fathers) weight = 1;
+            // else{
+            //     fathers = Array.isArray(fathers)? fathers : [fathers];
+            //     if(fathers.length === 1){
+            //         weight = fathers[0].weight / fathers[0].children.length;
+            //     }else{
+            //         for(var i = 0; i < fathers.length; i++){
+            //             weight += fathers[i].weight;
+            //         }
+            //     }
+            // }
+            if(fathers !== null){
                 fathers = Array.isArray(fathers)? fathers : [fathers];
-                if(fathers.length === 1){
-                    weight = fathers[0].weight / fathers[0].children.length;
-                }else{
-                    for(var i = 0; i < fathers.length; i++){
-                        weight += fathers[i].weight;
-                    }
-                }
             }
             var node = {
                 userId: userId,
@@ -39,7 +42,7 @@ define(function(require) {
                     x: null,
                     y: null
                 },
-                weight: weight,
+                weight: 0,
                 children: [],
                 fathers: fathers,
                 action: action,
@@ -60,13 +63,14 @@ define(function(require) {
         var RecalPos = true;
         var fullVerticalStep = 20;
         var graph = svg;
+        graph.Root = Root;
         var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
         
         var Repository = [];
         var stampId = 0;    //Each merge creates a timestamp
         var isPulling = false;
         var isMerging = false;
-        var CurShowNode = null;
+        var CurShowNode = Root;
         repoSave(); //Initial saving
 
         /************ Private Functions ************/
@@ -146,6 +150,10 @@ define(function(require) {
             for(var i = 0; i < node.children.length; i++){
                 cancelHighlightFrom(node.children[i]);
             }
+        }
+        function getCurShowNode = function(){
+            if(CurShowNode === Root) return Root;
+            return findNodeById(parseInt(CurShowNode.attr("id")));
         }
 
         /************ Public Functions ************/
@@ -265,7 +273,7 @@ define(function(require) {
                         .attr("style","cursor: hand")
                         .attr("transform", "translate(" + node.position.x + "," + node.position.y + ")");
                 circle.on("click", ()=>{
-                    if(CurShowNode !== null){
+                    if(CurShowNode !== null && CurShowNode != Root){
                         CurShowNode.transition()
                             .ease(d3.easeBounce)
                             .duration(400)
@@ -277,6 +285,7 @@ define(function(require) {
                             .attr("r", 15);
                     CurShowNode = circle;
                     showStateById(parseInt(CurShowNode.attr("id")));
+                    graph.onClickShow(getCurShowNode());
                 })
             }
             function showStateById(id){
@@ -327,14 +336,15 @@ define(function(require) {
             // datetime
             // username
             // nodesInfo
+            
             let temp = [];
-            temp.push(graph.findNodeById(Repository[pullStamp].nodeId));    
+            if(pullStamp === -1) temp.push(CurShowNode);
+            else temp.push(graph.findNodeById(Repository[pullStamp].nodeId));    
             // A temporary method
             // In order to obtain the handler of a node,
             // however, repo things are deep copy. Now, only
             // use id to find hanlder, which is possibly not
             // able to support some complex structure
-
 
             for(var i = 0; i < info.nodesInfo.length; i++){
                 temp = graph.checkout(temp[0], {
@@ -374,6 +384,8 @@ define(function(require) {
             }
             graph.refresh();
         }
+
+
 
         /************ Example ************/
         // var InfoA = {

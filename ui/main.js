@@ -68,9 +68,14 @@ return function(webSocket) {
     var hl = new gitTree({
         id: 'igraph-history',
         container: hlContainer,
-        width: 150,
+        width: 200,
         height: 500
     })
+
+    hl.onClickShow(node){
+        igraph.onTreeResponse(node);
+    }
+
 
     // var hl = new List({
     //     container: hlContainer,
@@ -129,7 +134,6 @@ return function(webSocket) {
 
     function newUninfoNodeAdd(ntype) {
         return function() {
-            igraph.showRecHist(-1);
             igraph.addNodes({
                 label: 'new ' + ntype,
                 type: ntype,
@@ -175,15 +179,6 @@ return function(webSocket) {
             $('.ui.sidebar').sidebar('toggle');
         }
     }))
-
-    graphPanel.header.append(new Button({
-        label: 'TraceBack',
-        types: ['blue','large'],
-        size: '12px',
-        onclick: function() {
-            igraph.traceCurTime();
-        }
-    }));
 
     graphPanel.header.append(new Button({
         label: 'Share',
@@ -245,7 +240,6 @@ return function(webSocket) {
     }
     areaCnt = 0;
     spatiotemporal.onAddToConceptMap = (d, value) => {
-        igraph.showRecHist(-1);
         let curData = d;
         let areas = selection.onAddToConceptMap();
         let visData ={
