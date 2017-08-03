@@ -75,6 +75,12 @@ return function(webSocket) {
     hl.onIGraphBuild = function(infos){
         igraph.allReset();
         infos = Array.isArray(infos)? infos : [infos];
+        igraph.switchHist("off");
+        spatiotemporal.map.onRenew();
+        let visData = igraph.fetchVisData();
+        if(visData.areas.length > 0){
+            spatiotemporal.map.loadMap(visData, true);
+        }
         for(var i = 0; i < infos.length; i++){
             let info = infos[i];
             if(info.action == "Add link"){
@@ -101,6 +107,7 @@ return function(webSocket) {
                 igraph.removeNodes(info.id);
             }
         }
+        igraph.switchHist("on");
         igraph.update();
     }
 
@@ -259,25 +266,21 @@ return function(webSocket) {
         spatiotemporal.setSubjects(subjectLocations);
     }
 
-    selection.onAddToConceptMap = () => {   //To erase corresponding leaflet -- then to restore by simpler data in geomap
-        for(var i = 0; i < spatiotemporal.areas.length; i++){
-            spatiotemporal.areas[i].leaflet = null;
-        }
-        return spatiotemporal.areas;
-    }
     areaCnt = 0;
-    spatiotemporal.onAddToConceptMap = (d, value) => {
-        let curData = d;
-        let areas = selection.onAddToConceptMap();
+    spatiotemporal.onAddToConceptMap = (d) => {
         let visData ={
-            //curData: curData,
-            //totalData: selection.totalData,
             mapZoom: {
                 center: map.getCenter(),
                 zoom: map.getZoom(),
             },
-            areas: areas
+            area: {
+                coordinates: d.coordinates,
+                type: d.type,
+                name: d.name,
+                reason: d.reason
+            },
         }
+        console.log(visData.mapZoom);
         igraph.addNodes({
             label: d.name,
             reason: d.reason,
@@ -286,7 +289,6 @@ return function(webSocket) {
             type: 'location',
             pos: [100,100],
             visData: visData,
-            value: value
         }).update();
         areaCnt++;
     }

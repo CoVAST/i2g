@@ -44,6 +44,13 @@ return function geoLocation(options) {
     }
 
     var removeImportantGeos = (geos) => {
+        if(geos.all){
+            // console.log(importantGeos);
+            while(importantGeos.length > 0){
+                removeImportantGeo(importantGeos[0]);
+            }
+            return;
+        }
         geos = Array.isArray(geos)? geos : [geos];
         geos.forEach(function(geo){
             removeImportantGeo(geo);

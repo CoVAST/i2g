@@ -52,8 +52,8 @@ define(function(require) {
                 type: type,
                 nodename: nodename
             }
-            node.checkout = function(infos){
-                return graph.checkout(node, infos);
+            node.checkout = function(info){
+                return graph.checkout(node, info);
             }
             return node;
         }
@@ -153,15 +153,27 @@ define(function(require) {
         }
         
         /************ Public Functions ************/
-        graph.checkout = function(beginNode, infos){    //Both single and multiple node(s) supported
-            infos = Array.isArray(infos)? infos : [infos];
-            var rst = [];
-            for(var i = 0; i < infos.length; i++){
-                var node = new Node(infos[i].userId, beginNode, infos[i].action, infos[i].duration, infos[i].datetime, infos[i].reason, infos[i].nodename, infos[i].type);
-                beginNode.children.push(node);
-                rst.push(node);
+        graph.selectCurShowNode = function(node){
+            CurShowNode = svg.select("#C" + node.nodeId);
+            if(CurShowNode && CurShowNode != Root){
+                CurShowNode.transition()
+                    .ease(d3.easeBounce)
+                    .duration(400)
+                    .attr("r", 15);
             }
-            return rst;
+            // else{
+            //     CurShowNode = svg.selectAll("circle").attr("id", node.nodeId);
+            //     console.log(CurShowNode);
+            //     CurShowNode.transition()
+            //             .ease(d3.easeBounce)
+            //             .duration(400)
+            //             .attr("r", 15);
+            // }
+        }
+        graph.checkout = function(beginNode, info){    //Both single and multiple node(s) supported
+            var node = new Node(info.userId, beginNode, info.action, info.duration, info.datetime, info.reason, info.nodename, info.type);
+            beginNode.children.push(node);
+            return node;
         }
 
         graph.merge = function(mergeNodes, mergeReason){
@@ -195,7 +207,7 @@ define(function(require) {
 
         graph.findByUserIdAmong = function(userId, nodes){
             var rst = nodes.filter(function(d){
-                  return d.userId === userId;
+                return d.userId === userId;
             })
             if(rst.length > 1){
                 console.log("Multiple branches own this same userId, which is not supported");
@@ -259,7 +271,7 @@ define(function(require) {
                     colorId = node.userId;
                 }
                 var circle = svg.append("circle")
-                        .attr("id", node.nodeId)
+                        .attr("id", "C" + node.nodeId)
                         .attr("r", 10)
                         .attr("stroke", colorAlloc(colorId))
                         .attr("stroke-width", 2)
@@ -280,7 +292,7 @@ define(function(require) {
                             .duration(400)
                             .attr("r", 15);
                     CurShowNode = circle;
-                    showStateById(parseInt(CurShowNode.attr("id")));
+                    showStateById(parseInt(CurShowNode.attr("id").replace(/C/g, '')));
                 })
             }
             function showStateById(id){
@@ -323,10 +335,9 @@ define(function(require) {
             // datetime
             // username
             // nodesInfo
-            
-            let temp = [];
-            if(pullStamp === -1) temp.push(CurShowNode);
-            else temp.push(graph.findNodeById(Repository[pullStamp].nodeId));    
+            let temp = null;
+            if(pullStamp === -1) temp = CurShowNode;
+            else temp = graph.findNodeById(Repository[pullStamp].nodeId);    
             // A temporary method
             // In order to obtain the handler of a node,
             // however, repo things are deep copy. Now, only
@@ -334,7 +345,7 @@ define(function(require) {
             // able to support some complex structure
 
             for(var i = 0; i < info.nodesInfo.length; i++){
-                temp = graph.checkout(temp[0], {
+                temp = graph.checkout(temp, {
                     userId: info.userId,
                     datetime: info.datetime,
                     action: info.nodesInfo[i].action,
@@ -346,6 +357,7 @@ define(function(require) {
                 });
             }
             graph.refresh();
+            graph.selectCurShowNode(temp);
         }
         graph.onClickPull = function(){
             if(isMerging)return;
@@ -392,9 +404,8 @@ define(function(require) {
 
         graph.getCurShowNode = function(){
             if(CurShowNode === Root) return Root;
-            return findNodeById(parseInt(CurShowNode.attr("id")));
+            return graph.findNodeById(parseInt(CurShowNode.attr("id").replace(/C/g, '')));
         }
-
 
 
         /************ Example ************/
@@ -434,8 +445,11 @@ define(function(require) {
         //     duration: 100,  //second
         //     action: "Add Node 7",
         // }
-        // graph.findByUserIdAmong(3, graph.checkout(Root, [InfoA, InfoB, InfoC])).checkout([InfoC2]);
-        // graph.findNodeById(2).checkout([InfoB2]);
+        // let A = Root.checkout(InfoB).checkout(InfoB2);
+        // let B = Root.checkout(InfoA);
+        // let C = graph.merge([A, B], "reason");
+        // C.checkout(InfoC).checkout(InfoC2);
+        // graph.findNodeById(1).checkout([InfoB2]);
         // graph.findLatestNodeByUserId(1).checkout([InfoA2]);
         // graph.merge([graph.merge([graph.findLatestNodeByUserId(1), graph.findLatestNodeByUserId(2)]),graph.findLatestNodeByUserId(3)])
 

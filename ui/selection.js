@@ -305,15 +305,15 @@ define(function(require){
                                             user: this.parent().children().index(this)
                                         })
                                         (data.records);
-                            let areas = selection.onAddToConceptMap();
+                            let area = selection.onAddToConceptMap();
                             let visData = {
                                 //curData: curData,
                                 //totalDataIdxs: selection.totalDataIdxs,
                                 mapZoom: {
                                     center: selection.mapCenter,
-                                    zoom: selected.mapZoom
+                                    zoom: selection.mapZoom
                                 },
-                                areas: areas
+                                area: area
                             }
                             addNodeToOntology(
                                     "Person " + personIds[id], 'people', personIds[id], visData);

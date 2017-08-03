@@ -80,7 +80,6 @@ return function(arg) {
     subjectGeos = {};
     let people = [];
     let datetimes = [];
-    appLayout.areas = [];
     appLayout.setSubjects = subjectLocations => {
         // clear locations
         R.forEachObjIndexed(
@@ -135,17 +134,16 @@ return function(arg) {
     }
 
     appLayout.removeAllAreas = () => {
-        appLayout.map.removeImportantGeos(appLayout.map.fillAreasLeafletByData(appLayout.areas));
-        appLayout.areas = [];
+        appLayout.map.removeImportantGeos({all: true});
     }
 
 
     appLayout.map.loadMap = function(visData, aboutToFly){
-        if(aboutToFly === true){
+        if(aboutToFly === true && visData.mapZoom){
+            // console.log("flyTo:" + visData.mapZoom.center + "," + visData.mapZoom.zoom);
             appLayout.map.flyTo(visData.mapZoom.center, visData.mapZoom.zoom);
         }
         appLayout.map.addImportantGeos(appLayout.map.fillAreasLeafletByData(visData.areas));
-        appLayout.areas = visData.areas.slice(0);
         // console.log("Here we need to load map.");
     }
 
@@ -161,7 +159,8 @@ return function(arg) {
         // if(!!latestData)appLayout.map.loadMap(latestData);
     }
 
-    var submit_d;
+    var submit_d = null;
+    var lastSubmit = null;
     appLayout.map.onadd(function(d){
         var selectedNum = 0;
         $('#infocard-modal').modal({closable: false}).modal('show');
@@ -191,20 +190,15 @@ return function(arg) {
                 }
                 appLayout.map.onRenew();
                 var visData = igraph.fetchVisData();
-                if(!!visData){
-                    // for(var i = 0; i < visData.areas.length; i++){
-                    //     visData.areas[i].leaflet._latlng = visData.areas[i].coordinates;
-                    // }
+                if(visData.areas.length > 0){
                     appLayout.map.loadMap(visData);
                 }
                 appLayout.map.addImportantGeos(submit_d);
-                appLayout.areas.push(submit_d);
                 submit_d.leaflet.on('click', function(){
-                    id = appLayout.areas.indexOf(submit_d);
-                    if(lastId >= 0){
-                        appLayout.map.cancelMarkGeo(appLayout.areas[lastId])
+                    if(lastSubmit !== null){
+                        appLayout.map.cancelMarkGeo(lastSubmit)
                     }
-                    lastId = id;
+                    lastSubmit = submit_d;
                     appLayout.map.markGeo(submit_d);
                     appLayout.onCallRespondingOntologyGraph(id);
                 });
@@ -255,10 +249,9 @@ return function(arg) {
         console.log(minmax);
         return minmax;
     }
-    var lastId = -1;
     appLayout.markIdLocation = (id) => {
         if(lastId >= 0){
-            appLayout.map.cancelMarkGeo(appLayout.areas[lastId])
+            appLayout.map.cancelMarkGeo(lastSubmit);
         }
         lastId = id;
         appLayout.map.markGeo(appLayout.areas[id]);

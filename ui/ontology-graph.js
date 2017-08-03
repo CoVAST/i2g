@@ -137,7 +137,7 @@ define(function(require) {
             }
         })
 
-        var visData = [];
+        var visData = [];   //插入时绑定！
         /**************Local functions***************/
 
         function addHistory(hist) {
@@ -153,10 +153,11 @@ define(function(require) {
                         nodename: hist.data.label,
                         reason: hist.data.reason,
                         type: hist.data.type,
-                        data: hist.data.visData.curData || null
+                        data: hist.data.visData || null
                     };
+                    visData[hist.data.id] = hist.data.visData;
                 }else{
-                    info = {
+                    info = {    
                         userId: 0,
                         source: hist.source,
                         target: hist.target,
@@ -166,8 +167,9 @@ define(function(require) {
                         datetime: hist.data.datetime || "2017-XX-XX"
                     };
                 }
-                localState = historyList.checkout(localState, info)[0];
+                localState = historyList.checkout(localState, info);
                 historyList.refresh();
+                historyList.selectCurShowNode(localState);
             }
         };
 
@@ -674,11 +676,31 @@ define(function(require) {
                 nodeRoute = nodeRoute.nodeStack;
             }
             for(var i = 0; i < nodeRoute.length; i++){
-                ret.push(visData[nodeRoute[i]]);
+                ret.push(visData[nodeRoute[i].nodeId - 1].area); //GitTree is 1 prior to visdata and nodeid
             }
-            return ret;
+
+            return {
+                areas: ret,
+                mapZoom: (nodeRoute.length > 0)? visData[nodeRoute[0].nodeId - 1].mapZoom : null
+            };
+        }
+
+        otGraph.allReset = function(){
+            trackHistory = false;
+            otGraph.removeNodes({all: true});
+            otGraph.removeLinks({all: true});
+            trackHistory = true;
+        }
+        otGraph.switchHist = function(choice){
+            if(choice === "off"){
+                trackHistory = false;
+            }else{
+                trackHistory = true;
+            }
         }
 
         return otGraph;
     }
+
+
 })
