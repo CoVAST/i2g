@@ -155,7 +155,7 @@ define(function(require) {
                         type: hist.data.type,
                         data: hist.data.visData || null
                     };
-                    visData[hist.data.id] = hist.data.visData;
+                    visData[historyList.getNextNodeId()] = hist.data.visData;
                 }else{
                     info = {    
                         userId: 0,
@@ -676,12 +676,12 @@ define(function(require) {
                 nodeRoute = nodeRoute.nodeStack;
             }
             for(var i = 0; i < nodeRoute.length; i++){
-                ret.push(visData[nodeRoute[i].nodeId - 1].area); //GitTree is 1 prior to visdata and nodeid
+                ret.push(visData[nodeRoute[i].nodeId].area); //GitTree is 1 prior to visdata and nodeid
             }
 
             return {
                 areas: ret,
-                mapZoom: (nodeRoute.length > 0)? visData[nodeRoute[0].nodeId - 1].mapZoom : null
+                mapZoom: (nodeRoute.length > 0)? visData[nodeRoute[0].nodeId].mapZoom : null
             };
         }
 
@@ -698,7 +698,9 @@ define(function(require) {
                 trackHistory = true;
             }
         }
-
+        otGraph.setLocalState = function(curNode){
+            localState = curNode;
+        }
         return otGraph;
     }
 

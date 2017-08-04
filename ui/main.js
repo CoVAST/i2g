@@ -72,7 +72,8 @@ return function(webSocket) {
         height: 500
     })
 
-    hl.onIGraphBuild = function(infos){
+    hl.onIGraphBuild = function(infos, curNode){
+        igraph.setLocalState(curNode);
         igraph.allReset();
         infos = Array.isArray(infos)? infos : [infos];
         igraph.switchHist("off");

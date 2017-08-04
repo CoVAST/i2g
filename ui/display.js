@@ -72,8 +72,11 @@ define(function(require){
         });
 
 
-        logTree.onIGraphBuild = function(infos){
+        logTree.onIGraphBuild = function(infos, curNode){
+            ig.setLocalState(curNode);
+            ig.allReset();
             infos = Array.isArray(infos)? infos : [infos];
+            ig.switchHist("off");
             for(var i = 0; i < infos.length; i++){
                 let info = infos[i];
                 if(info.action == "Add link"){
@@ -100,6 +103,7 @@ define(function(require){
                     ig.removeNodes(info.id);
                 }
             }
+            ig.switchHist("on");
             ig.update();
         }
 

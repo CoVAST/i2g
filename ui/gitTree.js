@@ -303,7 +303,7 @@ define(function(require) {
                 }else{
                     backStack = backStack.nodeStack;
                 }
-                graph.onIGraphBuild(backStack);
+                graph.onIGraphBuild(backStack, node);
             }
             function drawLink(beginNode, endNode){
                 var curveFunction = d3.line()
@@ -405,6 +405,10 @@ define(function(require) {
         graph.getCurShowNode = function(){
             if(CurShowNode === Root) return Root;
             return graph.findNodeById(parseInt(CurShowNode.attr("id").replace(/C/g, '')));
+        }
+
+        graph.getNextNodeId = function(){
+            return nodeCounter;
         }
 
 
