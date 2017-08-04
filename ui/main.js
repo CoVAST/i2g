@@ -85,7 +85,7 @@ return function(webSocket) {
         for(var i = 0; i < infos.length; i++){
             let info = infos[i];
             if(info.action == "Add link"){
-                igraph.addLink({
+                igraph.addLinks({
                     source: info.source,
                     target: info.target,
                     // value: 2,
@@ -103,9 +103,9 @@ return function(webSocket) {
                     // value: value
                 });
             }else if(info.action == "Remove link"){
-                igraph.removeLinks(info.id)
+                igraph.removeLinks({gitNodeId: info.nodeId})
             }else if(info.action == "Remove node"){
-                igraph.removeNodes(info.id);
+                igraph.removeNodes({gitNodeId: info.nodeId});
             }
         }
         igraph.switchHist("on");

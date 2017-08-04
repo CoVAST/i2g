@@ -137,7 +137,7 @@ define(function(require) {
             }
         })
 
-        var visData = [];   //插入时绑定！
+        var visData = {};  
         /**************Local functions***************/
 
         function addHistory(hist) {
@@ -158,13 +158,16 @@ define(function(require) {
                     visData[historyList.getNextNodeId()] = hist.data.visData;
                 }else{
                     info = {    
-                        userId: 0,
-                        source: hist.source,
-                        target: hist.target,
+                        userId: hist.data.userId,
+                        source: hist.data.source,
+                        target: hist.data.target,
                         reason: hist.data.reason || "Relevant",
-                        linkname: hist.data.label,
+                        linkname: hist.data.linkname,
                         duration: hist.data.duration || 200,
-                        datetime: hist.data.datetime || "2017-XX-XX"
+                        datetime: hist.data.datetime || "2017-XX-XX",
+                        datalink: hist.data.datalink,
+                        action: hist.action,
+                        value: hist.data.value,
                     };
                 }
                 localState = historyList.checkout(localState, info);
@@ -202,12 +205,17 @@ define(function(require) {
                 if(linkSource !== null && linkTarget === null) {
                         linkTarget = d;
                         console.log(linkTarget);
-                        otGraph.addLinks({
+                        otGraph.addLinks({  //Revise Here   same with Line 163
+                            userId: 0,
+                            reason: "Relevant",
                             source: linkSource,
                             target: linkTarget,
+                            duration: 200,
+                            datetime: new Date(),
+                            linkname: "Link",
                             value: 2,
                             datalink: false
-                        })
+                        });
 
                         linkSource = linkTarget = null;
                         tempLink
@@ -237,11 +245,14 @@ define(function(require) {
             // Apply the general update pattern to the links.
             //
             links = links.filter(function(li){
-                return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
+                let labelArr = Object.keys(nodeHash).map(function(k){
+                    return nodeHash[k].label;
+                });
+                return labelArr.indexOf(li.source.label) >= 0 && labelArr.indexOf(li.target.label) >= 0;
             });
 
             link = link.data(links, function(d) {
-                return d.source.id + "-" + d.target.id;
+                return d.source.label + "-" + d.target.label;
             });
             link.exit().remove();
 
@@ -278,9 +289,25 @@ define(function(require) {
             //     .attr("y2", function(d) {return d.target.y;});
 
             link.attr("d", function(d){
-                return "M" + d.source.x + "," + d.source.y
-                + " L" + ((d.target.x + d.source.x)/2) + "," +((d.target.y + d.source.y)/2)
-                + "," + d.target.x + "," + d.target.y;
+                let nodeArr = Object.keys(nodeHash).map(function(k){
+                    return nodeHash[k];
+                }).filter((j) => {return j.label === d.source.label || j.label === d.target.label});
+                let target = null;
+                let source = null;
+                if(nodeArr.length != 2){
+                    console.log("Error Number of nodeArr: " + nodeArr.length);
+                }else{
+                    if(nodeArr[0].label === d.source.label){
+                        source = nodeArr[0];
+                        target = nodeArr[1];
+                    }else{
+                        source = nodeArr[1];
+                        target = nodeArr[0];
+                    }
+                }
+                return "M" + source.x + "," + source.y
+                + " L" + ((target.x + source.x)/2) + "," +((target.y + source.y)/2)
+                + "," + target.x + "," + target.y;
             })
 
             var paddingSpace = 50;
@@ -397,6 +424,10 @@ define(function(require) {
                     var thisNode = this[0],
                         thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
+                        addHistory({
+                            action: 'Remove node',
+                            data: newNode
+                        });
                         d3.select(thisNode).remove();
                         nodeLabels[thisNodeId].remove();
                         nodeIcons[thisNodeId].remove();
@@ -676,12 +707,12 @@ define(function(require) {
                 nodeRoute = nodeRoute.nodeStack;
             }
             for(var i = 0; i < nodeRoute.length; i++){
+                if(typeof visData[nodeRoute[i].nodeId] === 'undefined')continue;
                 ret.push(visData[nodeRoute[i].nodeId].area); //GitTree is 1 prior to visdata and nodeid
             }
-
             return {
                 areas: ret,
-                mapZoom: (nodeRoute.length > 0)? visData[nodeRoute[0].nodeId].mapZoom : null
+                mapZoom: (nodeRoute.length > 0)? (visData[nodeRoute[0].nodeId] ? visData[nodeRoute[0].nodeId].mapZoom : null) : null
             };
         }
 
