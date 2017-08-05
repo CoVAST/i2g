@@ -637,6 +637,11 @@ define(function(require) {
                         return li.datalink !== query.datalink;
                     })
                     .map(function(li){ return li.id });
+                } else if(query.source && query.target){
+                    linkIds = links.filter(function(li){
+                        return li.source.label === query.source && li.target.label === query.target;
+                    })
+                    .map(function(li){ return li.id });
                 }
                 linkIds.forEach(function(lid){
                     removeLink(lid);
@@ -714,9 +719,23 @@ define(function(require) {
             }else{
                 nodeRoute = nodeRoute.nodeStack;
             }
+            let removeStack = [];
+            for(var i = nodeRoute.length - 1; i >= 0 ; i--){
+                if(nodeRoute[i].action === "Remove node"){
+                    removeStack.push(nodeRoute[i].nodename);
+                }
+            }
             for(var i = 0; i < nodeRoute.length; i++){
                 if(typeof visData[nodeRoute[i].nodeId] === 'undefined')continue;
-                ret.push(visData[nodeRoute[i].nodeId].area); //GitTree is 1 prior to visdata and nodeid
+                if(nodeRoute[i].action === "Add node"){
+                    let idx = removeStack.indexOf(nodeRoute[i].nodename);
+                    if(idx >= 0){
+                        removeStack.splice(idx, 1);
+                        continue;
+                    }else{
+                        ret.push(visData[nodeRoute[i].nodeId].area); //GitTree is 1 prior to visdata and nodeid
+                    }
+                }
             }
             return {
                 areas: ret,
