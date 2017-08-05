@@ -43,18 +43,27 @@ return function geoLocation(options) {
         }
     }
 
-    var removeImportantGeos = (geos) => {
-        if(geos.all){
+    var removeImportantGeos = (query) => {
+        if(query.all){
             // console.log(importantGeos);
             while(importantGeos.length > 0){
                 removeImportantGeo(importantGeos[0]);
             }
             return;
+        }else if(query.visData){
+            for(var i = 0; i < importantGeos.length; i++){
+                if(importantGeos[i].name === query.visData.area.name){
+                    removeImportantGeo(importantGeos[i]);
+                    return;
+                }
+            }
         }
-        geos = Array.isArray(geos)? geos : [geos];
-        geos.forEach(function(geo){
-            removeImportantGeo(geo);
-        });
+        else{
+            query = Array.isArray(query)? query : [query];
+            query.forEach(function(geo){
+                removeImportantGeo(geo);
+            });
+        }
     }
 
     let setCursorToCrosshair = () => map._container.style.cursor = 'crosshair';

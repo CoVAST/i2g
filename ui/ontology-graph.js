@@ -424,15 +424,16 @@ define(function(require) {
                     var thisNode = this[0],
                         thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
-                        addHistory({
-                            action: 'Remove node',
-                            data: newNode
-                        });
-                        d3.select(thisNode).remove();
-                        nodeLabels[thisNodeId].remove();
-                        nodeIcons[thisNodeId].remove();
-                        delete nodeLabels[thisNodeId];
-                        delete nodeHash[thisNodeId];
+                        // addHistory({
+                        //     action: 'Remove node',
+                        //     data: newNode
+                        // });
+                        // d3.select(thisNode).remove();
+                        // nodeLabels[thisNodeId].remove();
+                        // nodeIcons[thisNodeId].remove();
+                        // delete nodeLabels[thisNodeId];
+                        // delete nodeHash[thisNodeId];
+                        removeNode(thisNodeId);
                         restart();
                     } else if(key == 'annotate') {
                         d3.select(thisNode).attr('stroke', 'orange');
@@ -515,6 +516,7 @@ define(function(require) {
                     data: newNode
                 });
             })
+            restart();
             return otGraph;
         }
 
@@ -559,6 +561,7 @@ define(function(require) {
                 action: 'Remove node',
                 data: nodeHash[nodeId]
             });
+            if(otGraph.removeGeo) otGraph.removeGeo(nodeHash[nodeId].visData);
             nodeIcons[nodeId]._icon.remove();
             nodeIcons[nodeId].remove();
             nodeLabels[nodeId].remove();
@@ -599,6 +602,11 @@ define(function(require) {
                 } else if(query.datalink) {
                     nodeIds = nodes.filter(function(n){
                         return n.datalink !== query.datalink;
+                    })
+                    .map(function(n){ return n.id });
+                } else if(query.label) {
+                    nodeIds = nodes.filter(function(n){
+                        return n.label === query.label;
                     })
                     .map(function(n){ return n.id });
                 }

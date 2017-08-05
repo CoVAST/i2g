@@ -17,7 +17,7 @@ define(function(require) {
         width = width / 2;
 
         /************ Tree Structure ************/
-        var Node = function(userId, fathers, action, duration, datetime, reason, nodename, type, source, target, linkname, datalink, value){
+        var Node = function(userId, fathers, action, duration, datetime, reason, nodename, type, source, target, linkname, datalink, value, data){
             // //Formatize fathers
             // //Calculate weight
             // var weight = 0.0;
@@ -55,7 +55,8 @@ define(function(require) {
                 target: target,
                 linkname: linkname,
                 datalink: datalink,
-                value: value
+                value: value,
+                data: data
             }
             node.checkout = function(info){
                 return graph.checkout(node, info);
@@ -64,7 +65,7 @@ define(function(require) {
         }
 
         /************ Global Parameters ************/
-        var Root = new Node(0, null, "Root", 0, null, null, "Root", "Root", null, null, null, null, null);    // Mark 0 as root/merge/...(which is structural-part) node
+        var Root = new Node(0, null, "Root", 0, null, null, "Root", "Root", null, null, null, null, null, null);    // Mark 0 as root/merge/...(which is structural-part) node
         var RecalPos = true;
         var fullVerticalStep = 20;
         var graph = svg;
@@ -176,13 +177,13 @@ define(function(require) {
             // }
         }
         graph.checkout = function(beginNode, info){    //Both single and multiple node(s) supported
-            var node = new Node(info.userId, beginNode, info.action, info.duration, info.datetime, info.reason, info.nodename, info.type, info.source, info.target, info.linkname, info.datalink, info.value);
+            var node = new Node(info.userId, beginNode, info.action, info.duration, info.datetime, info.reason, info.nodename, info.type, info.source, info.target, info.linkname, info.datalink, info.value, info.data);
             beginNode.children.push(node);
             return node;
         }
 
         graph.merge = function(mergeNodes, mergeReason){
-            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, "Merge", "Merge", null, null, null, null, null);
+            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, "Merge", "Merge", null, null, null, null, null, null, null);
             for(var i = 0; i < mergeNodes.length; i++){
                 mergeNodes[i].children.push(node);
                 if(mergeNodes[i].duration > node.duration){

@@ -99,18 +99,20 @@ return function(webSocket) {
                     icon: info.type,
                     type: info.type,
                     pos: [100,100],
-                    // visData: visData,
+                    visData: info.data,
                     // value: value
                 });
             }else if(info.action == "Remove link"){
-                igraph.removeLinks({gitNodeId: info.nodeId})
+                igraph.removeLinks({source: info.source.label, target: info.target.label});
             }else if(info.action == "Remove node"){
-                igraph.removeNodes({gitNodeId: info.nodeId});
+                igraph.removeNodes({label: info.nodename});
             }
         }
         igraph.switchHist("on");
         igraph.update();
     }
+
+
 
     // var hl = new List({
     //     container: hlContainer,
@@ -152,6 +154,10 @@ return function(webSocket) {
 
     igraph.onCallRespondingMap = function(nodeId){
         spatiotemporal.markIdLocation(nodeId);
+    }
+
+    igraph.removeGeo = function(visData){
+        spatiotemporal.removeGeoByVisData(visData);
     }
 
     var spatiotemporal = require('./spatiotemporal')({

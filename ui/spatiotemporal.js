@@ -136,7 +136,9 @@ return function(arg) {
     appLayout.removeAllAreas = () => {
         appLayout.map.removeImportantGeos({all: true});
     }
-
+    appLayout.removeGeoByVisData = (visData) => {
+        appLayout.map.removeImportantGeos({visData: visData});
+    }
 
     appLayout.map.loadMap = function(visData, aboutToFly){
         if(aboutToFly === true && visData.mapZoom){
