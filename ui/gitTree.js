@@ -64,7 +64,7 @@ define(function(require) {
             return node;
         }
 
-        /************ Global Parameters ************/
+        /************ Global Variables ************/
         var Root = new Node(0, null, "Root", 0, null, null, "Root", "Root", null, null, null, null, null, null);    // Mark 0 as root/merge/...(which is structural-part) node
         var RecalPos = true;
         var fullVerticalStep = 20;
@@ -76,7 +76,9 @@ define(function(require) {
         var stampId = 0;    //Each merge creates a timestamp
         var isPulling = false;
         var isMerging = false;
+        var nodeMerging = null;
         var CurShowNode = Root;
+        var MergeNodesDrew = [];
         repoSave(); //Initial saving
 
         /************ Private Functions ************/
@@ -94,7 +96,7 @@ define(function(require) {
             }else{
                 node.weight = 0;
                 for(var i = 0; i < node.fathers.length; i++){
-                    node.weight += node.fathers[i].weight;
+                    node.weight += node.fathers[i].weight / node.fathers[i].children.length;
                 }
             }
             for(var i = 0; i < node.children.length; i++){
@@ -183,13 +185,18 @@ define(function(require) {
         }
 
         graph.merge = function(mergeNodes, mergeReason){
-            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, "Merge", "Merge", null, null, null, null, null, null, null);
+            let mergeName = "";
+            for(var i = 0; i < mergeNodes.length; i++){
+                mergeName += mergeNodes[i].nodeId;
+            }
+            var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, mergeName, "Merge", null, null, null, null, null, null, null);
             for(var i = 0; i < mergeNodes.length; i++){
                 mergeNodes[i].children.push(node);
                 if(mergeNodes[i].duration > node.duration){
                     node.duration = mergeNodes[i].duration;
                 }
             }
+            graph.refresh();
             return node;
         }
 
@@ -227,6 +234,20 @@ define(function(require) {
                     drawLink(node, node.children[i]);
                     drawFrom(node.children[i]);
                 }
+                if(node.action === 'Merge'){
+                    let mergeName = "";
+                    for(var i = 0; i < node.fathers.length; i++){
+                        mergeName += node.fathers[i].nodeId;
+                    }
+                    let rst = MergeNodesDrew.filter((d) => {
+                        return d.nodename === mergeName;
+                    });
+                    if(rst.length > 0){
+                        return;
+                    }else{
+                        MergeNodesDrew.push(node);
+                    }
+                }
                 drawCircle(node);
             }
 
@@ -237,17 +258,18 @@ define(function(require) {
                 }else{
                     let posY = 0;
                     let posX = 0;
-                    if(node.fathers.length > 1){
+                    if(node.fathers.length > 1){    //MergeNodes
                         for(var i = 0; i < node.fathers.length; i++){
                             if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
                             posX += node.fathers[i].position.x;
                         }
                         posX = posX / node.fathers.length;
                         node.position.x = posX;
-                        node.position.y = posY + fullVerticalStep;
+                        node.position.y = posY + 2 * fullVerticalStep;
                     }else{ //if(node.fathers.length === 1)
                         let fatherWidth = node.fathers[0].weight * width;
-                        let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
+                        // let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
+                        let fatherStartX  = 0;
                         let previousLength = 0;
                         let idx = node.fathers[0].children.indexOf(node);
                         for(var i = 0; i < idx; i++){
@@ -266,6 +288,7 @@ define(function(require) {
             }
 
             function drawCircle(node){    //One color represents one ID
+                var curDragNode = null;
                 if(node.highlight === -1){
                     colorId = 0;
                     opacity = 0.1;
@@ -278,6 +301,7 @@ define(function(require) {
                 }
                 var circle = svg.append("circle")
                         .attr("id", "C" + node.nodeId)
+                        .attr("class", "gitNodeHolder")
                         .attr("r", 10)
                         .attr("stroke", colorAlloc(colorId))
                         .attr("stroke-width", 2)
@@ -286,7 +310,16 @@ define(function(require) {
                         .attr("stroke-opacity", opacity)
                         .attr("style","cursor: hand")
                         .attr("transform", "translate(" + node.position.x + "," + node.position.y + ")");
+                console.log("Circle:", circle);
                 circle.on("click", ()=>{
+                    if(nodeMerging !== null){
+                        let node1 = nodeMerging;
+                        nodeMerging = null;
+                        let node2 = graph.findNodeById(parseInt(circle.attr("id").replace(/C/g, '')));
+                        graph.merge([node1, node2], "Merge Reason");
+                        $('#comparator-modal').modal('show');
+                        return;
+                    }
                     if(CurShowNode !== null && CurShowNode != Root){
                         CurShowNode.transition()
                             .ease(d3.easeBounce)
@@ -300,6 +333,27 @@ define(function(require) {
                     CurShowNode = circle;
                     showStateById(parseInt(CurShowNode.attr("id").replace(/C/g, '')));
                 })
+            }
+            function nodeMenu(){
+                $.contextMenu({
+                    selector: '.gitNodeHolder',
+                    callback: function(key, options) {
+                        console.log('key:' + key);
+                        console.log(this[0]);
+                        if(key == 'purge') {
+
+                        } else if(key == 'annotate') {
+
+                        } else if(key == 'merge'){
+                            nodeMerging = graph.findNodeById(parseInt(this[0].id.replace(/C/g, '')));
+                        }
+                    },
+                    items: {
+                        merge: {name: "Merge", icon: "fa-link"},
+                        purge: {name: "Purge", icon: "fa-times"},
+                        annotate: {name: "Annotate", icon: "fa-commenting"},
+                    }
+                });
             }
             function showStateById(id){
                 let node = graph.findNodeById(id);
@@ -320,6 +374,8 @@ define(function(require) {
                 var lineData=[  {"x": beginNode.position.x,   "y": beginNode.position.y},  
                                 {"x": endNode.position.x,     "y": endNode.position.y}   ];
                 svg.append("path")
+                    .attr("class", "gitLinkHolder")
+                    .attr("id", "L" + beginNode.nodeId +"-" + endNode.nodeId)
                     .attr("d", curveFunction(lineData))
                     .attr("stroke","black")
                     .attr("stroke-opacity", 0.4)
@@ -334,7 +390,9 @@ define(function(require) {
                 refillPositionFrom(Root);
                 RecalPos = true;    //TODO Later revise
             }
+            MergeNodesDrew = [];
             drawFrom(Root);
+            nodeMenu();
         }
 
         graph.insert = function(pullStamp, info){

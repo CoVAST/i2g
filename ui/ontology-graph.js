@@ -198,6 +198,7 @@ define(function(require) {
                 .attr("fill", "transparent")
                 .attr("r", 40)
                 .merge(node)
+                .style("cursor", "hand")
                 .on('click', function(d){
                     // d.fx = d3.mouse(this)[0];
                     // d.fy = d3.mouse(this)[1];
@@ -227,6 +228,31 @@ define(function(require) {
 
                         restart();
                     }
+                })
+                // .on('click', function(d){
+                //     nodeIcons[d.id].select("path")
+                //         .transition()
+                //         .attr("fill", "yello")
+                //         .duration(400)
+                // })
+                .on('mouseover', function(d){
+                    // console.log("mouseover");
+                    nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .duration(400)
+                        .attr("transform", "scale(" + scale * 0.11 + ")");
+                })
+                .on('mouseout', function(d){
+                    // console.log("mouseout");
+                    nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .ease(d3.easeBounce)
+                        .duration(400)
+                        .attr("transform", "scale(" + scale * 0.1 + ")");
                 })
                 .call(d3.drag()
                     .on("start", dragstarted)

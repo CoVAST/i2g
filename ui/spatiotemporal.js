@@ -204,16 +204,16 @@ return function(arg) {
                     appLayout.map.markGeo(submit_d);
                     appLayout.onCallRespondingOntologyGraph(id);
                 });
-                submit_d.leaflet.addContextMenuItem({
-                    text: "Remove",
-                    index: 0,
-                    callback: appLayout.map.removeImportantGeos.bind(this, submit_d)
-                })
-                submit_d.leaflet.addContextMenuItem({
-                    text: "Hide",
-                    index: 0,
-                    callback: appLayout.map.removeImportantGeos.bind(this, submit_d)
-                })
+                // submit_d.leaflet.addContextMenuItem({
+                //     text: "Remove",
+                //     index: 0,
+                //     callback: appLayout.map.removeImportantGeos.bind(this, submit_d)
+                // })
+                // submit_d.leaflet.addContextMenuItem({
+                //     text: "Hide",
+                //     index: 0,
+                //     callback: appLayout.map.removeImportantGeos.bind(this, submit_d)
+                // })
                 appLayout.onAddToConceptMap(submit_d, selectedNum);
                 node_name.val('');
                 node_reason.val('');
