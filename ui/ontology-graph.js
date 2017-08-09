@@ -18,6 +18,8 @@ define(function(require) {
             graphName = options.graphName || '',
             scale = options.scale || 1,
             colorScheme = options.colorScheme;
+        
+        var increments = [];
 
         var otGraph = {},
             nodes = graph.nodes,
@@ -33,7 +35,7 @@ define(function(require) {
             };
 
         var localState = historyList.Root;
-        var pullStamp = 0;
+        var pullState = 0;
 
         var maxLinkValue = 0,
             nodeCounter = 0;
@@ -147,7 +149,7 @@ define(function(require) {
                 if(hist.action.indexOf("node") !== -1){
                     info = {
                         userId: 0,
-                        datetime: hist.data.datetime || "2017-XX-XX",
+                        datetime: hist.data.datetime || new Date(),
                         action: hist.action,
                         duration: hist.data.duration || 200,
                         nodename: hist.data.label,
@@ -164,7 +166,7 @@ define(function(require) {
                         reason: hist.data.reason || "Relevant",
                         linkname: hist.data.linkname,
                         duration: hist.data.duration || 200,
-                        datetime: hist.data.datetime || "2017-XX-XX",
+                        datetime: hist.data.datetime || new Date(),
                         datalink: hist.data.datalink,
                         action: hist.action,
                         value: hist.data.value,
@@ -173,6 +175,7 @@ define(function(require) {
                 localState = historyList.checkout(localState, info);
                 historyList.refresh();
                 historyList.selectCurShowNode(localState);
+                increments.push(info);
             }
         };
 
@@ -784,6 +787,12 @@ define(function(require) {
         }
         otGraph.setLocalState = function(curNode){
             localState = curNode;
+        }
+        otGraph.getIncrements = function(){
+            return increments;
+        }
+        otGraph.pullState = function(){
+            return pullState;
         }
         return otGraph;
     }

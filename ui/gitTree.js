@@ -1,20 +1,41 @@
 define(function(require) {
+    var LabelList = require('./labellist'),
+        Layout = require('vastui/layout');
+
     return function gitTree(arg){
         /************ Initialization ************/
         var options = arg || {},
+            myId = arg.id,
             container = options.container || document.body,
             header = options.header,
             width = options.width,
             height = options.height,
             onselect = options.onselect;
-        var svg = d3.select(container).append('svg:svg');
             // type = options.type,
             // selectedColor = options.selectedColor || 'black',
             // selectedIcon = options.selectedIcon || '',
             // types = options.types || [];
-        svg.attr("width", width).attr("height", height);
         var nodeCounter = 0;
-        width = width / 2;
+
+    let appLayout = new Layout({
+            margin: 10,
+            padding: 0,
+            container: container,
+            cols: [
+                {
+                    width: 0.6,
+                    id: myId + '-' + 'git-left'
+                },
+                {
+                    width: 0.4,
+                    id: myId + '-' + 'git-right'
+                },
+            ]
+        });
+        var svg = d3.select(appLayout.cell(myId + '-' + 'git-left')).append('svg:svg');
+        width = parseInt(appLayout.cell(myId + '-' + 'git-left').style.width);
+        svg.attr("width", width).attr("height", height);
+
 
         /************ Tree Structure ************/
         var Node = function(userId, fathers, action, duration, datetime, reason, nodename, type, source, target, linkname, datalink, value, data){
@@ -47,7 +68,7 @@ define(function(require) {
                 fathers: fathers,
                 action: action,
                 duration: duration,
-                datetime: datetime,
+                datetime: datetime || new Date(),
                 reason: reason,
                 type: type,
                 nodename: nodename,
@@ -69,6 +90,7 @@ define(function(require) {
         var RecalPos = true;
         var fullVerticalStep = 20;
         var graph = svg;
+        graph.myId = myId;
         graph.Root = Root;
         var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
         
@@ -79,7 +101,16 @@ define(function(require) {
         var nodeMerging = null;
         var CurShowNode = Root;
         var MergeNodesDrew = [];
+        var durationRecord = 200;
         repoSave(); //Initial saving
+
+        /************** Label Part **************/
+        // var labelWidth = parseInt(appLayout.cell("git-right").style.width);
+        var labelList = new LabelList({
+                                        id: myId,
+                                        root: Root,
+                                        container: appLayout.cell(myId + '-' + 'git-right')
+                                    });
 
         /************ Private Functions ************/
         function repoSave(){
@@ -251,39 +282,87 @@ define(function(require) {
                 drawCircle(node);
             }
 
-            function refillPositionFrom(node){
-                if(node.fathers === null){
-                    node.position.x = width / 2;
-                    node.position.y = 20;
-                }else{
-                    let posY = 0;
-                    let posX = 0;
-                    if(node.fathers.length > 1){    //MergeNodes
-                        for(var i = 0; i < node.fathers.length; i++){
-                            if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
-                            posX += node.fathers[i].position.x;
-                        }
-                        posX = posX / node.fathers.length;
-                        node.position.x = posX;
-                        node.position.y = posY + 2 * fullVerticalStep;
-                    }else{ //if(node.fathers.length === 1)
-                        let fatherWidth = node.fathers[0].weight * width;
-                        // let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
-                        let fatherStartX  = 0;
-                        let previousLength = 0;
-                        let idx = node.fathers[0].children.indexOf(node);
-                        for(var i = 0; i < idx; i++){
-                            previousLength += node.fathers[0].children[i].weight;
-                        }
-                        previousLength = previousLength * width;
-                        let posX = fatherStartX + previousLength + node.weight * width / 2;
-                        let posY = node.fathers[0].position.y + fullVerticalStep * node.duration * durationStepConst;
-                        node.position.x = posX;
-                        node.position.y = posY;
-                    }
+            // function refillPositionFrom(node){
+            //     if(node.fathers === null){
+            //         node.position.x = width / 2;
+            //         node.position.y = 20;
+            //     }else{
+            //         let posY = 0;
+            //         let posX = 0;
+            //         if(node.fathers.length > 1){    //MergeNodes
+            //             for(var i = 0; i < node.fathers.length; i++){
+            //                 if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
+            //                 posX += node.fathers[i].position.x;
+            //             }
+            //             posX = posX / node.fathers.length;
+            //             node.position.x = posX;
+            //             node.position.y = posY + 2 * fullVerticalStep;
+            //         }else{ //if(node.fathers.length === 1)
+            //             let fatherWidth = node.fathers[0].weight * width;
+            //             let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
+            //             // let fatherStartX  = 0;
+            //             let previousLength = 0;
+            //             let idx = node.fathers[0].children.indexOf(node);
+            //             for(var i = 0; i < idx; i++){
+            //                 previousLength += node.fathers[0].children[i].weight;
+            //             }
+            //             previousLength = previousLength * width;
+            //             let posX = fatherStartX + previousLength + node.weight * width / 2;
+            //             let posY = node.fathers[0].position.y + fullVerticalStep * node.duration * durationStepConst;
+            //             node.position.x = posX;
+            //             node.position.y = posY;
+            //         }
+            //     }
+            //     for(var i = 0; i < node.children.length; i++){
+            //         refillPositionFrom(node.children[i]);
+            //     }
+            // }
+            function refillPosition(node){
+                let todoQueue = [];
+                let rstArray = [];
+                if(!node) return;
+                while(true){
+                    rstArray.push(node)
+                    todoQueue = todoQueue.concat(node.children);
+                    if(todoQueue.length === 0) break;
+                    node = todoQueue.splice(0, 1)[0];
                 }
-                for(var i = 0; i < node.children.length; i++){
-                    refillPositionFrom(node.children[i]);
+                console.log(rstArray); 
+                rstArray.sort((a, b)=>{
+                    return a.datetime.getTime() - b.datetime.getTime();
+                })
+                for(var j = 0; j < rstArray.length; j++){
+                    let node = rstArray[j];
+                    if(node.fathers === null){
+                        node.position.x = width / 2;
+                        node.position.y = 20;
+                    }else{
+                        let posY = 0;
+                        let posX = 0;
+                        if(node.fathers.length > 1){    //MergeNodes
+                            for(var i = 0; i < node.fathers.length; i++){
+                                if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
+                                posX += node.fathers[i].position.x;
+                            }
+                            posX = posX / node.fathers.length;
+                            node.position.x = posX;
+                            node.position.y = posY + 2 * fullVerticalStep;
+                        }else{ //if(node.fathers.length === 1)
+                            let fatherWidth = node.fathers[0].weight * width;
+                            let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
+                            // let fatherStartX  = 0;
+                            let previousLength = 0;
+                            let idx = node.fathers[0].children.indexOf(node);
+                            for(var i = 0; i < idx; i++){
+                                previousLength += node.fathers[0].children[i].weight;
+                            }
+                            previousLength = previousLength * width;
+                            let posX = fatherStartX + previousLength + node.weight * width / 2;
+                            let posY = fullVerticalStep * durationRecord * j * durationStepConst + 20;
+                            node.position.x = posX;
+                            node.position.y = posY;
+                        }
+                    }
                 }
             }
 
@@ -339,10 +418,7 @@ define(function(require) {
                     selector: '.gitNodeHolder',
                     callback: function(key, options) {
                         console.log('key:' + key);
-                        console.log(this[0]);
-                        if(key == 'purge') {
-
-                        } else if(key == 'annotate') {
+                        if(key == 'annotate') {
 
                         } else if(key == 'merge'){
                             nodeMerging = graph.findNodeById(parseInt(this[0].id.replace(/C/g, '')));
@@ -350,7 +426,6 @@ define(function(require) {
                     },
                     items: {
                         merge: {name: "Merge", icon: "fa-link"},
-                        purge: {name: "Purge", icon: "fa-times"},
                         annotate: {name: "Annotate", icon: "fa-commenting"},
                     }
                 });
@@ -387,10 +462,11 @@ define(function(require) {
 
             if(RecalPos){
                 refillWeightFrom(Root);
-                refillPositionFrom(Root);
+                refillPosition(Root);
                 RecalPos = true;    //TODO Later revise
             }
             MergeNodesDrew = [];
+            labelList.refresh(Root);
             drawFrom(Root);
             nodeMenu();
         }

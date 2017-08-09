@@ -58,7 +58,9 @@ define(function(require){
             container: views.left.body,
             width: 300,
             height: 1200,
+            id: "collaboration",
         })
+        
 
         var ig = iGraph({
             container: views.mid.body,

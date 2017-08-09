@@ -25,7 +25,7 @@ define(function(require){
             // margin: 5,
             // padding: 5,
             id: "panel-data-selection",
-            container: 'page-left-view-body',
+            container: 'page-middle-view-body',
             cols: [
                 {
                     id: "list-subject",

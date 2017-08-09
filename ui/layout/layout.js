@@ -10,11 +10,15 @@ define(function(require){
             container: 'page-main',
             cols: [
                 {
-                    width: 0.5,
+                    width: 0.25,
                     id: 'page-left'
                 },
                 {
-                    width: 0.5,
+                    width: 0.4,
+                    id: 'page-middle'
+                },
+                {
+                    width: 0.35,
                     id: 'page-right'
                 },
             ]
@@ -25,6 +29,16 @@ define(function(require){
         views.left = new Panel({
             container: appLayout.cell('page-left'),
             id: "page-left-view",
+            style: {
+                border: 'unset',
+                boxShadow: 'unset',
+                overflow: 'unset'
+            }
+        });
+
+        views.middle = new Panel({
+            container: appLayout.cell('page-middle'),
+            id: "page-middle-view",
             style: {
                 border: 'unset',
                 boxShadow: 'unset',

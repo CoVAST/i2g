@@ -42,7 +42,7 @@ return function(arg) {
         // margin: 5,
         // padding: 0,
         id: 'panel-data-selection',
-        container: 'page-left-view-body',
+        container: 'page-middle-view-body',
         rows: [
             {
                 id: 'filter-view',
