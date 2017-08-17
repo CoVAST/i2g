@@ -72,11 +72,49 @@ io.on('connection', function (socket) {
         console.log('Large Display connected');
     });
 
+    socket.on('mergeRequest', () => {
+        console.log("mergeRequest");
+        let ret = [];
+        let removeNodes = [];
+        let removeLinks = [];
+        for(var i = provenance.length - 1; i >= 0; i--){
+            for(var j = provenance[i].increments.length - 1; j >= 0; j--){
+                let curNode = provenance[i].increments[j];
+                if(curNode.action === "Remove node"){
+                    removeNodes.push(curNode.nodename);
+                }else if(curNode.action === "Remove link"){
+                    removeLinks.push(curNode.nodename);
+                }else if(curNode.action === "Add node"){
+                    let temp = removeNodes.indexOf(curNode.nodename);
+                    if(temp > -1){
+                        removeNodes.splice(temp, 1);
+                    }else{
+                        ret.push(curNode);
+                    }
+                }else if(curNode.action === "Add link"){
+                    let temp = removeNodes.indexOf(curNode.nodename);
+                    if(temp > -1){
+                        removeLinks.splice(temp, 1);
+                    }else{
+                        ret.push(curNode);
+                    }
+                }else{
+                    console.log("Undefined action: " + curNode.action);
+                }
+            }
+        }
+        console.log("Reply: ");
+        console.log(ret);
+        socket.emit('mergeReply', {
+            master: ret
+        });
+    });  //A nodes&links should be saved for collaboration view
+
     socket.on('push', function(data) {
         if(largeDisplay !== null) {
             let userId = userIdDict[socket.user.name];
             var log = {
-                pullStateId: data.pullStateId,
+                pullNodename: data.pullNodename,
                 userId: userId,
                 commitReason: data.note,
                 increments: data.increments,
@@ -91,6 +129,10 @@ io.on('connection', function (socket) {
         }
     });
 
+    socket.on('pullRequest', function(node){
+        socket.emit('pullRespond', node);
+    })
+
     // socket.broadcast.emit('bcast msg', {
     //     title: 'new user joined',
     //     username: socket.username,
@@ -98,7 +140,6 @@ io.on('connection', function (socket) {
 });
 
 require('./dataroutes.js').setupRoutes(app);
-
 
 server.listen(port, host, function(){
     console.log("server started, listening", host, port);

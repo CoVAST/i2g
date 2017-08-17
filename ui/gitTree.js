@@ -16,8 +16,9 @@ define(function(require) {
             // selectedIcon = options.selectedIcon || '',
             // types = options.types || [];
         var nodeCounter = 0;
+        var nameNodeDict = {};
 
-    let appLayout = new Layout({
+        let appLayout = new Layout({
             margin: 10,
             padding: 0,
             container: container,
@@ -79,6 +80,7 @@ define(function(require) {
                 value: value,
                 data: data
             }
+            nameNodeDict[nodename] = node;
             node.checkout = function(info){
                 return graph.checkout(node, info);
             }
@@ -87,6 +89,7 @@ define(function(require) {
 
         /************ Global Variables ************/
         var Root = new Node(0, null, "Root", 0, null, null, "Root", "Root", null, null, null, null, null, null);    // Mark 0 as root/merge/...(which is structural-part) node
+        
         var RecalPos = true;
         var fullVerticalStep = 20;
         var graph = svg;
@@ -94,15 +97,16 @@ define(function(require) {
         graph.Root = Root;
         var durationStepConst = 0.01;   //Every (1/durationStepConst) second means 1 Step
         
-        var Repository = [];
         var stampId = 0;    //Each merge creates a timestamp
         var isPulling = false;
         var isMerging = false;
         var nodeMerging = null;
         var CurShowNode = Root;
-        var MergeNodesDrew = [];
         var durationRecord = 200;
-        repoSave(); //Initial saving
+        let pullState = Root;
+        let NodesDrew = new Set();
+        let lastMerge = Root;
+
 
         /************** Label Part **************/
         // var labelWidth = parseInt(appLayout.cell("git-right").style.width);
@@ -113,12 +117,6 @@ define(function(require) {
                                     });
 
         /************ Private Functions ************/
-        function repoSave(){
-            let str = JSON.stringify(Root);
-            let restore = JSON.parse(str);
-            Repository[stampId] = restore;
-            stampId++;
-        }
 
         function refillWeightFrom(node){
             if(!node.fathers) node.weight = 1;
@@ -216,17 +214,55 @@ define(function(require) {
         }
 
         graph.merge = function(mergeNodes, mergeReason){
-            let mergeName = "";
-            for(var i = 0; i < mergeNodes.length; i++){
-                mergeName += mergeNodes[i].nodeId;
-            }
+            let mergeName = "Merge";
+            // for(var i = 0; i < mergeNodes.length; i++){
+            //     mergeName += mergeNodes[i].nodeId;
+            // }
+            let lastMerge = nameNodeDict["Merge"]? nameNodeDict["Merge"] : Root;
             var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, mergeName, "Merge", null, null, null, null, null, null, null);
+            
+            let mergePath = [];
+            node.data = [];
+            let nameDict = {};
             for(var i = 0; i < mergeNodes.length; i++){
-                mergeNodes[i].children.push(node);
-                if(mergeNodes[i].duration > node.duration){
-                    node.duration = mergeNodes[i].duration;
+                curNode = mergeNodes[i];
+                while(curNode && curNode.action !== "Merge" && curNode.action !== "Root"){
+                    if(nameDict[curNode.action + "-" + curNode.nodename] === true){
+                        curNode = curNode.fathers[0];
+                        continue;
+                    }
+                    else{
+                        mergePath.push({node: curNode, conflict: false});
+                        node.data.push(curNode.data);
+                        nameDict[curNode.action + "-" + curNode.nodename] = true;
+                        curNode = curNode.fathers[0];
+                    }
+                }
+                if(curNode.action === "Merge"){
+                    for(var j = 0; j < curNode.mergeInfo.length; j++){  //TODO: data and node sequences have NOT been decided yet
+                        if(nameDict[curNode.mergeInfo[j].node.action + "-" + curNode.mergeInfo[j].node.nodename] === true) continue;
+                        else{
+                            nameDict[curNode.mergeInfo[j].node.action + "-" + curNode.mergeInfo[j].node.nodename] = true;
+                            mergePath.push({node: curNode.mergeInfo[j].node, conflict: false});
+                            node.data.push(curNode.data[j]);
+                        }
+                    }
                 }
             }
+            node.reason = mergeReason;
+            let set = new Set(mergePath);
+            console.log("SSSSEEEETTTT:");
+            console.log(mergePath);
+            mergePath = Array.from(set);
+            node.mergeInfo = mergePath;
+            curNode = node;
+            for(var i = 0; i < mergeNodes.length; i++){
+                mergeNodes[i].children.push(node);
+                // if(mergeNodes[i].duration > node.duration){
+                //     node.duration = mergeNodes[i].duration;
+                // }
+            }
+            graph.setIgraphLocalState(curNode);
             graph.refresh();
             return node;
         }
@@ -241,7 +277,7 @@ define(function(require) {
             let max = 0;
             let record = null;
             for(var i = 0; i < rstArray.length; i++){
-                if(max < rstArray[i].nodeId){
+                if(max < rstArray[i].nodeId){ax
                     record = rstArray[i];
                     max = rstArray[i].nodeId;
                 }
@@ -261,25 +297,14 @@ define(function(require) {
 
         graph.refresh = function(){
             function drawFrom(node){
-                for(var i = 0; i < node.children.length; i++){
-                    drawLink(node, node.children[i]);
-                    drawFrom(node.children[i]);
-                }
-                if(node.action === 'Merge'){
-                    let mergeName = "";
-                    for(var i = 0; i < node.fathers.length; i++){
-                        mergeName += node.fathers[i].nodeId;
-                    }
-                    let rst = MergeNodesDrew.filter((d) => {
-                        return d.nodename === mergeName;
-                    });
-                    if(rst.length > 0){
-                        return;
-                    }else{
-                        MergeNodesDrew.push(node);
+                if(!NodesDrew.has(node)){
+                    NodesDrew.add(node);
+                    drawCircle(node);
+                    for(var i = 0; i < node.children.length; i++){
+                        drawLink(node, node.children[i]);
+                        drawFrom(node.children[i]);
                     }
                 }
-                drawCircle(node);
             }
 
             // function refillPositionFrom(node){
@@ -318,22 +343,30 @@ define(function(require) {
             //     }
             // }
             function refillPosition(node){
+                let mergePart = [];
                 let todoQueue = [];
                 let rstArray = [];
                 if(!node) return;
                 while(true){
+                    if(node.action === "Merge"){
+                        if(mergePart.indexOf(node) > -1){
+                            if(todoQueue.length === 0) break;
+                            node = todoQueue.splice(0, 1)[0];
+                            continue;
+                        }
+                        mergePart.push(node);
+                    }
                     rstArray.push(node)
                     todoQueue = todoQueue.concat(node.children);
                     if(todoQueue.length === 0) break;
                     node = todoQueue.splice(0, 1)[0];
                 }
-                console.log(rstArray); 
                 rstArray.sort((a, b)=>{
-                    return a.datetime.getTime() - b.datetime.getTime();
+                    return Date.parse(a.nodeId) - Date.parse(b.nodeId);
                 })
                 for(var j = 0; j < rstArray.length; j++){
                     let node = rstArray[j];
-                    if(node.fathers === null){
+                    if(node.fathers === null || node.fathers.length === 0){
                         node.position.x = width / 2;
                         node.position.y = 20;
                     }else{
@@ -346,17 +379,18 @@ define(function(require) {
                             }
                             posX = posX / node.fathers.length;
                             node.position.x = posX;
-                            node.position.y = posY + 2 * fullVerticalStep;
+                            node.position.y = fullVerticalStep * durationRecord * j * durationStepConst + 20;
                         }else{ //if(node.fathers.length === 1)
                             let fatherWidth = node.fathers[0].weight * width;
                             let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
-                            // let fatherStartX  = 0;
+                            // let fatherStartX = 0;
                             let previousLength = 0;
                             let idx = node.fathers[0].children.indexOf(node);
                             for(var i = 0; i < idx; i++){
                                 previousLength += node.fathers[0].children[i].weight;
                             }
                             previousLength = previousLength * width;
+                            if(previousLength > 100) previousLength = 100;
                             let posX = fatherStartX + previousLength + node.weight * width / 2;
                             let posY = fullVerticalStep * durationRecord * j * durationStepConst + 20;
                             node.position.x = posX;
@@ -389,7 +423,6 @@ define(function(require) {
                         .attr("stroke-opacity", opacity)
                         .attr("style","cursor: hand")
                         .attr("transform", "translate(" + node.position.x + "," + node.position.y + ")");
-                console.log("Circle:", circle);
                 circle.on("click", ()=>{
                     if(nodeMerging !== null){
                         let node1 = nodeMerging;
@@ -417,9 +450,8 @@ define(function(require) {
                 $.contextMenu({
                     selector: '.gitNodeHolder',
                     callback: function(key, options) {
-                        console.log('key:' + key);
                         if(key == 'annotate') {
-
+                            
                         } else if(key == 'merge'){
                             nodeMerging = graph.findNodeById(parseInt(this[0].id.replace(/C/g, '')));
                         }
@@ -434,11 +466,16 @@ define(function(require) {
                 let node = graph.findNodeById(id);
                 let backStack = graph.backRoute(node);
                 if(backStack.mergeNode !== null){
-                    //merge action
+                    console.log(backStack.mergeNode);
+                    let temp = backStack.mergeNode.mergeInfo.map((k)=>{
+                        return k.node;
+                    })
+                    if(!backStack.backNodes)backStack.backNodes = [];
+                    graph.onIGraphBuild(temp.reverse().concat(backStack.backNodes.reverse()), node)
                 }else{
-                    backStack = backStack.nodeStack;
+                    backStack = backStack.backNodes;
+                    graph.onIGraphBuild(backStack.reverse(), node);
                 }
-                graph.onIGraphBuild(backStack.reverse(), node);
             }
             function drawLink(beginNode, endNode){
                 var curveFunction = d3.line()
@@ -465,19 +502,17 @@ define(function(require) {
                 refillPosition(Root);
                 RecalPos = true;    //TODO Later revise
             }
-            MergeNodesDrew = [];
+            NodesDrew.clear();
             labelList.refresh(Root);
             drawFrom(Root);
             nodeMenu();
         }
 
-        graph.insert = function(pullStamp, info){
+        graph.insert = function(pullName, info){
             // datetime
             // username
             // nodesInfo
-            let temp = null;
-            if(pullStamp === -1) temp = CurShowNode;
-            else temp = graph.findNodeById(Repository[pullStamp].nodeId);    
+            let temp = nameNodeDict[pullName];    
             // A temporary method
             // In order to obtain the handler of a node,
             // however, repo things are deep copy. Now, only
@@ -493,23 +528,29 @@ define(function(require) {
                     nodename: info.nodesInfo[i].nodename,
                     reason: info.nodesInfo[i].reason,
                     type: info.nodesInfo[i].reason,
-                    data: info.nodesInfo[i].data
+                    data: info.nodesInfo[i].data,
+                    source: info.nodesInfo[i].source,
+                    target: info.nodesInfo[i].target
                 });
             }
             graph.refresh();
             graph.selectCurShowNode(temp);
+            return temp;
         }
         graph.onClickPull = function(){
-            if(isMerging)return;
-            if(isPulling){
-                isPulling = false;
-                cancelHighlightFrom(Root);
-            }else{
-                isPulling = true;
-                highlightLeavesFrom(Root);
+            // if(isMerging)return;
+            // if(isPulling){
+            //     isPulling = false;
+            //     cancelHighlightFrom(Root);
+            // }else{
+            //     isPulling = true;
+            //     highlightLeavesFrom(Root);
+            // }
+            // graph.refresh();
+            // return stampId;
+            if(!graph.pullToIndividial(graph.findNodeById(parseInt(CurShowNode.attr("id").replace(/C/g, ''))))){
+                alert("Only Root and Merge nodes are available for pulling");
             }
-            graph.refresh();
-            return stampId;
         }
 
         graph.onClickMerge = function(){
@@ -531,14 +572,14 @@ define(function(require) {
                 console.log(id, "Not found");
                 return;
             }
-            while(curNode.fathers && curNode.fathers.length === 1){
+            while(curNode.fathers && curNode.fathers.length === 1){ //, which is NOT merge node
                 backStack.push(curNode);
                 curNode = curNode.fathers[0];
             }
-            if(curNode.fathers && curNode.fathers.length > 1){
+            if(curNode.action === 'Merge'){
                 return {mergeNode: curNode, backNodes: backStack};
             }else{
-                return {mergeNode: null, nodeStack: backStack};
+                return {mergeNode: null, backNodes: backStack};
             }
         }
 
@@ -551,6 +592,33 @@ define(function(require) {
             return nodeCounter;
         }
 
+        graph.getPullState = function(){
+            return pullState;
+        }
+
+        graph.setPullState = function(pullnode){
+            pullState = pullnode;
+        }
+
+        graph.getLastMerge = function(){
+            return lastMerge;
+        }
+        graph.setLastMerge = function(newMerge){
+            lastMerge = newMerge;
+        }
+
+        graph.modifyByNodename = function(name, info){
+            console.log(nameNodeDict);
+            nameNodeDict[name].nodename = info.label;
+            nameNodeDict[name].reason = info.detail;
+            nameNodeDict[info.label] = nameNodeDict[name];
+            if(name !== info.label) nameNodeDict[name] = null;
+            graph.refresh();
+        }
+        graph.clearRoot = function(newRoot){
+            graph.root = Root = newRoot;
+            newRoot.nodeId = 0;
+        }
 
         /************ Example ************/
         // var InfoA = {
@@ -589,13 +657,12 @@ define(function(require) {
         //     duration: 100,  //second
         //     action: "Add Node 7",
         // }
-        // let A = Root.checkout(InfoB).checkout(InfoB2);
+        // let A = Root.checkout(InfoB2).checkout(InfoB2);
         // let B = Root.checkout(InfoA);
+        // A = A.checkout(InfoB2);
         // let C = graph.merge([A, B], "reason");
         // C.checkout(InfoC).checkout(InfoC2);
-        // graph.findNodeById(1).checkout([InfoB2]);
-        // graph.findLatestNodeByUserId(1).checkout([InfoA2]);
-        // graph.merge([graph.merge([graph.findLatestNodeByUserId(1), graph.findLatestNodeByUserId(2)]),graph.findLatestNodeByUserId(3)])
+        // graph.merge([graph.findLatestNodeByUserId(1), graph.findLatestNodeByUserId(2)])
 
         // RecalPos = true;
         // graph.refresh();

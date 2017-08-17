@@ -125,7 +125,7 @@ return function(arg) {
     }
 
     appLayout.removeAllSubjects = () => {
-        people = [];    //TODO: Memory Leak?
+        people = [];    
         for(var eachKey in subjectGeos){
             appLayout.map.removeLocations(subjectGeos[eachKey].mapObjs);
             delete subjectGeos[eachKey];

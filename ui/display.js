@@ -42,8 +42,6 @@ define(function(require){
             // header: {height: 0.05, border: 0}
         });
 
-
-
         if(container == 'page-main')
             views.left.append('<h1 style="text-align:center; color:teal;">CoVA</h1>');
 
@@ -56,8 +54,8 @@ define(function(require){
 
         var logTree = new gitTree({
             container: views.left.body,
-            width: 300,
-            height: 1200,
+            width: parseInt(views.left.body.style.width),
+            height: parseInt(views.left.body.style.height),
             id: "collaboration",
         })
         
@@ -73,22 +71,36 @@ define(function(require){
             scale: scale,
         });
 
+        logTree.setIgraphLocalState = function(node){
+            ig.setLocalState(node);
+        }
 
-        logTree.onIGraphBuild = function(infos, curNode){
+        logTree.onIGraphBuild = function(infos, curNode, not_reset){
             ig.setLocalState(curNode);
-            ig.allReset();
+            if(!not_reset){ig.allReset();}
             infos = Array.isArray(infos)? infos : [infos];
             ig.switchHist("off");
+            let collector = [];
             for(var i = 0; i < infos.length; i++){
-                let info = infos[i];
-                if(info.action == "Add link"){
-                    ig.addLink({
+                if(infos[i].action === "Merge"){
+                    collector = collector.concat(infos[i].mergeInfo.map((k) => {return k.node;}).reverse());
+                }else{
+                    collector.push(infos[i]);
+                }
+            }
+            let set = new Set(collector);
+            collector = Array.from(set);
+            collector = collector.reverse();    
+            for(var i = 0; i < collector.length; i++){
+                let info = collector[i];
+                if(info.action === "Add link"){
+                    ig.addLinks({
                         source: info.source,
                         target: info.target,
                         // value: 2,
                         // datalink: false
                     });
-                }else if(info.action == "Add node"){
+                }else if(info.action === "Add node"){
                     ig.addNodes({
                         label: info.nodename,
                         reason: info.reason,
@@ -99,16 +111,47 @@ define(function(require){
                         // visData: visData,
                         // value: value
                     });
-                }else if(info.action == "Remove link"){
-                    ig.removeLinks(info.id)
-                }else if(info.action == "Remove node"){
-                    ig.removeNodes(info.id);
+                }else if(info.action === "Remove link"){
+                    ig.removeLinks({source: info.source.label, target: info.target.label})  
+                }else if(info.action === "Remove node"){
+                    ig.removeNodes({label: info.nodename});
+                }else if(info.action === "Merge"){
+                    console.log("No merge is expected.");
                 }
             }
             ig.switchHist("on");
             ig.update();
         }
 
+        logTree.pullToIndividial = function(info){
+            if(info.action.indexOf("Root") > -1 || info.action.indexOf("Merge") > -1){
+                console.log(info);
+                let save = info.children;
+                let save2 = info.fathers;
+                let save3 = [];
+                info.children = [];
+                info.fathers = [];
+                if(info.mergeInfo){
+                    for(var i = 0; i < info.mergeInfo.length; i++){
+                        save3.push({fathers: info.mergeInfo[i].node.fathers, children: info.mergeInfo[i].node.children});
+                        info.mergeInfo[i].node.fathers = [];
+                        info.mergeInfo[i].node.children = [];
+                    }
+                }
+                webSocket.emit('pullRequest', info);
+                info.children = save;
+                info.fathers = save2;
+                if(info.mergeInfo){
+                    for(var i = 0; i < info.mergeInfo.length; i++){
+                        info.mergeInfo[i].node.fathers = save3[i].fathers;
+                        info.mergeInfo[i].node.children = save3[i].children;
+                    }
+                }
+                return true;
+            }else{
+                return false;
+            }
+        }
         views.left.header.append(new Button({
             label: 'Pull',
             types: ['teal', 'large'],
@@ -135,37 +178,38 @@ define(function(require){
             for(var j = 0; j < logs.length; j++){
                 var tempInfos = [];
                 for(var i = 0; i < logs[j].increments.length; i++){
-                    if(logs[j].increments[i].hist.action.indexOf("node") !== -1){
+                    if(logs[j].increments[i].action.indexOf("node") !== -1){
                         tempInfos.push({
-                            action: logs[j].increments[i].hist.action,
-                            reason: logs[j].increments[i].hist.data.reason,
-                            nodename: logs[j].increments[i].hist.data.label,
-                            type: logs[j].increments[i].hist.data.type,
-                            duration: logs[j].increments[i].hist.data.duration || 200,
-                            data: logs[j].increments[i].hist.data.visData.curData || null,
-                            datetime: logs[j].increments[i].hist.data.datetime || "2017-XX-XX"
+                            action: logs[j].increments[i].action,
+                            reason: logs[j].increments[i].reason,
+                            nodename: logs[j].increments[i].nodename,
+                            type: logs[j].increments[i].type,
+                            duration: logs[j].increments[i].duration || 200,
+                            data: logs[j].increments[i].data || null,
+                            datetime: logs[j].increments[i].datetime || new Date()
                         });
                     }else{
                         tempInfos.push({
-                            action: logs[j].increments[i].hist.action,
-                            source: logs[j].increments[i].hist.source,
-                            targe: logs[j].increments[i].hist.target,
-                            reason: logs[j].increments[i].hist.data.reason || "Relevant",
-                            nodename: logs[j].increments[i].hist.data.label,
+                            action: logs[j].increments[i].action,
+                            source: logs[j].increments[i].source,
+                            target: logs[j].increments[i].target,
+                            reason: logs[j].increments[i].reason || "Relevant",
+                            nodename: logs[j].increments[i].nodename,
                             data: "Link",
-                            duration: logs[j].increments[i].hist.data.duration || 200,
-                            datetime: logs[j].increments[i].hist.data.datetime || "2017-XX-XX"
+                            duration: logs[j].increments[i].duration || 200,
+                            datetime: logs[j].increments[i].datetime || new Date()
                         });
                     }
                 }
-                logTree.insert(0, {  //0 : pull state
+                let curNode = logTree.insert(logs[j].pullNodename, { 
                     datetime: logs[j].datetime,
                     commitReason: logs[j].commitReason,
                     userId: logs[j].userId,
                     nodesInfo: tempInfos
                 });
+                logTree.setLastMerge(logTree.merge([logTree.getLastMerge(), curNode], "Merge"));
             }
-            
+            logTree.refresh();
 
         });
         return appLayout;

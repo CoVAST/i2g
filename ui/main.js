@@ -14,6 +14,7 @@ var arrays = require('p4/core/arrays'),
 var ontoGraph = require('./ontology-graph');
 var colorScheme = require('./color-scheme');
 var gitTree = require('./gitTree');
+var Comparator = require('./comparator')
 
 
 return function(webSocket) {
@@ -42,7 +43,7 @@ return function(webSocket) {
         // margin: 2,
         // padding: 5,
         id: 'graph-layout',
-        container: 'page-left-view-body',
+        container: 'page-middle-view-body',
         cols: [
             {
                 id: 'graph-view',
@@ -60,21 +61,43 @@ return function(webSocket) {
         header: {height: 0.07, style: {backgroundColor: '#FFF'}}
     })
 
-    var hlContainer = document.getElementById('page-sidebar');
-    hlContainer.style.padding = '10px';
-    hlContainer.style.paddingTop = '6em';
-    hlContainer.innerHTML = '<h3>Provenance</h3>';
-
-    var hl = new gitTree({
-        id: 'igraph-history',
-        container: hlContainer,
-        width: 200,
-        height: 500
+    var gitPanel = new Panel({
+        margin: 4,
+        // container: ui.views.left.body,
+        container: "page-left-view-body",
+        id: 'gitPanel',
+        title: 'Local Provenance',
+        header: {height: 0.07, style: {backgroundColor: '#FFF'}},
     })
 
-    hl.onIGraphBuild = function(infos, curNode){
+    gitPanel.header.append(new Button({
+        label: 'Push',
+        types: ['blue', 'large'],
+        size: '12px',
+        onclick: function() {
+            $('#commit-note').val('');
+            $('#commit-modal').modal('show');
+        }
+    }))
+
+    console.log(parseInt(gitPanel.body.style.width));
+
+    var hl = new gitTree({
+        id: 'individial',
+        container: gitPanel.body,
+        width: parseInt(gitPanel.body.style.width),
+        height: parseInt(gitPanel.body.style.height)
+    })
+
+    hl.setIgraphLocalState = function(node){
+        igraph.setLocalState(node);
+    }
+
+    hl.onIGraphBuild = function(infos, curNode, not_reset){
         igraph.setLocalState(curNode);
-        igraph.allReset();
+        if(!not_reset){
+            igraph.allReset();
+        }
         infos = Array.isArray(infos)? infos : [infos];
         igraph.switchHist("off");
         spatiotemporal.map.onRenew();
@@ -82,8 +105,19 @@ return function(webSocket) {
         if(visData.areas.length > 0){
             spatiotemporal.map.loadMap(visData, true);
         }
+        let collector = [];
         for(var i = 0; i < infos.length; i++){
-            let info = infos[i];
+            if(infos[i].action === "Merge"){
+                collector = collector.concat(infos[i].mergeInfo.map((k) => {return k.node;}).reverse());
+            }else{
+                collector.push(infos[i]);
+            }
+        }
+        let set = new Set(collector);
+        collector = Array.from(set);
+        collector = collector.reverse();    
+        for(var i = 0; i < collector.length; i++){
+            let info = collector[i];
             if(info.action == "Add link"){
                 igraph.addLinks({
                     source: info.source,
@@ -106,13 +140,13 @@ return function(webSocket) {
                 igraph.removeLinks({source: info.source.label, target: info.target.label});
             }else if(info.action == "Remove node"){
                 igraph.removeNodes({label: info.nodename});
+            }else if(info.action === "Merge"){
+                console.log("No merge is expected.");
             }
         }
         igraph.switchHist("on");
         igraph.update();
     }
-
-
 
     // var hl = new List({
     //     container: hlContainer,
@@ -158,6 +192,12 @@ return function(webSocket) {
 
     igraph.removeGeo = function(visData){
         spatiotemporal.removeGeoByVisData(visData);
+    }
+
+    igraph.modifyHist = function(d, info){
+        console.log(d);
+        console.log(info);
+        hl.modifyByNodename(d, info);
     }
 
     var spatiotemporal = require('./spatiotemporal')({
@@ -212,37 +252,75 @@ return function(webSocket) {
 
     graphPanel.append(nodeChoices);
 
-    graphPanel.header.append(new Button({
-        label: 'Provenance',
-        types: ['teal', 'large'],
-        size: '12px',
-        onclick: function() {
-            $('.ui.sidebar').sidebar('toggle');
-        }
-    }))
-
-    graphPanel.header.append(new Button({
-        label: 'Share',
-        types: ['red', 'large'],
-        size: '12px',
-        onclick: function() {
-            $('#commit-note').val('');
-            $('#commit-modal').modal('show');
-        }
-    }))
-
     $("#confirm-commit").click(function(){
         // var graph = {
         //     nodes: igraph.getNodes(),
         //     links: igraph.getLinks()
         // };
-        var increments = igraph.getIncrements();
-        webSocket.emit('push', {
-            pullStateId: igraph.pullState(),
-            increments: increments,
-            note: $('#commit-note').val()
-        });
+        webSocket.emit('mergeRequest');
+        // webSocket.emit('push', {
+        //     pullStateId: igraph.pullState(),
+        //     increments: increments,
+        //     note: $('#commit-note').val()
+        // });
     })
+
+    var comparator = new Comparator({});
+
+    webSocket.on('mergeReply', (data) => {
+        console.log(data.master);   //Provenance of master branch
+        let rst = comparator.getCompareResult(hl.getPullState(), hl.Root, data.master);
+        console.log(rst);
+        if(Object.keys(rst.conflictNodes).length || Object.keys(rst.conflictLinks).length){
+            console.log("Conflict(s) Detected.");
+            console.log(rst.conflictNodes);
+            console.log(rst.conflictLinks);
+            comparator.getConflictTree();
+        }else{
+            var increments = igraph.getIncrementsAndClear();
+            var areaRepo = [];
+            var dataRepo = [];
+            var linkNodesRepo = [];
+            var linkDataRepo = [];
+            for(var i = 0; i < increments.length; i++){
+                if(increments[i].data && increments[i].data.area.leaflet){
+                    areaRepo.push(increments[i].data.area);
+                    dataRepo.push(increments[i].data.area.leaflet);
+                    increments[i].data.area.leaflet = null;
+                }
+                if(increments[i].source.visData && increments[i].source.visData.area.leaflet){
+                    areaRepo.push(increments[i].source.visData.area);
+                    dataRepo.push(increments[i].source.visData.area.leaflet);
+                    increments[i].source.visData.area.leaflet = null;
+                }
+                if(increments[i].target.visData && increments[i].target.visData.area.leaflet){
+                    areaRepo.push(increments[i].target.visData.area);
+                    dataRepo.push(increments[i].target.visData.area.leaflet);
+                    increments[i].target.visData.area.leaflet = null;
+                }
+
+            }
+            webSocket.emit('push', {
+                pullNodename: hl.getPullState().nodename,
+                increments: increments,
+                note: $('#commit-note').val()
+            });
+            for(var i = 0; i < areaRepo.length; i++){
+                areaRepo[i].leaflet = dataRepo[i];
+            }
+            console.log(rst);
+            hl.setPullState(hl.merge([hl.Root, rst.leafNode]));
+            hl.refresh();
+        }
+    });
+
+    webSocket.on('pullRespond', function(node){
+        hl.clearRoot(node);
+        hl.setPullState(node);
+        hl.refresh();
+        hl.selectCurShowNode(node);
+    })
+
 
     $('#graph-layout').transition('fade left');
 

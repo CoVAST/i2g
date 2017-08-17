@@ -35,7 +35,7 @@ define(function(require) {
             };
 
         var localState = historyList.Root;
-        var pullState = 0;
+        var pullState = historyList.Root;
 
         var maxLinkValue = 0,
             nodeCounter = 0;
@@ -157,14 +157,14 @@ define(function(require) {
                         type: hist.data.type,
                         data: hist.data.visData || null
                     };
-                    visData[historyList.getNextNodeId()] = hist.data.visData;
+                    visData[hist.data.label] = hist.data.visData;
                 }else{
                     info = {    
                         userId: hist.data.userId,
                         source: hist.data.source,
                         target: hist.data.target,
-                        reason: hist.data.reason || "Relevant",
-                        linkname: hist.data.linkname,
+                        reason: hist.data.reason || "Is about to go",
+                        linkname: hist.data.linkname || "Relevant",
                         duration: hist.data.duration || 200,
                         datetime: hist.data.datetime || new Date(),
                         datalink: hist.data.datalink,
@@ -173,9 +173,9 @@ define(function(require) {
                     };
                 }
                 localState = historyList.checkout(localState, info);
+                increments.push(info);
                 historyList.refresh();
                 historyList.selectCurShowNode(localState);
-                increments.push(info);
             }
         };
 
@@ -574,6 +574,10 @@ define(function(require) {
 
 
         otGraph.modifyNode = function(d, props) {
+            if(otGraph.modifyHist){
+                console.log(nodeHash[d]);
+                otGraph.modifyHist(nodeHash[d].label, props);
+            }
             var theNode = (typeof d == 'object') ? d : nodeHash[d];
 
             for(var p in props) {
@@ -744,9 +748,9 @@ define(function(require) {
             let ret = [];
             let nodeRoute = historyList.backRoute(historyList.getCurShowNode());
             if(nodeRoute.mergeNode !== null){
-                //merge id
+                nodeRoute = nodeRoute.backNodes.concat(nodeRoute.mergeNode.mergeInfo.map((k) => {return k.node}));
             }else{
-                nodeRoute = nodeRoute.nodeStack;
+                nodeRoute = nodeRoute.backNodes;
             }
             let removeStack = [];
             for(var i = nodeRoute.length - 1; i >= 0 ; i--){
@@ -755,20 +759,25 @@ define(function(require) {
                 }
             }
             for(var i = 0; i < nodeRoute.length; i++){
-                if(typeof visData[nodeRoute[i].nodeId] === 'undefined')continue;
+                if(typeof visData[nodeRoute[i].nodename] === 'undefined'){
+                    if(!nodeRoute[i].data) continue;
+                    else{
+                        visData[nodeRoute[i].nodename] = nodeRoute[i].data;
+                    }
+                }
                 if(nodeRoute[i].action === "Add node"){
                     let idx = removeStack.indexOf(nodeRoute[i].nodename);
                     if(idx >= 0){
                         removeStack.splice(idx, 1);
                         continue;
                     }else{
-                        ret.push(visData[nodeRoute[i].nodeId].area); //GitTree is 1 prior to visdata and nodeid
+                        ret.push(visData[nodeRoute[i].nodename].area); //GitTree is 1 prior to visdata and nodeid
                     }
                 }
             }
             return {
                 areas: ret,
-                mapZoom: (nodeRoute.length > 0)? (visData[nodeRoute[0].nodeId] ? visData[nodeRoute[0].nodeId].mapZoom : null) : null
+                mapZoom: (nodeRoute.length > 0)? (visData[nodeRoute[0].nodename] ? visData[nodeRoute[0].nodename].mapZoom : null) : null
             };
         }
 
@@ -788,8 +797,10 @@ define(function(require) {
         otGraph.setLocalState = function(curNode){
             localState = curNode;
         }
-        otGraph.getIncrements = function(){
-            return increments;
+        otGraph.getIncrementsAndClear = function(){
+            let temp = increments.slice(0);
+            increments = [];
+            return temp;
         }
         otGraph.pullState = function(){
             return pullState;
