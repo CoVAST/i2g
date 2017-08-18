@@ -90,7 +90,9 @@ define(function(require){
             }
             let set = new Set(collector);
             collector = Array.from(set);
-            collector = collector.reverse();    
+            collector.sort((a, b)=>{
+                return a.nodeId - b.nodeId;
+            })  
             for(var i = 0; i < collector.length; i++){
                 let info = collector[i];
                 if(info.action === "Add link"){
@@ -198,16 +200,17 @@ define(function(require){
                             data: "Link",
                             duration: logs[j].increments[i].duration || 200,
                             datetime: logs[j].increments[i].datetime || new Date()
-                        });
+                        }); 
                     }
                 }
-                let curNode = logTree.insert(logs[j].pullNodename, { 
+                let curNode = null;
+                curNode = logTree.insert((curNode !== null)? curNode : logs[j].pullNodename, { 
                     datetime: logs[j].datetime,
                     commitReason: logs[j].commitReason,
                     userId: logs[j].userId,
                     nodesInfo: tempInfos
                 });
-                logTree.setLastMerge(logTree.merge([logTree.getLastMerge(), curNode], "Merge"));
+                // logTree.setLastMerge(logTree.merge([logTree.getLastMerge(), curNode], "Merge"));
             }
             logTree.refresh();
 

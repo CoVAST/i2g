@@ -364,6 +364,7 @@ define(function(require) {
                 rstArray.sort((a, b)=>{
                     return Date.parse(a.nodeId) - Date.parse(b.nodeId);
                 })
+                let totalConflicts = 0;
                 for(var j = 0; j < rstArray.length; j++){
                     let node = rstArray[j];
                     if(node.fathers === null || node.fathers.length === 0){
@@ -372,14 +373,25 @@ define(function(require) {
                     }else{
                         let posY = 0;
                         let posX = 0;
-                        if(node.fathers.length > 1){    //MergeNodes
-                            for(var i = 0; i < node.fathers.length; i++){
-                                if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
-                                posX += node.fathers[i].position.x;
-                            }
-                            posX = posX / node.fathers.length;
-                            node.position.x = posX;
-                            node.position.y = fullVerticalStep * durationRecord * j * durationStepConst + 20;
+                        if(node.action === "Conflict"){
+                            node.position.x = width / 2;
+                            // totalConflicts++;
+                            // for(var i = 0; i < node.fathers.length; i++){
+                            //     if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
+                            //     posX += node.fathers[i].position.x;
+                            // }
+                            // posX = posX / node.fathers.length;
+                            // node.position.x = posX;
+                            // node.position.y = fullVerticalStep * durationRecord * (j + totalConflicts - 0.5) * durationStepConst + 20;
+                        }else if(node.fathers.length > 1){    //MergeNodes
+                            node.position.x = width / 2;
+                            // for(var i = 0; i < node.fathers.length; i++){
+                            //     if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
+                            //     posX += node.fathers[i].position.x;
+                            // }
+                            // posX = posX / node.fathers.length;
+                            // node.position.x = posX;
+                            node.position.y = fullVerticalStep * durationRecord * (j + totalConflicts) * durationStepConst + 20;
                         }else{ //if(node.fathers.length === 1)
                             let fatherWidth = node.fathers[0].weight * width;
                             let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
@@ -390,9 +402,8 @@ define(function(require) {
                                 previousLength += node.fathers[0].children[i].weight;
                             }
                             previousLength = previousLength * width;
-                            if(previousLength > 100) previousLength = 100;
                             let posX = fatherStartX + previousLength + node.weight * width / 2;
-                            let posY = fullVerticalStep * durationRecord * j * durationStepConst + 20;
+                            let posY = fullVerticalStep * durationRecord * (j + totalConflicts) * durationStepConst + 20;
                             node.position.x = posX;
                             node.position.y = posY;
                         }
@@ -512,7 +523,13 @@ define(function(require) {
             // datetime
             // username
             // nodesInfo
-            let temp = nameNodeDict[pullName];    
+            let temp = null;
+            if(pullName.nodename){
+                temp = pullName;
+            }
+            else{
+                temp = nameNodeDict[pullName];
+            }
             // A temporary method
             // In order to obtain the handler of a node,
             // however, repo things are deep copy. Now, only
@@ -616,8 +633,28 @@ define(function(require) {
             graph.refresh();
         }
         graph.clearRoot = function(newRoot){
-            graph.root = Root = newRoot;
+            graph.Root = Root = newRoot;
             newRoot.nodeId = 0;
+        }
+
+        graph.appendConflictNodes = function(conflicts){
+            // rst.push({link: i, conflict: conflictNodes[i], conflictReason: explainConflict(conflictLinks[i])});
+            // rst.push({node: i, conflict: conflictNodes[i], conflictReason: explainConflict(conflictNodes[i])});
+            for(var i = 0; i < conflicts.length; i++){
+                if(conflicts[i].node){
+                    curNode = graph.getCurShowNode();
+                    let newnode = new Node(0, curNode, "Conflict", 0, new Date(), conflicts[i].conflictReason, conflicts[i].node, "Node-Conflict", null, null, null, false, 0, null)
+                    curNode.children.push(newnode);
+                    curNode = newnode;
+                }else if(conflicts[i].link){
+                    curNode = graph.getCurShowNode();
+                    let newnode = new Node(0, curNode, "Conflict", 0, new Date(), conflicts[i].conflictReason, conflicts[i].node, "Link-Conflict", null, null, null, false, 0, null)
+                    curNode.children.push(newnode);
+                    curNode = newnode;
+                }else{
+                    console.log("Unexpected conflicts: " + conflicts[i]);
+                }
+            }
         }
 
         /************ Example ************/
@@ -671,7 +708,6 @@ define(function(require) {
     }
 
 })
-
 
 // TODO: graph.pull -- should pass out a state as symbol
 // TODO: log.append not here but share part

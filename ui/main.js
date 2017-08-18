@@ -115,7 +115,9 @@ return function(webSocket) {
         }
         let set = new Set(collector);
         collector = Array.from(set);
-        collector = collector.reverse();    
+        collector.sort((a, b)=>{
+            return a.nodeId - b.nodeId;
+        }) 
         for(var i = 0; i < collector.length; i++){
             let info = collector[i];
             if(info.action == "Add link"){
@@ -269,13 +271,13 @@ return function(webSocket) {
 
     webSocket.on('mergeReply', (data) => {
         console.log(data.master);   //Provenance of master branch
-        let rst = comparator.getCompareResult(hl.getPullState(), hl.Root, data.master);
+        let rst = comparator.getCompareResult(hl.getPullState(), data.master);
         console.log(rst);
-        if(Object.keys(rst.conflictNodes).length || Object.keys(rst.conflictLinks).length){
+        if(Object.keys(rst.conflictNodes).length || Object.keys(rst.conflictLinks).length || true){
             console.log("Conflict(s) Detected.");
-            console.log(rst.conflictNodes);
-            console.log(rst.conflictLinks);
-            comparator.getConflictTree();
+            let rst = comparator.getConflictTree();
+            hl.appendConflictNodes(rst);
+            hl.refresh();
         }else{
             var increments = igraph.getIncrementsAndClear();
             var areaRepo = [];
@@ -288,12 +290,12 @@ return function(webSocket) {
                     dataRepo.push(increments[i].data.area.leaflet);
                     increments[i].data.area.leaflet = null;
                 }
-                if(increments[i].source.visData && increments[i].source.visData.area.leaflet){
+                if(increments[i].source && increments[i].source.visData && increments[i].source.visData.area.leaflet){
                     areaRepo.push(increments[i].source.visData.area);
                     dataRepo.push(increments[i].source.visData.area.leaflet);
                     increments[i].source.visData.area.leaflet = null;
                 }
-                if(increments[i].target.visData && increments[i].target.visData.area.leaflet){
+                if(increments[i].target && increments[i].target.visData && increments[i].target.visData.area.leaflet){
                     areaRepo.push(increments[i].target.visData.area);
                     dataRepo.push(increments[i].target.visData.area.leaflet);
                     increments[i].target.visData.area.leaflet = null;

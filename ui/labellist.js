@@ -39,7 +39,31 @@ define(function(require) {
                     lbl.className = "node action " + myId;
                     curNode.reason = curNode.reason || "Manage";
                     let tail = "...";
-                    lbl.innerHTML = (curNode.action + ": " + curNode.nodename + " | " + curNode.reason).slice(0, textlength) + tail;
+                    if(curNode.action === "Conflict"){
+                        let uiForm = document.createElement('div');
+                        uiForm.className = "ui form";
+                        lbl.appendChild(uiForm);
+                        let groupFields = document.createElement('div');
+                        groupFields.className = "grouped fields";
+                        uiForm.appendChild(groupFields);
+                        for(var j = 0; j < 2; j++){
+                            let field = document.createElement('div');
+                            field.className = "field";
+                            groupFields.appendChild(field);
+                            let radio = document.createElement('div');
+                            radio.className = "ui radio checkbox";
+                            field.appendChild(radio);
+                            let input = document.createElement('input');
+                            input.type = "radio";
+                            input.name = "conflict1";
+                            radio.appendChild(input);
+                            let label = document.createElement('label');
+                            label.innerHTML = "Option-" + j;
+                            radio.appendChild(label);
+                        }
+                        
+                    }else lbl.innerHTML = (curNode.action + ": " + curNode.nodename + " | " + curNode.reason).slice(0, textlength) + tail;
+
                     // let color = null;
                     // let type = null;
                     // if(!curNode.action) curNode.action = "Root";
@@ -67,8 +91,9 @@ define(function(require) {
                     // lbl.appendChild(showName);
                     lbl.style.marginRight = '0.5em';
                     lbl.style.position = 'absolute';
-                    lbl.style.top = (gapY * i + 15) + "px";
-                    lbl.style.left = '300px';
+                    if(curNode.action === "Conflict") lbl.style.top = (gapY * (i - 0.3) + 15) + "px";
+                    else lbl.style.top = (gapY * i + 15) + "px";
+                    lbl.style.left = '250px';
                     $("#" + myId + "GITL" + curNode.nodeId)
                         .popup({
                             position : 'bottom center',

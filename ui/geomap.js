@@ -39,6 +39,9 @@ return function geoLocation(options) {
         var index = importantGeos.indexOf(geo);
         if (index > -1) {
             importantGeos.splice(index, 1);
+            if(geo.leaflet === null){
+                fillAreasLeafletByData([geo]);
+            }
             importantLocations.removeLayer(geo.leaflet);
         }
     }
