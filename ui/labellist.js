@@ -5,16 +5,16 @@ define(function(require) {
             var options = arg || {},
             container = options.container || null,
             myId = arg.id || false;
+
+            startX = container.getBoundingClientRect().left;
+            startY = 15;
+            console.log(container.getBoundingClientRect());
+
+            let RemoveHandleChoices = ["{Abondon Further Explore}", "{Restore Removed Node}"]
+            let DuplicateHandleChoices = ["{Merge nodes with the same name}", "{Rename the local node}"]
+
             if(root){
                 $(".node.action." + myId).remove();
- 
-                // let save = $("#git-right").html()
-                // console.log($("#git-right").html())
-                // $("#git-right").empty();
-                // console.log($("#git-right").html())
-                // $("#git-right").html(save);
-                // console.log($("#git-right").html())
-                // console.log($("#git-right").innerHTML)
                 let curNode = root;
                 let todoQueue = [];
                 let rstArray = [];
@@ -33,20 +33,41 @@ define(function(require) {
                 totalY = rstArray[rstArray.length - 1].position.y + 20;
                 gapY = totalY / rstArray.length;
                 let textlength = 25;
+                conflictNum = 0;
                 for(var i = 0; i < rstArray.length; i++){
+                    let choiceArray = [];
                     curNode = rstArray[i];
                     let lbl = document.createElement('div');
                     lbl.className = "node action " + myId;
                     curNode.reason = curNode.reason || "Manage";
                     let tail = "...";
-                    if(curNode.action === "Conflict"){
+                    if(curNode.action === "Conflict"){ 
                         let uiForm = document.createElement('div');
                         uiForm.className = "ui form";
                         lbl.appendChild(uiForm);
                         let groupFields = document.createElement('div');
                         groupFields.className = "grouped fields";
                         uiForm.appendChild(groupFields);
-                        for(var j = 0; j < 2; j++){
+                        if(curNode.reason.indexOf("[Node Removed]") > -1){
+                            if(curNode.reason === "[Node Removed]"){
+                                curNode.reason = curNode.reason + ": " + curNode.conflictDependency.trunk.node.nodename;
+                                choiceArray = RemoveHandleChoices;
+                            }else{
+                                choiceArray = [];
+                            }
+                        }else if(curNode.reason.indexOf("[Name Duplicated]") > -1){
+                            if(curNode.reason === "[Name Duplicated]"){
+                                curNode.reason = curNode.reason + ": " + curNode.conflictDependency.dupNode;
+                                choiceArray = DuplicateHandleChoices;
+                            }else{
+                                choiceArray = [];
+                            }
+                        }
+                        if(curNode.hasHandled === true){
+                            let field = document.createElement('i');
+                            field.className = "green big check circle icon";
+                            groupFields.appendChild(field);
+                        }else for(var j = 0; j < choiceArray.length; j++){
                             let field = document.createElement('div');
                             field.className = "field";
                             groupFields.appendChild(field);
@@ -55,15 +76,14 @@ define(function(require) {
                             field.appendChild(radio);
                             let input = document.createElement('input');
                             input.type = "radio";
-                            input.name = "conflict1";
+                            input.name = "conflict" + conflictNum;
+                            input.value = j;
                             radio.appendChild(input);
                             let label = document.createElement('label');
-                            label.innerHTML = "Option-" + j;
+                            label.innerHTML = choiceArray[j];
                             radio.appendChild(label);
                         }
-                        
                     }else lbl.innerHTML = (curNode.action + ": " + curNode.nodename + " | " + curNode.reason).slice(0, textlength) + tail;
-
                     // let color = null;
                     // let type = null;
                     // if(!curNode.action) curNode.action = "Root";
@@ -89,18 +109,33 @@ define(function(require) {
                     // showName.className = "detail";
                     // showName.appendChild(document.createTextNode(type));
                     // lbl.appendChild(showName);
-                    lbl.style.marginRight = '0.5em';
                     lbl.style.position = 'absolute';
-                    if(curNode.action === "Conflict") lbl.style.top = (gapY * (i - 0.3) + 15) + "px";
-                    else lbl.style.top = (gapY * i + 15) + "px";
-                    lbl.style.left = '250px';
+                    if(curNode.action === "Conflict" && choiceArray.length != 0) lbl.style.top = (gapY * (i - 0.3) + startY) + "px";
+                    else lbl.style.top = (gapY * i + startY) + "px";
+                    lbl.style.left = startX;
                     $("#" + myId + "GITL" + curNode.nodeId)
                         .popup({
                             position : 'bottom center',
                             target   : "#" + myId + "GITL" + curNode.nodeId,
                             title    : curNode.action + ": " + curNode.nodename,
-                            content  : ("Type: " + curNode.type + " / Datetime: " + curNode.datetime + " / Reason:" + curNode.reason) || "Manage"
+                            html  : curNode.reason? ("Reason:" + curNode.reason + "<br>Type: " + curNode.type) : "Root"
                         })
+                    if(curNode.action === "Conflict"){
+                        console.log($("#" + myId + "GITL" + curNode.nodeId))
+                        $("input[type='radio'][name='conflict" + conflictNum + "']").on('click', ()=>{
+                            let choice = $("input[type='radio'][name='conflict" + conflictNum + "']:checked").val();
+                            console.log("Radio choice: " + choice);
+                            if(list.onShowConflictChoice){
+                                list.onShowConflictChoice(curNode, choiceArray[choice]);
+                                curNode.hasHandled = true;
+                                curNode.reason = choiceArray[choice];
+                            }
+                            else{
+                                console.log("OnShowConflictChoice function not found.");
+                            }
+                        })
+                        // $('#' + myId + 'GITL' + curNode.nodeId + " .ui.form .grouped.fields .field .checkbox").checkbox().first().checkbox({onChecked : (a, b, c)=> {console.log(a, b, c)}});
+                    }
                 }
             }
 

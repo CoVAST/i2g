@@ -323,14 +323,15 @@ define(function(require) {
                 }).filter((j) => {return j.label === d.source.label || j.label === d.target.label});
                 let target = null;
                 let source = null;
-                if(nodeArr.length != 2){
+                // if(nodeArr.length != 2){ //TODO FIXME conflict !!
+                if(false){
                     console.log("Error Number of nodeArr: " + nodeArr.length);
                 }else{
                     if(nodeArr[0].label === d.source.label){
                         source = nodeArr[0];
-                        target = nodeArr[1];
+                        target = nodeArr[nodeArr.length - 1];
                     }else{
-                        source = nodeArr[1];
+                        source = nodeArr[nodeArr.length - 1];
                         target = nodeArr[0];
                     }
                 }
@@ -804,6 +805,12 @@ define(function(require) {
         }
         otGraph.pullState = function(){
             return pullState;
+        }
+        otGraph.isDuplicatedName = function(name){
+            let rst = nodes.filter((k)=>{
+                return k.label === name;
+            })
+            return rst.length > 0;
         }
         return otGraph;
     }

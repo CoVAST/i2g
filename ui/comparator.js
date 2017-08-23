@@ -16,6 +16,7 @@ define(function(require) {
         var conflictNodes = {};
         var conflictLinks = {};
         var removedNodes = [];
+        var dependency = {};
         //ALL nodes and links in this file refers to concepts in ontology graphs
         
         /************ Local Functions ************/
@@ -67,11 +68,11 @@ define(function(require) {
                 let nodeKey = link.target.action + "-" +link.target.nodename;
                 conflictNodes[nodeKey] = conflictNodes[nodeKey]? (conflictNodes[nodeKey] | 4): 4;
             }
-            for(var i = 0; i < serverLinks.length; i++){
-                if(link.nodename === serverLinks[i].nodename){
-                    conflictLinks[linkKey] = conflictLinks[linkKey]? (conflictLinks[linkKey] | 2) : 2;   //Name Duplicated
-                }
-            }
+            // for(var i = 0; i < serverLinks.length; i++){
+            //     if(link.nodename === serverLinks[i].nodename){
+            //         conflictLinks[linkKey] = conflictLinks[linkKey]? (conflictLinks[linkKey] | 2) : 2;   //Name Duplicated
+            //     }
+            // }
         }
         comparator.getConflictTree = function(){
             function explainConflict(value){
@@ -84,10 +85,10 @@ define(function(require) {
             let rst = [];
             for(var i in conflictNodes){
                 console.log(i);
-                rst.push({node: i, conflict: conflictNodes[i], conflictReason: explainConflict(conflictNodes[i])});
+                rst.push({node: i, conflict: conflictNodes[i], conflictReason: explainConflict(conflictNodes[i]), dependency: dependency[i]});
             }
             for(var i in conflictLinks){
-                rst.push({link: i, conflict: conflictNodes[i], conflictReason: explainConflict(conflictLinks[i])});
+                rst.push({link: i, conflict: conflictNodes[i], conflictReason: explainConflict(conflictLinks[i]), dependency: dependency[i]});
             }
             return rst;
         }
@@ -110,12 +111,18 @@ define(function(require) {
                             if(mergeInfo[i].node.action.indexOf("node") > -1){
                                 if(nodeBelongTo(mergeInfo[i].node, serverList.nodes) === false){
                                     removedNodes.push(mergeInfo[i].node.nodename);
-                                    conflictNodes[mergeInfo[i].node.action + "-" + mergeInfo[i].node.nodename] |= 1;
+                                    let key = mergeInfo[i].node.action + "-" + mergeInfo[i].node.nodename;
+                                    conflictNodes[key] = conflictNodes[key]? conflictNodes[key] | 1 : 1;
+                                    dependency[key] = {trunk: mergeInfo[i], branches: []};
+                                    mergeInfo[i].conflict = true;
                                 }
                             }else if(mergeInfo[i].node.action.indexOf("link") > -1){
                                 if(linkBelongTo(mergeInfo[i].node, serverList.links) === false){
                                     removedNodes.push(mergeInfo[i].node.nodename);
-                                    conflictNodes[mergeInfo[i].node.action + "-" + mergeInfo[i].node.nodename] |= 1;
+                                    let key = mergeInfo[i].node.action + "-" + mergeInfo[i].node.nodename;
+                                    conflictNodes[key] = conflictNodes[key]? conflictNodes[key] | 1 : 1;
+                                    dependency[key] = {trunk: mergeInfo[i], branches: []};
+                                    mergeInfo.conflict = true;
                                 }
                             }
                         }
@@ -136,24 +143,49 @@ define(function(require) {
             }
         }
 
-        function hasAddOnHanldeConflict(localList){
+        function CheckDependency(localList){
             for(var i = 0; i < localList.nodes.length; i++){
-                if(conflictNodes[localList.nodes[i].nodename]){
-                    if(conflictNodes[localList.nodes[i]] & 1){ //Name dumplicate
-
+                let key = localList.nodes[i].action + "-" + localList.nodes[i].nodename;
+                if(conflictNodes[key]){
+                    if(conflictNodes[key] & 1){ //Node Removed
+                        
                     }
-                    if(conflictNodes[localList.nodes[i]] & 2){//Node Removed
-
+                    if(conflictNodes[key] & 2){//Name duplicate
+                        dependency[key] = {dupNode: localList.nodes[i]};
                     }
-                    if(conflictLinks[localList.nodes[i]] & 4){//Neighborhood node removed
+                    if(conflictLinks[key] & 4){//Neighborhood node removed
 
                     }
                 }
             }
             for(var i = 0; i < localList.links.length; i++){
+                let srcKey = "Add node" + "-" + localList.links[i].source.label;
+                if(conflictNodes[srcKey]){
+                    if(conflictNodes[srcKey] & 1){ //Node Removed
+                        dependency[srcKey].branches.push(localList.links[i]);
+                    }
+                    if(conflictNodes[srcKey] & 2){//Name duplicate
+                        dependency[srcKey] = {duplink: localList.links[i]};
+                    }
+                    if(conflictLinks[srcKey] & 4){//Neighborhood node removed
 
+                    }
+                }
+                
+                let tarKey = "Add node" + "-" + localList.links[i].target.label;
+                if(conflictNodes[tarKey]){
+                    if(conflictNodes[tarKey] & 1){ //Node Removed
+                        dependency[tarKey].branches.push(localList.links[i]);
+                    }
+                    if(conflictNodes[tarKey] & 2){//Name duplicate
+                        dependency[srcKey] = {duplink: localList.links[i]};
+                    }
+                    if(conflictLinks[tarKey] & 4){//Neighborhood node removed
+
+                    }
+                }
             }
-            return false;
+            return true;
         }
 
         comparator.getCompareResult = function(pullState, serverRawList){
@@ -198,8 +230,8 @@ define(function(require) {
                 curNode = curNode.children[0];
             }
             let rst1 = hasPullCriticalChange(pullState, serverList);
-            let rst2 = hasAddOnHanldeConflict(localList);
-            if(rst1 === true && rst2 === false){
+            let rst2 = CheckDependency(localList);
+            if(rst1 && rst2){
                 console.log("Pull state problem");
             }else{
                 for(var i = 0; i < localList.nodes.length; i++){
@@ -210,8 +242,16 @@ define(function(require) {
                     compareNode(localList.links[i], serverList.links);
                 }
             }
+            CheckDependency(localList);
+            for(var i in dependency){
+                if(dependency[i].branches){
+                    let dset = new Set(dependency[i].branches);
+                    dependency[i].branches = Array.from(dset);
+                }
+            }
             return {conflictNodes: conflictNodes, conflictLinks: conflictLinks, leafNode: leafNode};
         }
     	return comparator;
     }
 })
+ 

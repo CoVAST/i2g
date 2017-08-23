@@ -165,7 +165,7 @@ return function(arg) {
     var lastSubmit = null;
     appLayout.map.onadd(function(d){
         var selectedNum = 0;
-        $('#infocard-modal').modal({closable: false}).modal('show');
+        $('#infocard-modal').modal({closable: true}).modal('show');
         submit_d = d;
         $('#submit').click(()=>{
             if(d !== submit_d)return;   //FIXME Some strange occassions, here are harsh codes
@@ -174,9 +174,10 @@ return function(arg) {
             let name = node_name.val() || null;
             let reason = node_reason.val() || node_reason.attr('placeholder');
             if (!name || !reason) {
-                $('#infocard-modal').modal({closable: false}).modal('show');
                 alert('Name and Reason are required');
-            } else {
+            }else if(appLayout.isDuplicatedName(name)){
+                alert('A duplicated name is not allowed.')
+            }else {
                 $('#infocard-modal').modal('hide');
                 submit_d.name = name;
                 submit_d.reason = reason;

@@ -17,6 +17,7 @@ define(function(require) {
             // types = options.types || [];
         var nodeCounter = 0;
         var nameNodeDict = {};
+        var allMergeDict = {};
 
         let appLayout = new Layout({
             margin: 10,
@@ -24,11 +25,11 @@ define(function(require) {
             container: container,
             cols: [
                 {
-                    width: 0.6,
+                    width: 0.2,
                     id: myId + '-' + 'git-left'
                 },
                 {
-                    width: 0.4,
+                    width: 0.8,
                     id: myId + '-' + 'git-right'
                 },
             ]
@@ -40,20 +41,6 @@ define(function(require) {
 
         /************ Tree Structure ************/
         var Node = function(userId, fathers, action, duration, datetime, reason, nodename, type, source, target, linkname, datalink, value, data){
-            // //Formatize fathers
-            // //Calculate weight
-            // var weight = 0.0;
-            // if(!fathers) weight = 1;
-            // else{
-            //     fathers = Array.isArray(fathers)? fathers : [fathers];
-            //     if(fathers.length === 1){
-            //         weight = fathers[0].weight / fathers[0].children.length;
-            //     }else{
-            //         for(var i = 0; i < fathers.length; i++){
-            //             weight += fathers[i].weight;
-            //         }
-            //     }
-            // }
             if(fathers !== null){
                 fathers = Array.isArray(fathers)? fathers : [fathers];
             }
@@ -79,6 +66,13 @@ define(function(require) {
                 datalink: datalink,
                 value: value,
                 data: data
+            }
+            if(nodename === "Merge"){
+                let mergeName = "Merge";
+                for(var i = 0; i < fathers.length; i++){
+                    mergeName += fathers[i].nodename
+                }
+                allMergeDict[mergeName] = node;
             }
             nameNodeDict[nodename] = node;
             node.checkout = function(info){
@@ -106,20 +100,63 @@ define(function(require) {
         let pullState = Root;
         let NodesDrew = new Set();
         let lastMerge = Root;
-
+        var leafNodes = [Root];
 
         /************** Label Part **************/
         // var labelWidth = parseInt(appLayout.cell("git-right").style.width);
         var labelList = new LabelList({
                                         id: myId,
                                         root: Root,
-                                        container: appLayout.cell(myId + '-' + 'git-right')
+                                        container: appLayout.cell(myId + '-' + 'git-right'),
                                     });
+        labelList.onShowConflictChoice = function(conflictNode, choice){
+            console.log(conflictNode);
+            console.log(choice);
+            conflictNode.handleInfo = [];
+            //NOTICE:   Abondon type info should be added after users' operations
+            //          Restore type info should be added before the operations
+            if(choice === "{Abondon Further Explore}"){
+                let branches = conflictNode.conflictDependency.branches;
+                for(var i = 0; i < branches.length; i++){
+                    conflictNode.conflictDependency.trunk.type = "Abondon";
+                    if(branches[i].action === "Add node"){
+                        conflictNode.handleInfo.push({
+                            type: "Abondon", 
+                            action: "Add node",
+                            nodename: branches[i].nodename,
+                        })
+                    }else if(branches[i].action === "Add link"){
+                        conflictNode.handleInfo.push({
+                            type: "Abondon",
+                            action: "Add link",
+                            linkname: branches[i].linkname,
+                            source: branches[i].source,
+                            target: branches[i].target,
+                        })
+                    }
+                }
+            }else if(choice === "{Restore Removed Node}"){
+                let trunk = conflictNode.conflictDependency.trunk;
+                let branches = conflictNode.conflictDependency.branches;
+                trunk.type = "Restore";
+                conflictNode.handleInfo.push(trunk);
+                conflictNode.handleInfo = conflictNode.handleInfo.concat(branches);
+            }else if(choice === "{Merge nodes with the same name}"){
+                conflictNode.handleInfo.push({
+                    type: "MergeSameName",
+                    nodename: conflictNode.conflictNode.dupNode.nodename,
+                })
+            }else if(choice === "{Rename the local node}"){
 
+            }
+            graph.conflictSolved = true;
+            // graph.refresh();
+            // labelList.refresh(Root);
+        }
         /************ Private Functions ************/
 
         function refillWeightFrom(node){
-            if(!node.fathers) node.weight = 1;
+            if(!node.fathers || node.fathers.length === 0) node.weight = 1;
             else if(node.fathers.length === 1){
                 node.weight = node.fathers[0].weight / node.fathers[0].children.length;
             }else{
@@ -134,12 +171,12 @@ define(function(require) {
         }
 
         function colorAlloc(nodeId) {
-            //Google ten
+            //Google twenty
             var color_g20_addBlack = [   "#000000", "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", 
                                 "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", 
                                 "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", 
                                 "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"   ];
-            if(nodeId > color_g20_addBlack) {
+            if(nodeId > color_g20_addBlack.length) {
                 console.log("Too many ids. Colors aren't enough.");
                 return "black";
             }
@@ -188,15 +225,33 @@ define(function(require) {
                 cancelHighlightFrom(node.children[i]);
             }
         }
-        
+        function showStateById(id){
+            let node = graph.findNodeById(id);
+            let backStack = graph.backRoute(node);
+            if(backStack.mergeNode !== null){
+                console.log(backStack.mergeNode);
+                let temp = backStack.mergeNode.mergeInfo.map((k)=>{
+                    return k.node;
+                })
+                if(!backStack.backNodes)backStack.backNodes = [];
+                temp = temp.concat(backStack.backNodes);
+                temp.sort((a, b)=>{return a.nodeId > b.nodeId;});
+                graph.onIGraphBuild(temp, node);
+            }else{
+                backStack = backStack.backNodes;
+                graph.onIGraphBuild(backStack.reverse(), node);
+            }
+        }
+
         /************ Public Functions ************/
         graph.selectCurShowNode = function(node){
-            CurShowNode = svg.select("#C" + node.nodeId);
+            CurShowNode = svg.selectAll("#C" + node.nodeId);
             if(CurShowNode && CurShowNode != Root){
                 CurShowNode.transition()
                     .ease(d3.easeBounce)
                     .duration(400)
                     .attr("r", 15);
+                showStateById(parseInt(CurShowNode.attr("id").replace(/C/g, '')));
             }
             // else{
             //     CurShowNode = svg.selectAll("circle").attr("id", node.nodeId);
@@ -215,9 +270,10 @@ define(function(require) {
 
         graph.merge = function(mergeNodes, mergeReason){
             let mergeName = "Merge";
-            // for(var i = 0; i < mergeNodes.length; i++){
-            //     mergeName += mergeNodes[i].nodeId;
-            // }
+            for(var i = 0; i < mergeNodes.length; i++){
+                mergeName += mergeNodes[i].nodeId;
+            }
+            if(allMergeDict[mergeName]) return;
             let lastMerge = nameNodeDict["Merge"]? nameNodeDict["Merge"] : Root;
             var node = new Node(0, mergeNodes, "Merge", 0, (new Date()).toString(), mergeReason, mergeName, "Merge", null, null, null, null, null, null, null);
             
@@ -375,14 +431,14 @@ define(function(require) {
                         let posX = 0;
                         if(node.action === "Conflict"){
                             node.position.x = width / 2;
-                            // totalConflicts++;
+                            totalConflicts++;
                             // for(var i = 0; i < node.fathers.length; i++){
                             //     if(node.fathers[i].position.y > posY) posY = node.fathers[i].position.y;
                             //     posX += node.fathers[i].position.x;
                             // }
                             // posX = posX / node.fathers.length;
                             // node.position.x = posX;
-                            // node.position.y = fullVerticalStep * durationRecord * (j + totalConflicts - 0.5) * durationStepConst + 20;
+                            node.position.y = fullVerticalStep * durationRecord * (j + totalConflicts - 0.5) * durationStepConst + 20;
                         }else if(node.fathers.length > 1){    //MergeNodes
                             node.position.x = width / 2;
                             // for(var i = 0; i < node.fathers.length; i++){
@@ -394,15 +450,8 @@ define(function(require) {
                             node.position.y = fullVerticalStep * durationRecord * (j + totalConflicts) * durationStepConst + 20;
                         }else{ //if(node.fathers.length === 1)
                             let fatherWidth = node.fathers[0].weight * width;
-                            let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
-                            // let fatherStartX = 0;
-                            let previousLength = 0;
-                            let idx = node.fathers[0].children.indexOf(node);
-                            for(var i = 0; i < idx; i++){
-                                previousLength += node.fathers[0].children[i].weight;
-                            }
-                            previousLength = previousLength * width;
-                            let posX = fatherStartX + previousLength + node.weight * width / 2;
+                            let fatherStartX = 0;
+                            let posX = fatherStartX + node.weight * width / 2;
                             let posY = fullVerticalStep * durationRecord * (j + totalConflicts) * durationStepConst + 20;
                             node.position.x = posX;
                             node.position.y = posY;
@@ -473,21 +522,7 @@ define(function(require) {
                     }
                 });
             }
-            function showStateById(id){
-                let node = graph.findNodeById(id);
-                let backStack = graph.backRoute(node);
-                if(backStack.mergeNode !== null){
-                    console.log(backStack.mergeNode);
-                    let temp = backStack.mergeNode.mergeInfo.map((k)=>{
-                        return k.node;
-                    })
-                    if(!backStack.backNodes)backStack.backNodes = [];
-                    graph.onIGraphBuild(temp.reverse().concat(backStack.backNodes.reverse()), node)
-                }else{
-                    backStack = backStack.backNodes;
-                    graph.onIGraphBuild(backStack.reverse(), node);
-                }
-            }
+
             function drawLink(beginNode, endNode){
                 var curveFunction = d3.line()
                         .x((d) => { return d.x; })
@@ -544,7 +579,7 @@ define(function(require) {
                     duration: info.nodesInfo[i].duration,
                     nodename: info.nodesInfo[i].nodename,
                     reason: info.nodesInfo[i].reason,
-                    type: info.nodesInfo[i].reason,
+                    type: info.nodesInfo[i].type,
                     data: info.nodesInfo[i].data,
                     source: info.nodesInfo[i].source,
                     target: info.nodesInfo[i].target
@@ -633,8 +668,17 @@ define(function(require) {
             graph.refresh();
         }
         graph.clearRoot = function(newRoot){
+            nodeCounter = 0;
+            nameNodeDict = {};
+            allMergeDict = {};
+            if(newRoot === null) newRoot = new Node(0, null, "Root", 0, null, null, "Root", "Root", null, null, null, null, null, null);
+            else if(!newRoot){
+                console.log("newRoot not specified!");
+                return;
+            }
             graph.Root = Root = newRoot;
-            newRoot.nodeId = 0;
+            graph.setLastMerge(newRoot);
+            graph.setPullState(newRoot);
         }
 
         graph.appendConflictNodes = function(conflicts){
@@ -644,16 +688,41 @@ define(function(require) {
                 if(conflicts[i].node){
                     curNode = graph.getCurShowNode();
                     let newnode = new Node(0, curNode, "Conflict", 0, new Date(), conflicts[i].conflictReason, conflicts[i].node, "Node-Conflict", null, null, null, false, 0, null)
+                    newnode.conflictDependency = conflicts[i].dependency;
                     curNode.children.push(newnode);
                     curNode = newnode;
                 }else if(conflicts[i].link){
                     curNode = graph.getCurShowNode();
                     let newnode = new Node(0, curNode, "Conflict", 0, new Date(), conflicts[i].conflictReason, conflicts[i].node, "Link-Conflict", null, null, null, false, 0, null)
+                    newnode.conflictDependency = conflicts[i].dependency;
                     curNode.children.push(newnode);
                     curNode = newnode;
                 }else{
                     console.log("Unexpected conflicts: " + conflicts[i]);
                 }
+            }
+        }
+        graph.getLeafNodes = function(){
+            if(myId === "collaboration"){
+                let todoList = Root.children;
+                leafNodes = [];
+                for(var i = 0; i < todoList.length; i++){
+                    if(todoList[i].children.length > 0){
+                        todoList.push(todoList[i].children);
+                    }else{
+                        leafNodes.push(todoList[i]);
+                    }
+                }
+                return leafNodes;
+            }else{
+                cur = Root;
+                while(true){
+                    if(cur.children.length > 0){
+                        cur = cur.children[0];
+                    }else break;
+                }
+                leafNodes[0] = cur;
+                return cur;
             }
         }
 

@@ -130,7 +130,17 @@ io.on('connection', function (socket) {
     });
 
     socket.on('pullRequest', function(node){
-        socket.emit('pullRespond', node);
+        console.log("_____________");
+        console.log(node);
+        console.log(provenance);
+        console.log("_____________");
+        let ret = [];
+        for(var i = 0; i < provenance.length; i++){
+            if(provenance[i].pullNodename === node.nodename){
+                break;
+            }else ret.push(provenance[i]);
+        }
+        socket.emit('pullRespond', ret);
     })
 
     // socket.broadcast.emit('bcast msg', {

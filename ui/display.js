@@ -37,7 +37,7 @@ define(function(require){
             title: "Tree Provenance",
             container: appLayout.cell('col-left'),
             id: "col-left-view",
-            padding: 25,
+            padding: 0,
             // style:{border: 0},
             // header: {height: 0.05, border: 0}
         });
@@ -59,6 +59,7 @@ define(function(require){
             id: "collaboration",
         })
         
+        logTree.datas = null;
 
         var ig = iGraph({
             container: views.mid.body,
@@ -126,33 +127,29 @@ define(function(require){
         }
 
         logTree.pullToIndividial = function(info){
-            if(info.action.indexOf("Root") > -1 || info.action.indexOf("Merge") > -1){
-                console.log(info);
-                let save = info.children;
-                let save2 = info.fathers;
-                let save3 = [];
-                info.children = [];
-                info.fathers = [];
-                if(info.mergeInfo){
-                    for(var i = 0; i < info.mergeInfo.length; i++){
-                        save3.push({fathers: info.mergeInfo[i].node.fathers, children: info.mergeInfo[i].node.children});
-                        info.mergeInfo[i].node.fathers = [];
-                        info.mergeInfo[i].node.children = [];
-                    }
+            console.log(info);
+            let save = info.children;
+            let save2 = info.fathers;
+            let save3 = [];
+            info.children = [];
+            info.fathers = [];
+            if(info.mergeInfo){
+                for(var i = 0; i < info.mergeInfo.length; i++){
+                    save3.push({fathers: info.mergeInfo[i].node.fathers, children: info.mergeInfo[i].node.children});
+                    info.mergeInfo[i].node.fathers = [];
+                    info.mergeInfo[i].node.children = [];
                 }
-                webSocket.emit('pullRequest', info);
-                info.children = save;
-                info.fathers = save2;
-                if(info.mergeInfo){
-                    for(var i = 0; i < info.mergeInfo.length; i++){
-                        info.mergeInfo[i].node.fathers = save3[i].fathers;
-                        info.mergeInfo[i].node.children = save3[i].children;
-                    }
-                }
-                return true;
-            }else{
-                return false;
             }
+            webSocket.emit('pullRequest', info);
+            info.children = save;
+            info.fathers = save2;
+            if(info.mergeInfo){
+                for(var i = 0; i < info.mergeInfo.length; i++){
+                    info.mergeInfo[i].node.fathers = save3[i].fathers;
+                    info.mergeInfo[i].node.children = save3[i].children;
+                }
+            }
+            return true;
         }
         views.left.header.append(new Button({
             label: 'Pull',
@@ -176,6 +173,7 @@ define(function(require){
         webSocket.emit('large display', {});
         webSocket.on('update', function(datas){
             console.log(datas.logs);
+            logTree.datas = datas;
             let logs = Array.isArray(datas.logs)? datas.logs : [datas.logs];
             for(var j = 0; j < logs.length; j++){
                 var tempInfos = [];
@@ -204,7 +202,7 @@ define(function(require){
                     }
                 }
                 let curNode = null;
-                curNode = logTree.insert((curNode !== null)? curNode : logs[j].pullNodename, { 
+                curNode = logTree.insert(logs[j].pullNodename, { 
                     datetime: logs[j].datetime,
                     commitReason: logs[j].commitReason,
                     userId: logs[j].userId,
