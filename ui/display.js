@@ -92,8 +92,18 @@ define(function(require){
             let set = new Set(collector);
             collector = Array.from(set);
             collector.sort((a, b)=>{
-                return a.nodeId - b.nodeId;
-            })  
+                // "remove" after "add" a.action > b.action
+                // "link" after "node" a.action < b.action
+                if(a.action.indexOf("Remove") > -1 && b.action.indexOf("Remove") > -1){
+                    return a.action < b.action;
+                }else if(a.action.indexOf("Remove") > -1){
+                    return true;    //a.action greater
+                }else if(b.action.indexOf("Remove") > -1){
+                    return false;   //b.action greater
+                }else{  //both add
+                    return a.action < b.action;
+                }
+            }) 
             for(var i = 0; i < collector.length; i++){
                 let info = collector[i];
                 if(info.action === "Add link"){
@@ -133,7 +143,14 @@ define(function(require){
             let save3 = [];
             info.children = [];
             info.fathers = [];
+            let lastId = 0;
             if(info.mergeInfo){
+                for(var i = 0; i < info.mergeInfo.length; i++){
+                    if(lastId < info.mergeInfo[i].node.nodeId){
+                        lastId = info.mergeInfo[i].node.nodeId;
+                        info.lastNode = info.mergeInfo[i].node;
+                    }
+                }
                 for(var i = 0; i < info.mergeInfo.length; i++){
                     save3.push({fathers: info.mergeInfo[i].node.fathers, children: info.mergeInfo[i].node.children});
                     info.mergeInfo[i].node.fathers = [];
@@ -172,7 +189,7 @@ define(function(require){
 
         webSocket.emit('large display', {});
         webSocket.on('update', function(datas){
-            console.log(datas.logs);
+            console.log(datas.logs, datas.provIdDict);
             logTree.datas = datas;
             let logs = Array.isArray(datas.logs)? datas.logs : [datas.logs];
             for(var j = 0; j < logs.length; j++){
@@ -186,7 +203,8 @@ define(function(require){
                             type: logs[j].increments[i].type,
                             duration: logs[j].increments[i].duration || 200,
                             data: logs[j].increments[i].data || null,
-                            datetime: logs[j].increments[i].datetime || new Date()
+                            datetime: logs[j].increments[i].datetime || new Date(),
+                            serverId: logs[j].serverId,
                         });
                     }else{
                         tempInfos.push({
@@ -198,6 +216,7 @@ define(function(require){
                             data: "Link",
                             duration: logs[j].increments[i].duration || 200,
                             datetime: logs[j].increments[i].datetime || new Date()
+                            serverId: logs[j].serverId,
                         }); 
                     }
                 }
@@ -209,6 +228,9 @@ define(function(require){
                     nodesInfo: tempInfos
                 });
                 // logTree.setLastMerge(logTree.merge([logTree.getLastMerge(), curNode], "Merge"));
+                if(logs[j].waitMore === false && logTree.getLeafNodes().length >= 2){
+                    logTree.setLastMerge(logTree.merge(logTree.getLeafNodes(), "Merge"));
+                }
             }
             logTree.refresh();
 

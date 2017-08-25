@@ -7,7 +7,7 @@ define(function(require) {
             myId = arg.id || false;
 
             startX = container.getBoundingClientRect().left;
-            startY = 15;
+            startY = 18;
             console.log(container.getBoundingClientRect());
 
             let RemoveHandleChoices = ["{Abondon Further Explore}", "{Restore Removed Node}"]

@@ -262,8 +262,13 @@ define(function(require) {
             //             .attr("r", 15);
             // }
         }
+        graph.setPushColor = function(node){
+            let cur = svg.selectAll("#C" + node.nodeId);
+            CurShowNode.attr("stroke", "teal")
+        }
         graph.checkout = function(beginNode, info){    //Both single and multiple node(s) supported
             var node = new Node(info.userId, beginNode, info.action, info.duration, info.datetime, info.reason, info.nodename, info.type, info.source, info.target, info.linkname, info.datalink, info.value, info.data);
+            if(info.serverId) node.serverId = info.serverId;
             beginNode.children.push(node);
             return node;
         }
@@ -271,7 +276,7 @@ define(function(require) {
         graph.merge = function(mergeNodes, mergeReason){
             let mergeName = "Merge";
             for(var i = 0; i < mergeNodes.length; i++){
-                mergeName += mergeNodes[i].nodeId;
+                mergeName += "-[" + mergeNodes[i].nodename + "]";
             }
             if(allMergeDict[mergeName]) return;
             let lastMerge = nameNodeDict["Merge"]? nameNodeDict["Merge"] : Root;
@@ -450,8 +455,13 @@ define(function(require) {
                             node.position.y = fullVerticalStep * durationRecord * (j + totalConflicts) * durationStepConst + 20;
                         }else{ //if(node.fathers.length === 1)
                             let fatherWidth = node.fathers[0].weight * width;
-                            let fatherStartX = 0;
-                            let posX = fatherStartX + node.weight * width / 2;
+                            let fatherStartX = node.fathers[0].position.x - fatherWidth / 2;
+                            let previousLength = 0;
+                            for(var i = 0; i < node.fathers[0].children.length; i++){
+                                if(node.fathers[0].children[i] === node)break;
+                                previousLength = node.fathers[0].children[i].weight;
+                            }
+                            let posX = fatherStartX + previousLength * width + node.weight * width / 2;
                             let posY = fullVerticalStep * durationRecord * (j + totalConflicts) * durationStepConst + 20;
                             node.position.x = posX;
                             node.position.y = posY;
@@ -582,7 +592,8 @@ define(function(require) {
                     type: info.nodesInfo[i].type,
                     data: info.nodesInfo[i].data,
                     source: info.nodesInfo[i].source,
-                    target: info.nodesInfo[i].target
+                    target: info.nodesInfo[i].target,
+                    serverId: info.serverId,
                 });
             }
             graph.refresh();
@@ -702,17 +713,22 @@ define(function(require) {
                 }
             }
         }
-        graph.getLeafNodes = function(){
-            if(myId === "collaboration"){
+        graph.getLeafNodes = function(option){
+            if(!option){
+                option = myId;
+            }
+            if(option === "collaboration"){
                 let todoList = Root.children;
                 leafNodes = [];
                 for(var i = 0; i < todoList.length; i++){
                     if(todoList[i].children.length > 0){
-                        todoList.push(todoList[i].children);
+                        todoList = todoList.concat(todoList[i].children);
                     }else{
                         leafNodes.push(todoList[i]);
                     }
                 }
+                let set = new Set(leafNodes);
+                leafNodes = Array.from(set);
                 return leafNodes;
             }else{
                 cur = Root;

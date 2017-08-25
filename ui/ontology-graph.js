@@ -463,7 +463,7 @@ define(function(require) {
                         // nodeIcons[thisNodeId].remove();
                         // delete nodeLabels[thisNodeId];
                         // delete nodeHash[thisNodeId];
-                        removeNode(thisNodeId);
+                        otGraph.removeNodes({label: thisNode.__data__.label});
                         restart();
                     } else if(key == 'annotate') {
                         d3.select(thisNode).attr('stroke', 'orange');

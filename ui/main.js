@@ -120,11 +120,11 @@ return function(webSocket) {
         collector.sort((a, b)=>{
             // "remove" after "add" a.action > b.action
             // "link" after "node" a.action < b.action
-            if(a.action.indexOf("remove") > -1 && b.action.indexOf("remove") > -1){
+            if(a.action.indexOf("Remove") > -1 && b.action.indexOf("Remove") > -1){
                 return a.action < b.action;
-            }else if(a.action.indexOf("remove") > -1){
+            }else if(a.action.indexOf("Remove") > -1){
                 return true;    //a.action greater
-            }else if(b.action.indexOf("remove") > -1){
+            }else if(b.action.indexOf("Remove") > -1){
                 return false;   //b.action greater
             }else{  //both add
                 return a.action < b.action;
@@ -456,10 +456,14 @@ return function(webSocket) {
                 userId: logs[j].userId,
                 nodesInfo: tempInfos
             });
+            if(logs[j].waitMore === false && hl.getLeafNodes("collaboration").length >= 2){
+                hl.setLastMerge(hl.merge(hl.getLeafNodes("collaboration"), "Merge"));
+            }
             // hl.setLastMerge(hl.merge([hl.getLastMerge(), curNode], "Merge"));
         }
-        // hl.setPullState(hl.getLastMerge());
-        hl.selectCurShowNode(hl.getLeafNodes());
+        hl.setPullState(hl.getLeafNodes());
+        hl.selectCurShowNode(hl.getLeafNodes());    //FIXME select does not work
+        hl.setPushColor(hl.getLeafNodes());
         hl.refresh();
     })
 
