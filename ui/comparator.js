@@ -94,52 +94,78 @@ define(function(require) {
         }
 
         function hasPullCriticalChange(pullState, serverList){
-            if(pullState.action === "Merge"){
-                let removing = [];
-                let mergeInfo = pullState.mergeInfo;
-                for(var i = 0; i < mergeInfo.length; i++){
-                    if(mergeInfo[i].node.action.indexOf("Remove") > -1){
-                        removing.push(mergeInfo[i].node.nodename);
+            //PullState: all ancestor's common and the only interstection child
+            
+            let cur = pullState;
+            let todoList = [];
+            let ancestors = [];
+            todoList.push(pullState);
+
+            for(var i = 0; i < todoList.length; i++){
+                ancestors.push(todoList[i]);
+                if(todoList[i].action === "Merge") break;
+                todoList.concat(todoList[i].fathers);
+            }
+            ancestors = new Set(ancestors);
+            ancestors = Array.from(ancestors);
+            ancestors.sort((a, b) => a.nodeId > b.nodeId);  //Reverse order nodeId desc
+            let removing = [];
+            let results = [];
+            for(var j = 0; j < ancestors.length; j++){
+                if(ancestors[j].action === "Merge"){
+                    let mergeInfo = ancestors[j].mergeInfo;
+                    for(var k = 0; k < mergeInfo.length; k++){
+                        if(mergeInfo[k].node.action.indexOf("Remove") > -1){
+                            removing.push(mergeInfo[k].node);
+                        }
                     }
-                }
-                for(var i = 0; i < mergeInfo.length; i++){
-                    if(mergeInfo[i].node.action.indexOf("Add") > -1){
-                        let pos = removing.indexOf(mergeInfo[i].node.nodename)
-                        if(pos > -1){
-                            removing.splice(pos, 1);
-                        }else{
-                            if(mergeInfo[i].node.action.indexOf("node") > -1){
-                                if(nodeBelongTo(mergeInfo[i].node, serverList.nodes) === false){
-                                    removedNodes.push(mergeInfo[i].node.nodename);
-                                    let key = mergeInfo[i].node.action + "-" + mergeInfo[i].node.nodename;
-                                    conflictNodes[key] = conflictNodes[key]? conflictNodes[key] | 1 : 1;
-                                    dependency[key] = {trunk: mergeInfo[i], branches: []};
-                                    mergeInfo[i].conflict = true;
-                                }
-                            }else if(mergeInfo[i].node.action.indexOf("link") > -1){
-                                if(linkBelongTo(mergeInfo[i].node, serverList.links) === false){
-                                    removedNodes.push(mergeInfo[i].node.nodename);
-                                    let key = mergeInfo[i].node.action + "-" + mergeInfo[i].node.nodename;
-                                    conflictNodes[key] = conflictNodes[key]? conflictNodes[key] | 1 : 1;
-                                    dependency[key] = {trunk: mergeInfo[i], branches: []};
-                                    mergeInfo.conflict = true;
-                                }
+                    for(var k = 0; k < mergeInfo.length; k++){
+                        if(mergeInfo.node.action.indexOf("Add") > -1){
+                            let pos = removing.indexOf(mergeInfo[i].node);
+                            if(pos > -1){
+                                removing.splice(pos, 1);
+                            }else{
+                                results.push(mergeInfo[i].node);
                             }
                         }
                     }
+                    break;
+                }else{
+                    if(ancestors[j].action.indexOf("Remove") > -1){
+                        removing.push(ancestors[j]);
+                    }else if(ancestors[j].action.indexOf("Add") > -1){
+                        let pos = removing.indexOf(ancestors[j].nodename)
+                        if(pos > -1){
+                            removing.splice(pos, 1);
+                        }else{
+                            results.push(ancestors[j]);
+                        }
+                    }
                 }
-                if(Object.keys(conflictLinks).length > 0 || Object.keys(conflictNodes).length > 0){
+            }
+            for(var j = 0; j < results.length; j++){
+                if(results[j].action.indexOf("node")){
+                    if(nodeBelongTo(results[j], serverList.nodes) === false){
+                        removedNodes.push(results[j].serverId);
+                        let key = results[j].serverId;
+                        conflictNodes[key] = conflictNodes[key]? conflictNodes[key] | 1 : 1;
+                        dependency[key] = {trunk: results[j], branches: [], unsolved: true};
+                    }
+                }else if(results[j].action.indexOf("link")){
+                    if(nodeBelongTo(results[j], serverList.links) === false){
+                        removedNodes.push(results[j].serverId);
+                        let key = results[j].serverId;
+                        conflictLinks[key] = conflictLinks[key]? conflictLinks[key] | 1 : 1;
+                        dependency[key] = {trunk: results[j], branches: [], unsolved: true};
+                    }
+                }
+            }
+            if(Object.keys(conflictLinks).length > 0 || Object.keys(conflictNodes).length > 0){
                     console.log(Object.keys(conflictNodes));
                     console.log(Object.keys(conflictLinks));
                     return true;
-                }else{
-                    return false;
-                }
-            }else if(pullState.action === "Root"){
-                return false;
             }else{
-                console.log("Unexpected action of pullState.");
-                return true;
+                return false;
             }
         }
 
@@ -211,7 +237,11 @@ define(function(require) {
             }
             let curNode = pullState;
             let leafNode = null;
-            while(curNode){
+            while(true){
+                leafNode = curNode;
+                curNode = curNode.children[0];
+                if(!curNode) break;
+
                 if(curNode.action === "Merge"){
                     // for(var i = 0; i < curNode.mergeInfo.length; i++){
                     //     if(curNode.action.indexOf("node") > -1){
@@ -226,8 +256,7 @@ define(function(require) {
                 }else if(curNode.action.indexOf("link") > -1){
                     localList.links.push(curNode);
                 }
-                leafNode = curNode;
-                curNode = curNode.children[0];
+
             }
             let rst1 = hasPullCriticalChange(pullState, serverList);
             let rst2 = CheckDependency(localList);

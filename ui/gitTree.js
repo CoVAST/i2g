@@ -207,7 +207,18 @@ define(function(require) {
             }
             return rstArray;
         }
-
+        function findNodeByServerIdFrom(serverId, node){
+            var curNode = node;
+            if(curNode.serverId === serverId){
+                return curNode;
+            }else{
+                for(var i = 0; i < curNode.children.length; i++){
+                    let rst = findNodeByServerIdFrom(serverId, curNode.children[i]);
+                    if(rst != null) return rst;
+                }
+            }
+            return null;
+        }
         function highlightLeavesFrom(node){
             if(node.children.length === 0){
                 node.highlight = 1;
@@ -268,7 +279,7 @@ define(function(require) {
         }
         graph.checkout = function(beginNode, info){    //Both single and multiple node(s) supported
             var node = new Node(info.userId, beginNode, info.action, info.duration, info.datetime, info.reason, info.nodename, info.type, info.source, info.target, info.linkname, info.datalink, info.value, info.data);
-            if(info.serverId) node.serverId = info.serverId;
+            if(info.serverId >= 0) node.serverId = info.serverId;
             beginNode.children.push(node);
             return node;
         }
@@ -564,16 +575,49 @@ define(function(require) {
             nodeMenu();
         }
 
-        graph.insert = function(pullName, info){
+        graph.insert = function(pullServerId, info){
             // datetime
             // username
             // nodesInfo
             let temp = null;
-            if(pullName.nodename){
-                temp = pullName;
+            if(pullServerId === -1){
+                temp = Root;
+            }else if(pullServerId.indexOf && pullServerId.indexOf("_") > -1){
+                let arr = pullServerId.split("_");
+                let temparr = [];
+                let todoList = [];
+                todoList.push(findNodeByServerIdFrom(parseInt(arr[0]), Root));
+                for(var i = 0; i < todoList.length; i++){
+                    temparr.push(todoList[i]);
+                    todoList = todoList.concat(todoList[i].children);
+                }
+                temparr = new Set(temparr);
+                temparr = Array.from(temparr);
+                for(var j = 1; j < arr.length; j++){
+                    let curarr = [];
+                    let todoList = [];
+                    todoList.push(findNodeByServerIdFrom(parseInt(arr[j]), Root));
+                    for(var i = 0; i < todoList.length; i++){
+                        curarr.push(todoList[i]);
+                        todoList = todoList.concat(todoList[i].children);
+                    }
+                    curarr = new Set(curarr);
+                    curarr = Array.from(curarr);
+                    temparr = temparr.filter((k) => {
+                        return curarr.indexOf(k) > -1;
+                    });
+                }
+                if(temparr.length != 1){
+                    console.log("Unexpected length of Merge");
+                }else{
+                    temp = temparr[0];
+                }
+            }else{
+                temp = findNodeByServerIdFrom(pullServerId, Root);
             }
-            else{
-                temp = nameNodeDict[pullName];
+            if(temp === null){
+                console.log("ServerId " + pullServerId +" Not Found.");
+                return;
             }
             // A temporary method
             // In order to obtain the handler of a node,
@@ -593,7 +637,7 @@ define(function(require) {
                     data: info.nodesInfo[i].data,
                     source: info.nodesInfo[i].source,
                     target: info.nodesInfo[i].target,
-                    serverId: info.serverId,
+                    serverId: info.nodesInfo[i].serverId,
                 });
             }
             graph.refresh();
@@ -737,7 +781,6 @@ define(function(require) {
                         cur = cur.children[0];
                     }else break;
                 }
-                leafNodes[0] = cur;
                 return cur;
             }
         }

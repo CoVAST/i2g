@@ -50,7 +50,7 @@ define(function(require) {
                         uiForm.appendChild(groupFields);
                         if(curNode.reason.indexOf("[Node Removed]") > -1){
                             if(curNode.reason === "[Node Removed]"){
-                                curNode.reason = curNode.reason + ": " + curNode.conflictDependency.trunk.node.nodename;
+                                curNode.reason = curNode.reason + ": " + curNode.conflictDependency.trunk.nodename;
                                 choiceArray = RemoveHandleChoices;
                             }else{
                                 choiceArray = [];

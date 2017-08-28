@@ -137,6 +137,7 @@ define(function(require){
         }
 
         logTree.pullToIndividial = function(info){
+            if(Array.isArray(info)) info = info[0];
             console.log(info);
             let save = info.children;
             let save2 = info.fathers;
@@ -194,6 +195,7 @@ define(function(require){
             let logs = Array.isArray(datas.logs)? datas.logs : [datas.logs];
             for(var j = 0; j < logs.length; j++){
                 var tempInfos = [];
+                let conflicts = [];
                 for(var i = 0; i < logs[j].increments.length; i++){
                     if(logs[j].increments[i].action.indexOf("node") !== -1){
                         tempInfos.push({
@@ -206,7 +208,7 @@ define(function(require){
                             datetime: logs[j].increments[i].datetime || new Date(),
                             serverId: logs[j].serverId,
                         });
-                    }else{
+                    }else if(logs[j].increments[i].action.indexOf("link") !== -1){
                         tempInfos.push({
                             action: logs[j].increments[i].action,
                             source: logs[j].increments[i].source,
@@ -215,21 +217,43 @@ define(function(require){
                             nodename: logs[j].increments[i].nodename,
                             data: "Link",
                             duration: logs[j].increments[i].duration || 200,
-                            datetime: logs[j].increments[i].datetime || new Date()
+                            datetime: logs[j].increments[i].datetime || new Date(),
                             serverId: logs[j].serverId,
                         }); 
+                    }else if(logs[j].increments[i].action.indexOf("Conflict") !== -1){
+                        conflicts.push(logs[j].increments[i]);
                     }
                 }
                 let curNode = null;
-                curNode = logTree.insert(logs[j].pullNodename, { 
-                    datetime: logs[j].datetime,
-                    commitReason: logs[j].commitReason,
-                    userId: logs[j].userId,
-                    nodesInfo: tempInfos
-                });
+                if(tempInfos.length > 0){
+                    curNode = logTree.insert(logs[j].pullNodeServerId, { 
+                        datetime: logs[j].datetime,
+                        commitReason: logs[j].commitReason,
+                        userId: logs[j].userId,
+                        nodesInfo: tempInfos,
+                    });
+                }
+
                 // logTree.setLastMerge(logTree.merge([logTree.getLastMerge(), curNode], "Merge"));
+                if(conflicts.length > 1){
+                    let cnode = logTree.setLastMerge(logTree.merge({
+                        isConflict: true,
+                        node: conflicts[0]
+                    }}))
+                    for(var i = 1; i < conflicts.length; i++){
+                        cnode = cnode.checkout(conflicts[i]);
+                    }
+                }
                 if(logs[j].waitMore === false && logTree.getLeafNodes().length >= 2){
-                    logTree.setLastMerge(logTree.merge(logTree.getLeafNodes(), "Merge"));
+                    logTree.setLastMerge(logTree.merge(logTree.getLeafNodes(), logs[j].commitReason));
+                    if(datas.isPush === true){
+                        logTree.pullToIndividial(logTree.getLastMerge());
+                    }
+                }
+                }else if(logs[j].waitMore === false && logTree.getLeafNodes().length === 1){
+                    if(datas.isPush === true){
+                        logTree.pullToIndividial(logTree.getLeafNodes());
+                    }
                 }
             }
             logTree.refresh();

@@ -335,36 +335,37 @@ return function(webSocket) {
                         }
                     }
                 }
-                let trunknode = cur.conflictDependency.trunk.node;
-                if(trunknode && cur.conflictDependency.trunk.type === "Abondon"){
-                    let newnode = {
-                        action: trunknode.action,
-                        nodename: trunknode.nodename,
-                        nodeId: trunknode.nodeId,
-                        source: trunknode.source,
-                        target: trunknode.target,
-                        data: trunknode.data,
-                    }
-                    if(newnode.action === "Add node"){
-                        newnode.action = "Remove node";
-                    }else if(newnode.action === "Remove node"){
-                        newnode.action = "Add node";
-                    }else if(newnode.action === "Add link"){
-                        newnode.action = "Remove link";
-                    }else if(newnode.action === "Remove link"){
-                        newnode.action = "Add link";
-                    }else{
-                        console.log("Unexpected action: " + newnode.action);
-                    }
-                    cur.handleInfo.push(newnode);
-                }
-                if(cur.conflictDependency.trunk.type === "Restore"){
-                    for(var i = 0; i < cur.handleInfo.length; i++){
-                        if(cur.handleInfo[i].node){
-                            increments.push(cur.handleInfo[i].node);
-                        }else increments.push(cur.handleInfo[i]);
-                    }
-                }
+                // let trunknode = cur.conflictDependency.trunk;
+                // if(trunknode && cur.conflictDependency.trunk.type === "Abondon"){
+                //     let newnode = {
+                //         action: trunknode.action,
+                //         nodename: trunknode.nodename,
+                //         nodeId: trunknode.nodeId,
+                //         source: trunknode.source,
+                //         target: trunknode.target,
+                //         data: trunknode.data,
+                //     }
+                //     if(newnode.action === "Add node"){
+                //         newnode.action = "Remove node";
+                //     }else if(newnode.action === "Remove node"){
+                //         newnode.action = "Add node";
+                //     }else if(newnode.action === "Add link"){
+                //         newnode.action = "Remove link";
+                //     }else if(newnode.action === "Remove link"){
+                //         newnode.action = "Add link";
+                //     }else{
+                //         console.log("Unexpected action: " + newnode.action);
+                //     }
+                //     cur.handleInfo.push(newnode);
+                // }
+                // if(cur.conflictDependency.trunk.type === "Restore"){
+                //     for(var i = 0; i < cur.handleInfo.length; i++){
+                //         if(cur.handleInfo[i].node){
+                //             increments.push(cur.handleInfo[i].node);
+                //         }else increments.push(cur.handleInfo[i]);
+                //     }
+                // }
+                increments.push(cur);
                 cur = cur.fathers[0];
             }
             for(var i = 0; i < increments.length; i++){
@@ -393,10 +394,61 @@ return function(webSocket) {
                     childrenData.push(increments[i].children);
                     increments[i].children = null;
                 }
+                if(increments[i].handleInfo){
+                    for(var j = 0; j < increments[i].handleInfo.length; j++){
+                        if(increments[i].handleInfo[j].data && increments[i].handleInfo[j].data.area.leaflet){
+                        areaRepo.push(increments[i].handleInfo[j].data.area);
+                        dataRepo.push(increments[i].handleInfo[j].data.area.leaflet);
+                        increments[i].handleInfo[j].data.area.leaflet = null;
+                    }
+                    if(increments[i].handleInfo[j].source && increments[i].handleInfo[j].source.visData && increments[i].handleInfo[j].source.visData.area.leaflet){
+                        areaRepo.push(increments[i].handleInfo[j].source.visData.area);
+                        dataRepo.push(increments[i].handleInfo[j].source.visData.area.leaflet);
+                        increments[i].handleInfo[j].source.visData.area.leaflet = null;
+                    }
+                    if(increments[i].handleInfo[j].target && increments[i].handleInfo[j].target.visData && increments[i].handleInfo[j].target.visData.area.leaflet){
+                        areaRepo.push(increments[i].handleInfo[j].target.visData.area);
+                        dataRepo.push(increments[i].handleInfo[j].target.visData.area.leaflet);
+                        increments[i].handleInfo[j].target.visData.area.leaflet = null;
+                    }
+                    if(increments[i].handleInfo[j].fathers && increments[i].handleInfo[j].fathers.length > 0){
+                        fatherRepo.push(increments[i].handleInfo[j]);
+                        fatherData.push(increments[i].handleInfo[j].fathers);
+                        increments[i].handleInfo[j].fathers = null;
+                    }
+                    if(increments[i].handleInfo[j].children && increments[i].handleInfo[j].children.length > 0){
+                        childrenRepo.push(increments[i].handleInfo[j]);
+                        childrenData.push(increments[i].handleInfo[j].children);
+                        increments[i].handleInfo[j].children = null;
+                    }
+                    }
+                }
 
             }
+            let pullNodeServerId = "";
+            function fathersToString(curNode){
+                let ret = "";
+                for(var i = 0; i < curNode.fathers.length; i++){
+                    if(curNode.fathers[i].type === "Merge"){
+                        ret += fathersToString(curNode.fathers[i]);
+                    }if(curNode.fathers[i].type === "Root"){
+                        ret += "-1";
+                    }else{
+                        ret += curNode.fathers[i].serverId;
+                    }
+                    if(i != curNode.fathers.length - 1){
+                        ret += "_";
+                    }
+                }
+                return ret;
+            }
+            if(hl.getPullState().type === "Merge"){
+                pullNodeServerId = fathersToString(hl.getPullState());
+            }else{
+                pullNodeServerId = hl.getPullState().serverId;
+            }
             webSocket.emit('push', {
-                pullNodename: hl.getPullState().nodename,
+                pullNodeServerId: pullNodeServerId,
                 increments: increments,
                 note: $('#commit-note').val()
             });
@@ -434,7 +486,8 @@ return function(webSocket) {
                         type: logs[j].increments[i].type,
                         duration: logs[j].increments[i].duration || 200,
                         data: logs[j].increments[i].data || null,
-                        datetime: logs[j].increments[i].datetime || new Date()
+                        datetime: logs[j].increments[i].datetime || new Date(),
+                        serverId: logs[j].serverId,
                     });
                 }else{
                     tempInfos.push({
@@ -445,12 +498,13 @@ return function(webSocket) {
                         nodename: logs[j].increments[i].nodename,
                         data: "Link",
                         duration: logs[j].increments[i].duration || 200,
-                        datetime: logs[j].increments[i].datetime || new Date()
-                    }); 
+                        datetime: logs[j].increments[i].datetime || new Date(),
+                        serverId: logs[j].serverId,
+                    });
                 }
             }
             let curNode = null;
-            curNode = hl.insert(logs[j].pullNodename, { 
+            curNode = hl.insert(logs[j].pullNodeServerId, { 
                 datetime: logs[j].datetime,
                 commitReason: logs[j].commitReason,
                 userId: logs[j].userId,

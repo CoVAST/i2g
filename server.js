@@ -45,6 +45,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 var provenance = [];
+var mergeRecords = [];
 var provID = 0;
 
 var users = {};
@@ -124,13 +125,19 @@ io.on('connection', function (socket) {
             // };
 
             let curIdx = provenance.length;
+            let tlog = null;
             for(var i = 0; i < data.increments.length; i++){
-                let pullNodename = data.pullNodename;
-                if(i > 0){
-                    pullNodename = data.increments[i - 1].nodename;
+                let pullNodeServerId = data.pullNodeServerId;
+                if(i === 0){
+                    if(typeof data.pullNodeServerId === 'undefined'){
+                        pullNodeServerId = -1; //Stand for Root
+                    }
                 }
-                let tlog = {
-                    pullNodename: pullNodename,
+                else{
+                    pullNodeServerId = tlog.serverId;
+                }
+                tlog = {
+                    pullNodeServerId: pullNodeServerId,
                     userId: userId,
                     commitReason: data.note,
                     increments: [data.increments[i]],
@@ -145,6 +152,7 @@ io.on('connection', function (socket) {
             console.log("Update");
             largeDisplay.emit('update', {
                 logs: provenance.slice(curIdx),
+                isPush: true,
             });
         }
     });
@@ -161,48 +169,48 @@ io.on('connection', function (socket) {
                 todoList.concat(todoList[i].fathers);
             }
         }
-        // console.log(allAncestors);
+        console.log(allAncestors);
 
-        // console.log("_____________");
-        // console.log(node);
-        // console.log(provenance);
+        console.log("_____________");
+        console.log(node);
+        console.log(provenance);
         let ret = [];
         if(node.type === "Merge"){
             for(var i = 0; i < provenance.length; i++){
                 ret.push(provenance[i]);
-                if(provenance[i].increments[0] && provenance[i].increments[0].nodename === node.lastNode.nodename){
+                if(provenance[i].increments[0] && provenance[i].increments[0].serverId === node.lastNode.serverId){
                     break;
                 }
             }
         }else{
-            let curSeeking = node.nodename;
+            let curSeeking = node.serverId;
             let maxIdx = 0;
-            // console.log(curSeeking);
+            console.log(curSeeking);
             for(var i = 0; i < provenance.length; i++){
-                if(provenance[i].increments[0] && provenance[i].increments[0].nodename === curSeeking){
+                if(provenance[i] && provenance[i].serverId === curSeeking){
                     maxIdx = i;
                     break;
                 }
             }
-            // console.log(maxIdx);
+            console.log(maxIdx);
             for(; maxIdx >= 0; maxIdx--){
-                if(curSeeking.indexOf("Merge") > -1){
+                if(typeof curSeeking === "undefined" || (curSeeking.indexOf && curSeeking.indexOf("_") > -1)){
                     ret.push(provenance[maxIdx]);
                     continue;
                 }
-                if(provenance[maxIdx].increments[0].nodename === curSeeking){
+                if(provenance[maxIdx].serverId === curSeeking){
                     ret.push(provenance[maxIdx]);
-                    curSeeking = provenance[maxIdx].pullNodename.nodename? provenance[maxIdx].pullNodename.nodename : provenance[maxIdx].pullNodename;
+                    curSeeking = provenance[maxIdx].pullNodeServerId;
                     console.log(curSeeking);
                 }
             }
             ret.reverse();
-            // console.log(provenance);
+            console.log(provenance);
         }
 
         socket.emit('pullRespond', ret);
-        // console.log(ret);
-        // console.log("_____________");
+        console.log(ret);
+        console.log("_____________");
 
     })
 

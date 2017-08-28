@@ -463,6 +463,7 @@ define(function(require) {
                         // nodeIcons[thisNodeId].remove();
                         // delete nodeLabels[thisNodeId];
                         // delete nodeHash[thisNodeId];
+                        console.log(nodeHash);
                         otGraph.removeNodes({label: thisNode.__data__.label});
                         restart();
                     } else if(key == 'annotate') {
@@ -603,7 +604,7 @@ define(function(require) {
             delete nodeLabels[nodeId];
             delete nodeHash[nodeId];
             nodes = nodes.filter(function(d){
-                d.id != nodeId;
+                return d.id != nodeId;
             })
         }
 
