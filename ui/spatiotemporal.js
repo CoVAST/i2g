@@ -125,7 +125,7 @@ return function(arg) {
     }
 
     appLayout.removeAllSubjects = () => {
-        people = [];    
+        people = [];
         for(var eachKey in subjectGeos){
             appLayout.map.removeLocations(subjectGeos[eachKey].mapObjs);
             delete subjectGeos[eachKey];
@@ -220,7 +220,7 @@ return function(arg) {
                 node_reason.val('');
             }
         });
-        
+
 
     })
 
@@ -452,8 +452,6 @@ return function(arg) {
                 })
                 .sortBy({timestep: 1})
                 (data);
-
-
 
                 var timeSeries = new Array(people.length);
                 people.forEach(

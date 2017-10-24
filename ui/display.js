@@ -239,7 +239,8 @@ define(function(require){
                     let cnode = logTree.setLastMerge(logTree.merge({
                         isConflict: true,
                         node: conflicts[0]
-                    }}))
+                    }))
+
                     for(var i = 1; i < conflicts.length; i++){
                         cnode = cnode.checkout(conflicts[i]);
                     }
@@ -249,7 +250,7 @@ define(function(require){
                     if(datas.isPush === true){
                         logTree.pullToIndividial(logTree.getLastMerge());
                     }
-                }
+                
                 }else if(logs[j].waitMore === false && logTree.getLeafNodes().length === 1){
                     if(datas.isPush === true){
                         logTree.pullToIndividial(logTree.getLeafNodes());
