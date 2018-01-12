@@ -38,7 +38,7 @@ app.get("/data/:dataSrc", (req, res) => {
 })
 
 app.use("/vastui", express.static(srcDir.davi));
-app.use("/semantic", express.static('./semantic'));
+app.use("/semantic", express.static('./davi/semantic'));
 app.use("/i2v", express.static(srcDir.i2v));
 app.use("/p4",  express.static(srcDir.p4));
 
@@ -46,15 +46,21 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 var provenance = [];
+var mergeRecords = [];
+var provID = 0;
 
-var users = {},
-    graphs = {},
-    largeDisplay = null;
+var users = {};
+var largeDisplay = null;
+
+var userIdDict = {};
 
 io.on('connection', function (socket) {
     socket.on('add user', function (userInfo) {
         socket.user = userInfo;
-        users[userInfo.name] = socket.user;
+        if(!userIdDict[userInfo.name]){
+            users[userInfo.name] = socket.user;
+            userIdDict[userInfo.name] = Object.keys(userIdDict).length + 1;
+        }
         socket.emit('login', {
             numUsers: Object.keys(users).length
         });
@@ -64,49 +70,150 @@ io.on('connection', function (socket) {
     socket.on('large display', function(displayInfo) {
         largeDisplay = socket;
         largeDisplay.emit('update', {
-            users: users,
-            graphs: graphs,
-            logs: provenance
-        });
+            logs: provenance,
+         });
         console.log('Large Display connected');
     });
 
-    socket.on('push', function(data) {
-        graphs[socket.user.name] = data.graph;
-        if(largeDisplay !== null) {
-            var graph = {links: [], nodes:[]};
-            for(var name in users) {
-                console.log(name, users);
-                if(graphs.hasOwnProperty(name)) {
-                    graphs[name].nodes.forEach(function(d){
-                        d.id = d.label;
-                        d._user = name;
-                    });
-                    graphs[name].links.forEach(function(d){
-                        d._user = name;
-                        d.source.id = d.source.label;
-                        d.target.id = d.target.label;
-                    });
-
-                    graph.nodes = graph.nodes.concat(graphs[name].nodes);
-                    graph.links = graph.links.concat(graphs[name].links);
+    socket.on('mergeRequest', () => {
+        console.log("mergeRequest");
+        let ret = [];
+        let removeNodes = [];
+        let removeLinks = [];
+        for(var i = provenance.length - 1; i >= 0; i--){
+            for(var j = provenance[i].increments.length - 1; j >= 0; j--){
+                let curNode = provenance[i].increments[j];
+                if(curNode.action === "Remove node"){
+                    removeNodes.push(curNode.nodename);
+                }else if(curNode.action === "Remove link"){
+                    removeLinks.push(curNode.nodename);
+                }else if(curNode.action === "Add node"){
+                    let temp = removeNodes.indexOf(curNode.nodename);
+                    if(temp > -1){
+                        removeNodes.splice(temp, 1);
+                    }else{
+                        ret.push(curNode);
+                    }
+                }else if(curNode.action === "Add link"){
+                    let temp = removeNodes.indexOf(curNode.nodename);
+                    if(temp > -1){
+                        removeLinks.splice(temp, 1);
+                    }else{
+                        ret.push(curNode);
+                    }
+                }else{
+                    console.log("Undefined action: " + curNode.action);
                 }
             }
-            var log = {
-                user: socket.user.name,
-                note: data.note,
-                graph: graph,
-                datetime: new Date(),
-            };
-            provenance.push(log);
-            console.log(graphs);
+        }
+        console.log("Reply: ");
+        console.log(ret);
+        socket.emit('mergeReply', {
+            master: ret,
+        });
+    });  //A nodes&links should be saved for collaboration view
+
+    socket.on('push', function(data) {
+        if(largeDisplay !== null) {
+            let userId = userIdDict[socket.user.name];
+            // var log = {
+            //     pullNodename: data.pullNodename,
+            //     userId: userId,
+            //     commitReason: data.note,
+            //     increments: data.increments,
+            //     datetime: new Date(),
+            //     waitMore: false,
+            // };
+
+            let curIdx = provenance.length;
+            let tlog = null;
+            for(var i = 0; i < data.increments.length; i++){
+                let pullNodeServerId = data.pullNodeServerId;
+                if(i === 0){
+                    if(typeof data.pullNodeServerId === 'undefined'){
+                        pullNodeServerId = -1; //Stand for Root
+                    }
+                }
+                else{
+                    pullNodeServerId = tlog.serverId;
+                }
+                tlog = {
+                    pullNodeServerId: pullNodeServerId,
+                    userId: userId,
+                    commitReason: data.note,
+                    increments: [data.increments[i]],
+                    datetime: new Date(),
+                    waitMore: (i === data.increments.length - 1) ? false : true,
+                    serverId: provID,
+                }
+                provenance.push(tlog);
+                provID++;
+            }
+            console.log(provenance);
+            console.log("Update");
             largeDisplay.emit('update', {
-                users: users,
-                graphs: graphs,
-                logs: [log]
+                logs: provenance.slice(curIdx),
+                isPush: true,
             });
         }
     });
+
+//belongTo ancestor to purge not ancestor branches  
+//Merge: provide last node needed
+
+    socket.on('pullRequest', function(node){
+        let todoList = node.fathers;
+        let allAncestors = [];
+        for(var i = 0; i < todoList.length; i++){
+            allAncestors.push(todoList);
+            if(todoList[i].fathers){
+                todoList.concat(todoList[i].fathers);
+            }
+        }
+        console.log(allAncestors);
+
+        console.log("_____________");
+        console.log(node);
+        console.log(provenance);
+        let ret = [];
+        if(node.type === "Merge"){
+            for(var i = 0; i < provenance.length; i++){
+                ret.push(provenance[i]);
+                if(provenance[i].increments[0] && provenance[i].increments[0].serverId === node.lastNode.serverId){
+                    break;
+                }
+            }
+        }else{
+            let curSeeking = node.serverId;
+            let maxIdx = 0;
+            console.log(curSeeking);
+            for(var i = 0; i < provenance.length; i++){
+                if(provenance[i] && provenance[i].serverId === curSeeking){
+                    maxIdx = i;
+                    break;
+                }
+            }
+            console.log(maxIdx);
+            for(; maxIdx >= 0; maxIdx--){
+                if(typeof curSeeking === "undefined" || (curSeeking.indexOf && curSeeking.indexOf("_") > -1)){
+                    ret.push(provenance[maxIdx]);
+                    continue;
+                }
+                if(provenance[maxIdx].serverId === curSeeking){
+                    ret.push(provenance[maxIdx]);
+                    curSeeking = provenance[maxIdx].pullNodeServerId;
+                    console.log(curSeeking);
+                }
+            }
+            ret.reverse();
+            console.log(provenance);
+        }
+
+        socket.emit('pullRespond', ret);
+        console.log(ret);
+        console.log("_____________");
+
+    })
 
     // socket.broadcast.emit('bcast msg', {
     //     title: 'new user joined',
@@ -114,7 +221,6 @@ io.on('connection', function (socket) {
     // });
 });
 
-//require('./dataroutes.js').setupRoutes(app);
 
 var nodeDsv = require('../p4/src/io/node-dsv'),
     p4 = require('../p4/src/core/pipeline');
@@ -166,6 +272,8 @@ nodeDsv.read({
 app.get('/terrorists', (req, res) => {
     res.send(data);
 });
+
+require('./dataroutes.js').setupRoutes(app);
 
 server.listen(port, host, function(){
     console.log("server started, listening", host, port);

@@ -3,6 +3,7 @@ define(function(require) {
         pipeline = require('p4/core/pipeline');
     return function(arg) {
         'use strict';
+        /**************Initialization Variables***************/
         var options = arg || {},
             container = options.container || "body",
             domain = options.domain || [0, 1],
@@ -17,6 +18,8 @@ define(function(require) {
             graphName = options.graphName || '',
             scale = options.scale || 1,
             colorScheme = options.colorScheme;
+        
+        var increments = [];
 
         var otGraph = {},
             nodes = graph.nodes,
@@ -31,18 +34,8 @@ define(function(require) {
                 time: 'wait'
             };
 
-        function addHistory(hist) {
-            if(trackHistory && typeof historyList != 'undefined') {
-                history.push(hist);
-                var histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
-                console.log(hist.data);
-                historyList.append({
-                    header: hist.action + ' ' + (hist.data.label || hist.data.id),
-                    icon: histIcon,
-                    text: hist.data.detail || ''
-                })
-            }
-        };
+        var localState = historyList.Root;
+        var pullState = historyList.Root;
 
         var maxLinkValue = 0,
             nodeCounter = 0;
@@ -146,6 +139,46 @@ define(function(require) {
             }
         })
 
+        var visData = {};  
+        /**************Local functions***************/
+
+        function addHistory(hist) {
+            if(trackHistory && typeof historyList != 'undefined') {
+                let histIcon = (hist.data.hasOwnProperty('type')) ? historyIcons[hist.data.type] : 'linkify';
+                let info = null;
+                if(hist.action.indexOf("node") !== -1){
+                    info = {
+                        userId: 0,
+                        datetime: hist.data.datetime || new Date(),
+                        action: hist.action,
+                        duration: hist.data.duration || 200,
+                        nodename: hist.data.label,
+                        reason: hist.data.reason,
+                        type: hist.data.type,
+                        data: hist.data.visData || null
+                    };
+                    visData[hist.data.label] = hist.data.visData;
+                }else{
+                    info = {    
+                        userId: hist.data.userId,
+                        source: hist.data.source,
+                        target: hist.data.target,
+                        reason: hist.data.reason || "Is about to go",
+                        linkname: hist.data.linkname || "Relevant",
+                        duration: hist.data.duration || 200,
+                        datetime: hist.data.datetime || new Date(),
+                        datalink: hist.data.datalink,
+                        action: hist.action,
+                        value: hist.data.value,
+                    };
+                }
+                localState = historyList.checkout(localState, info);
+                increments.push(info);
+                historyList.refresh();
+                historyList.selectCurShowNode(localState);
+            }
+        };
+
         function restart() {
 
             // Apply the general update pattern to the nodes.
@@ -168,6 +201,7 @@ define(function(require) {
                 .attr("fill", "transparent")
                 .attr("r", 40)
                 .merge(node)
+                .style("cursor", "hand")
                 .on('click', function(d){
                     // d.fx = d3.mouse(this)[0];
                     // d.fy = d3.mouse(this)[1];
@@ -175,12 +209,17 @@ define(function(require) {
                 if(linkSource !== null && linkTarget === null) {
                         linkTarget = d;
                         console.log(linkTarget);
-                        otGraph.addLinks({
+                        otGraph.addLinks({  //Revise Here   same with Line 163
+                            userId: 0,
+                            reason: "Relevant",
                             source: linkSource,
                             target: linkTarget,
+                            duration: 200,
+                            datetime: new Date(),
+                            linkname: "Link",
                             value: 2,
                             datalink: false
-                        })
+                        });
 
                         linkSource = linkTarget = null;
                         tempLink
@@ -192,6 +231,31 @@ define(function(require) {
 
                         restart();
                     }
+                })
+                // .on('click', function(d){
+                //     nodeIcons[d.id].select("path")
+                //         .transition()
+                //         .attr("fill", "yello")
+                //         .duration(400)
+                // })
+                .on('mouseover', function(d){
+                    // console.log("mouseover");
+                    nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .duration(400)
+                        .attr("transform", "scale(" + scale * 0.11 + ")");
+                })
+                .on('mouseout', function(d){
+                    // console.log("mouseout");
+                    nodeIcons[d.id].select("path")
+                        .attr("d", logos(d.icon || d.type))
+                        .attr("fill", nodeColor(d))
+                        .transition()
+                        .ease(d3.easeBounce)
+                        .duration(400)
+                        .attr("transform", "scale(" + scale * 0.1 + ")");
                 })
                 .call(d3.drag()
                     .on("start", dragstarted)
@@ -210,11 +274,14 @@ define(function(require) {
             // Apply the general update pattern to the links.
             //
             links = links.filter(function(li){
-                return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
+                let labelArr = Object.keys(nodeHash).map(function(k){
+                    return nodeHash[k].label;
+                });
+                return labelArr.indexOf(li.source.label) >= 0 && labelArr.indexOf(li.target.label) >= 0;
             });
 
             link = link.data(links, function(d) {
-                return d.source.id + "-" + d.target.id;
+                return d.source.label + "-" + d.target.label;
             });
             link.exit().remove();
 
@@ -251,9 +318,26 @@ define(function(require) {
             //     .attr("y2", function(d) {return d.target.y;});
 
             link.attr("d", function(d){
-                return "M" + d.source.x + "," + d.source.y
-                + " L" + ((d.target.x + d.source.x)/2) + "," +((d.target.y + d.source.y)/2)
-                + "," + d.target.x + "," + d.target.y;
+                let nodeArr = Object.keys(nodeHash).map(function(k){
+                    return nodeHash[k];
+                }).filter((j) => {return j.label === d.source.label || j.label === d.target.label});
+                let target = null;
+                let source = null;
+                // if(nodeArr.length != 2){ //TODO FIXME conflict !!
+                if(false){
+                    console.log("Error Number of nodeArr: " + nodeArr.length);
+                }else{
+                    if(nodeArr[0].label === d.source.label){
+                        source = nodeArr[0];
+                        target = nodeArr[nodeArr.length - 1];
+                    }else{
+                        source = nodeArr[nodeArr.length - 1];
+                        target = nodeArr[0];
+                    }
+                }
+                return "M" + source.x + "," + source.y
+                + " L" + ((target.x + source.x)/2) + "," +((target.y + source.y)/2)
+                + "," + target.x + "," + target.y;
             })
 
             var paddingSpace = 50;
@@ -370,11 +454,17 @@ define(function(require) {
                     var thisNode = this[0],
                         thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
-                        d3.select(thisNode).remove();
-                        nodeLabels[thisNodeId].remove();
-                        nodeIcons[thisNodeId].remove();
-                        delete nodeLabels[thisNodeId];
-                        delete nodeHash[thisNodeId];
+                        // addHistory({
+                        //     action: 'Remove node',
+                        //     data: newNode
+                        // });
+                        // d3.select(thisNode).remove();
+                        // nodeLabels[thisNodeId].remove();
+                        // nodeIcons[thisNodeId].remove();
+                        // delete nodeLabels[thisNodeId];
+                        // delete nodeHash[thisNodeId];
+                        console.log(nodeHash);
+                        otGraph.removeNodes({label: thisNode.__data__.label});
                         restart();
                     } else if(key == 'annotate') {
                         d3.select(thisNode).attr('stroke', 'orange');
@@ -457,6 +547,7 @@ define(function(require) {
                     data: newNode
                 });
             })
+            restart();
             return otGraph;
         }
 
@@ -485,6 +576,10 @@ define(function(require) {
 
 
         otGraph.modifyNode = function(d, props) {
+            if(otGraph.modifyHist){
+                console.log(nodeHash[d]);
+                otGraph.modifyHist(nodeHash[d].label, props);
+            }
             var theNode = (typeof d == 'object') ? d : nodeHash[d];
 
             for(var p in props) {
@@ -501,6 +596,7 @@ define(function(require) {
                 action: 'Remove node',
                 data: nodeHash[nodeId]
             });
+            if(otGraph.removeGeo) otGraph.removeGeo(nodeHash[nodeId].visData);
             nodeIcons[nodeId]._icon.remove();
             nodeIcons[nodeId].remove();
             nodeLabels[nodeId].remove();
@@ -508,7 +604,7 @@ define(function(require) {
             delete nodeLabels[nodeId];
             delete nodeHash[nodeId];
             nodes = nodes.filter(function(d){
-                d.id != nodeId;
+                return d.id != nodeId;
             })
         }
 
@@ -543,6 +639,11 @@ define(function(require) {
                         return n.datalink !== query.datalink;
                     })
                     .map(function(n){ return n.id });
+                } else if(query.label) {
+                    nodeIds = nodes.filter(function(n){
+                        return n.label === query.label;
+                    })
+                    .map(function(n){ return n.id });
                 }
 
                 nodeIds.forEach(function(nid){
@@ -569,6 +670,11 @@ define(function(require) {
                 } else if(query.datalink) {
                     linkIds = links.filter(function(li){
                         return li.datalink !== query.datalink;
+                    })
+                    .map(function(li){ return li.id });
+                } else if(query.source && query.target){
+                    linkIds = links.filter(function(li){
+                        return li.source.label === query.source && li.target.label === query.target;
                     })
                     .map(function(li){ return li.id });
                 }
@@ -640,6 +746,75 @@ define(function(require) {
 
         otGraph.getLinks = function() { return links;};
 
+        otGraph.fetchVisData = function(){
+            let ret = [];
+            let nodeRoute = historyList.backRoute(historyList.getCurShowNode());
+            if(nodeRoute.mergeNode !== null){
+                nodeRoute = nodeRoute.backNodes.concat(nodeRoute.mergeNode.mergeInfo.map((k) => {return k.node}));
+            }else{
+                nodeRoute = nodeRoute.backNodes;
+            }
+            let removeStack = [];
+            for(var i = nodeRoute.length - 1; i >= 0 ; i--){
+                if(nodeRoute[i].action === "Remove node"){
+                    removeStack.push(nodeRoute[i].nodename);
+                }
+            }
+            for(var i = 0; i < nodeRoute.length; i++){
+                if(typeof visData[nodeRoute[i].nodename] === 'undefined'){
+                    if(!nodeRoute[i].data) continue;
+                    else{
+                        visData[nodeRoute[i].nodename] = nodeRoute[i].data;
+                    }
+                }
+                if(nodeRoute[i].action === "Add node"){
+                    let idx = removeStack.indexOf(nodeRoute[i].nodename);
+                    if(idx >= 0){
+                        removeStack.splice(idx, 1);
+                        continue;
+                    }else{
+                        ret.push(visData[nodeRoute[i].nodename].area); //GitTree is 1 prior to visdata and nodeid
+                    }
+                }
+            }
+            return {
+                areas: ret,
+                mapZoom: (nodeRoute.length > 0)? (visData[nodeRoute[0].nodename] ? visData[nodeRoute[0].nodename].mapZoom : null) : null
+            };
+        }
+
+        otGraph.allReset = function(){
+            trackHistory = false;
+            otGraph.removeNodes({all: true});
+            otGraph.removeLinks({all: true});
+            trackHistory = true;
+        }
+        otGraph.switchHist = function(choice){
+            if(choice === "off"){
+                trackHistory = false;
+            }else{
+                trackHistory = true;
+            }
+        }
+        otGraph.setLocalState = function(curNode){
+            localState = curNode;
+        }
+        otGraph.getIncrementsAndClear = function(){
+            let temp = increments.slice(0);
+            increments = [];
+            return temp;
+        }
+        otGraph.pullState = function(){
+            return pullState;
+        }
+        otGraph.isDuplicatedName = function(name){
+            let rst = nodes.filter((k)=>{
+                return k.label === name;
+            })
+            return rst.length > 0;
+        }
         return otGraph;
     }
+
+
 })

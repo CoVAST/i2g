@@ -12,8 +12,10 @@ define(function(require){
         stats = require('p4/dataopt/stats');
 
     return function(arg) {
+
         var options = arg || {},
             // container = options.container || 'domain-vis',
+            colorScheme = options.colorScheme,
             igraph = options.igraph;
 
         var data = {},
@@ -23,7 +25,7 @@ define(function(require){
             // margin: 5,
             // padding: 5,
             id: "panel-data-selection",
-            container: 'page-left-view-body',
+            container: 'page-middle-view-body',
             cols: [
                 {
                     id: "list-subject",
@@ -41,13 +43,35 @@ define(function(require){
 
         let onSelect = (d, r) => {
             selection.onSelect.call(this, d, r);
-            igraph.append({
-                nodes: {label: d, labelPrefix: 'Person', type: "people", pos: [100,100], value: 0},
-                links: []
-            });
+            // igraph.append({
+            //     nodes: {label: d, labelPrefix: 'Person', type: "people", pos: [100,100], value: 0},
+            //     links: []
+            // });
+            // July: To remove click-to-history function
+        }
+
+        //July: For RClick Menu
+        let addNodeToOntology = (id, type, props, visData, icon) => {
+            igraph.showRecHist(-1);
+            igraph.addNodes({
+                    label: id,
+                    type: type,
+                    icon: icon,
+                    pos: [100,100],
+                    value: 0,
+                    visData: visData,
+                    props: props
+            }).update()
         }
 
         var views = {};
+
+        //July: For Clear Button
+        let createLinkClear = id => {
+            return '<a id="' + id + '" href="#" style="color:'
+                 + colorScheme.semantic
+                 + '">Clear</a>';
+        }
 
         views.subject = new Panel({
             container: selection.cell('list-subject'),
@@ -68,6 +92,18 @@ define(function(require){
             header: {height: 40, style: {backgroundColor: '#FFF'}}
         });
 
+        selection.onMultiSelect = () => {console.log("Undefined onMultiSelect in Main.")};
+
+        //July: Clear Button
+        views.related.header.append(createLinkClear('cv-text-related-clear'));
+        $('#cv-text-related-clear').click(() => {
+            // let arr = relatedPeople.getSelectedItemIds();
+            selected = {};
+            relatedPeople.clearSelected();
+            selection.onMultiSelect([]);    //Local: selection.onMultiSelect()
+        })
+
+
         views.subject.append(
             '<div class="ui icon input fluid" >' +
               '<input type="text" id="subject-search"  placeholder="Search...">' +
@@ -86,7 +122,35 @@ define(function(require){
                 populateRelatedPeople(data.subjects[subjectId]);
             }
         })
+        $.contextMenu({
+                selector: '#panel-subject .list .item',
+                items: {
+                    addToOntologyGraph: {
+                        name: "Add to Concept Map",
+                        callback: function(key, opt){
+                            // let id = this.parent().children().index(this) - 1;
+                            // let curData = pipeline()
+                            //             .match({
+                            //                 user: this.parent().children().index(this)
+                            //             })
+                            //             (data.records);
+                            // let locs = selection.onAddToConceptMap();
+                            // let visData = {
+                            //     curData: curData,
+                            //     totalData: selection.totalData,
+                            //     mapZoom: {
+                            //         center: selection.mapCenter,
+                            //         zoom: selected.mapZoom,
+                            //         locs: locs
+                            //     },
 
+                            // }
+                            // addNodeToOntology(
+                            //         "Person " + personIds[id], 'people', personIds[id], visData);
+                        }
+                    }
+                }
+            })
         views.subject.showLoading();
         views.related.showLoading();
 
@@ -206,9 +270,10 @@ define(function(require){
             //     })
             // });
 
-        }
 
+        }
         let populateRelatedPeople = (personIds) => {
+            personObjs = personIds;
             data.relatedPersonIds = personIds;
             relatedPeople.clear();
             let selectedItemIds = [];
@@ -225,11 +290,42 @@ define(function(require){
                 }
             }, personIds);
             relatedPeople.setSelectedItemIds(selectedItemIds);
+            views.related.hideLoading();
+            // console.log($.contextMenu);
+            // console.log(personIds);
+            $.contextMenu({
+                selector: '#panel-related-people .list .item',
+                items: {
+                    addToOntologyGraph: {
+                        name: "Add to Concept Map",
+                        callback: function(key, opt){
+                            let id = data.relatedPersonIds[this.parent().children().index(this)] - 1;
+                            let curData = pipeline()
+                                        .match({
+                                            user: this.parent().children().index(this)
+                                        })
+                                        (data.records);
+                            let area = selection.onAddToConceptMap();
+                            let visData = {
+                                //curData: curData,
+                                //totalDataIdxs: selection.totalDataIdxs,
+                                mapZoom: {
+                                    center: selection.mapCenter,
+                                    zoom: selection.mapZoom
+                                },
+                                area: area
+                            }
+                            addNodeToOntology(
+                                    "Person " + personIds[id], 'people', personIds[id], visData);
+                        }
+                    }
+                }
+            })
         }
         selection.result = function() {
             return result;
         }
-
+        selection.totalDataIdxs = {};
         return selection;
     }
 

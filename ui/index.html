@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"/>
+    <!-- <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico"> -->
+    <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' /> -->
+    <link rel="stylesheet" href="/npm/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="/npm/leaflet-contextmenu/dist/leaflet.contextmenu.css"/>
+    <style>
+    body {
+        overflow: hidden;
+    }
+    img {
+      max-width: 100% !important;
+    }
+    a.active {
+        border-bottom: 4px solid teal;
+    }
+
+    .selected.item  {
+        background-color: #DDFFFA !important;
+    }
+
+    .selected.item > div, .selected.item > i {
+        color: #000;
+    }
+    .links line {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+
+    .context-menu-icon.context-menu-icon--fa::before {
+        color: rgb(11, 170, 160);
+    }
+
+    .context-menu-item:hover{
+        background-color: #CCC;
+    }
+    </style>
+
+
+    <title>CoVA | Collaborative Visual Analytics</title>
+    <!-- <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script> -->
+    <script src="/npm/jquery/dist/jquery.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v4.min.js"></script> -->
+    <script src="/npm/d3/build/d3.min.js"></script>
+    <!-- <script src='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script> -->
+    <script src="/npm/leaflet/dist/leaflet.js"></script>
+    <script src="/npm/leaflet-contextmenu/dist/leaflet.contextmenu.js"></script>
+    <script src="/semantic/dist/semantic.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/npm/ramda/dist/ramda.min.js"></script>
+    <script src="/npm/moment/min/moment-with-locales.js"></script>
+    <script src="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
+    <script src="/npm/moment-timezone/builds/moment-timezone-with-data.min.js"></script>
+    <script src="/npm/oboe/dist/oboe-browser.min.js"></script>
+    <script src="/npm/tinycolor2/dist/tinycolor-min.js"></script>
+  </head>
+  <body>
+      <div class="ui top fixed menu page-menu" id="page-header" style="margin:0;">
+        <div class="item">
+          <h2 style="color: teal;">CoVA</h2>
+        </div>
+        <a  href="#panel-data-selection"
+            class="item active">
+          <i class="database large teal icon"></i>Selection
+        </a>
+        <a  href="#graph-layout" class="item">
+          <i class="marker large teal icon"></i>Analysis
+        </a>
+        <a href="#page-collaboration" class="item" id="switch-collaboration">
+          <i class="universal access large teal icon"></i>Collaboration
+        </a>
+        <div class="right menu">
+            <div class="ui pointing dropdown link item">
+            <img class="ui right avatar image" src="/images/chris.jpg">
+              <span id="panel-user-name" class="text"></span>
+              <!-- <i class="dropdown icon"></i> -->
+              <!-- <div class="menu" style="z-index: 999;"> -->
+                  <!-- <a class="item">Profile</a> -->
+                  <!-- <a id="logout-action" class="item">Logout</a> -->
+              <!-- </div> -->
+            </div>
+            <a class="ui item">
+                <i class="sidebar icon"></i>
+            </a>
+        </div>
+      </div>
+      <div class="ui sidebar vertical menu" id="page-sidebar">
+
+      </div>
+      <div class="pusher">
+          <div id="page-secondary"></div>
+          <div id="page-main"></div>
+      </div>
+
+      <div class="ui small modal" id="commit-modal">
+        <div class="content">
+          <div class="ui form">
+            <div class="field">
+              <label>Note/Message</label>
+              <textarea id="commit-note" name="name"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">
+              Cancel
+            </div>
+            <div id="confirm-commit" class="ui positive right labeled icon button">Push
+              <i class="checkmark icon"></i>
+            </div>
+
+        </div>
+      </div>
+
+      <div class="ui small modal" id="login-modal">
+        <div class="header">
+          Collaborative Visual Analytic System
+        </div>
+        <div class="content">
+          <div class="ui form">
+            <div class="field">
+              <label>Analyst Name</label>
+              <input id="login-modal-name" type="text" name="name"
+                  placeholder="Your Name">
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <div id="login" class="ui green button">Login</div>
+        </div>
+      </div>
+
+      <div class="ui small modal" id="infocard-modal">
+        <div class="header">
+          Adding an ontology to Insight Graph
+        </div>
+        <div class="content">
+          <div class="ui form">
+            <div class="field">
+              <label>Ontology Name</label>
+              <input id="infocard-modal-name" type="text" name="name"
+                  placeholder="Name(As primary key)">
+            </div>
+            <div class="field">
+              <label>Reason</label>
+              <input id="infocard-modal-reason" type="text" name="reason"
+                  placeholder="Your reason for the ontology">
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <div id="submit" class="ui green button">Submit</div>
+        </div>
+      </div>
+
+      <div class="ui fullscreen modal" id="comparator-modal">
+        <div class="header">
+          Adding an ontology to Insight Graph
+        </div>
+        <div class="content">
+          <div class="ui four column grid">
+            <div class="column">
+              <div class="ui inverted segment">
+                <div class="ui inverted relaxed divided list">
+                  <div class="item">
+                    <div class="right floated content">
+                      <div class="ui button">Add</div>
+                    </div>
+                    <div class="content">
+                      <div class="header">Snickerdoodle</div>
+                      An excellent companion
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="right floated content">
+                      <div class="ui button">Add</div>
+                    </div>
+                    <div class="content">
+                      <div class="header">Poodle</div>
+                      A poodle, its pretty basic
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="right floated content">
+                      <div class="ui button">Add</div>
+                    </div>
+                    <div class="content">
+                      <div class="header">Paulo</div>
+                      He's also a dog
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="ui inverted segment">
+                <div class="ui inverted relaxed divided list">
+                  <div class="item">
+                    <div class="right floated content">
+                      <div class="ui button">Add</div>
+                    </div>
+                    <div class="content">
+                      <div class="header">Snickerdoodle</div>
+                      An excellent companion
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="right floated content">
+                      <div class="ui button">Add</div>
+                    </div>
+                    <div class="content">
+                      <div class="header">Poodle</div>
+                      A poodle, its pretty basic
+                    </div>
+                  </div>
+                  <div class="item">
+                    <div class="right floated content">
+                      <div class="ui button">Add</div>
+                    </div>
+                    <div class="content">
+                      <div class="header">Paulo</div>
+                      He's also a dog
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <p>234</p>
+              <p>345</p>
+              <p>456</p> 
+            </div>
+            <div class="column">
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+              <p>123</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui basic modal", id = "infocard-alert">
+        <div class="ui icon header">
+          <i class="archive icon"></i>
+          Alert
+        </div>
+        <div class="content">
+          <p>Your ontology needs a name.</p>
+        </div>
+        <div class="actions">
+          <div class="ui green ok inverted button">
+            <i class="checkmark icon"></i>
+            Okay
+          </div>
+        </div>
+      </div>
+
+
+    <script src="npm/requirejs/require.js"></script>
+    <script>
+        var webSocket = io();
+        require(["main", "display"], function(main, display) {
+            var pageHeaderHeight =  $('#page-header').height();
+
+            $('.ui.sidebar')
+              .sidebar({
+                  dimPage: false,
+                  closable: false
+                })
+
+            $("#page-main,#page-secondary")
+                .css({
+                    height: $("body").height() - pageHeaderHeight,
+                    'margin-top': pageHeaderHeight + 'px'
+                });
+            $('#page-secondary').transition('fade left');
+            $(".page-menu > a.item").click(function(){
+                $(".page-menu > a.item.active").each(function(menuID,i){
+                    $(this.getAttribute('href')).transition('fade left');
+                    $(this).removeClass('active');
+                })
+
+                $('#page-secondary').hide();
+                $(this).addClass('active');
+                $(this.getAttribute('href')).transition('fade left');
+            })
+
+            main(webSocket);
+            $('.cv-page').not('.cv-page-active').hide();
+            $('.ui.dropdown').dropdown();
+            display(webSocket, 'page-secondary');
+            $('#switch-collaboration').click(function(){
+                    $('#page-secondary').transition('fade left');
+            })
+            let setUserName = function(name) {
+                webSocket.emit('add user',{name: name});
+
+                webSocket.on('login', function(msg){
+                    console.log(msg);
+                    console.log('logged in');
+                    $('#panel-user-name').html(name);
+                    sessionStorage.setItem('username', name);
+                })
+
+            }
+            let hideModalAndSetUserName = function() {
+                $('.ui.modal').modal('hide');
+                let el = $('#login-modal-name');
+                let name = el.val() || el.attr('placeholder');
+                setUserName(name);
+            }
+            $('#login-modal-name').keypress(function(e) {
+                if (e.which == 13)
+                    hideModalAndSetUserName();
+            })
+            $('#login').click(hideModalAndSetUserName);
+            let username = sessionStorage.getItem('username');
+            if (!username) {
+                $('#login-modal').modal({closable: false}).modal('show');
+            } else {
+                setUserName(username);
+            }
+
+        })
+
+    </script>
+
+  </body>
+</html>

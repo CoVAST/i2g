@@ -77,10 +77,9 @@ return function(arg) {
     });
     appLayout.views = views;
 
-    let subjectGeos = {};
+    subjectGeos = {};
     let people = [];
     let datetimes = [];
-    let areas = [];
     appLayout.setSubjects = subjectLocations => {
         // clear locations
         R.forEachObjIndexed(
@@ -115,6 +114,7 @@ return function(arg) {
         // update timeline
         updateTimeline();
     }
+
     appLayout.removeSubject = (subjectKey) => {
         people.splice(people.indexOf(subjectKey), 1);
         // remove locations from map
@@ -124,45 +124,104 @@ return function(arg) {
         updateTimeline();
     }
 
+    appLayout.removeAllSubjects = () => {
+        people = [];
+        for(var eachKey in subjectGeos){
+            appLayout.map.removeLocations(subjectGeos[eachKey].mapObjs);
+            delete subjectGeos[eachKey];
+        }
+        updateTimeline();
+    }
+
+    appLayout.removeAllAreas = () => {
+        appLayout.map.removeImportantGeos({all: true});
+    }
+    appLayout.removeGeoByVisData = (visData) => {
+        appLayout.map.removeImportantGeos({visData: visData});
+    }
+
+    appLayout.map.loadMap = function(visData, aboutToFly){
+        if(aboutToFly === true && visData.mapZoom){
+            // console.log("flyTo:" + visData.mapZoom.center + "," + visData.mapZoom.zoom);
+            appLayout.map.flyTo(visData.mapZoom.center, visData.mapZoom.zoom);
+        }
+        appLayout.map.addImportantGeos(appLayout.map.fillAreasLeafletByData(visData.areas));
+        // console.log("Here we need to load map.");
+    }
+
+    appLayout.map.onRenew = function(){
+        //appLayout.removeAllSubjects();
+        appLayout.removeAllAreas();
+        // var latestData = igraph.fetchVisData(-1);
+        // if(!!latestData && !!latestData.totalData){
+        //     for(var eachKey in latestData.totalData){
+        //         appLayout.addSubject(latestData.totalData[eachKey]);
+        //     }
+        // }
+        // if(!!latestData)appLayout.map.loadMap(latestData);
+    }
+
+    var submit_d = null;
+    var lastSubmit = null;
     appLayout.map.onadd(function(d){
+        var selectedNum = 0;
+        $('#infocard-modal').modal({closable: true}).modal('show');
+        submit_d = d;
+        $('#submit').click(()=>{
+            if(d !== submit_d)return;   //FIXME Some strange occassions, here are harsh codes
+            let node_name = $('#infocard-modal-name');
+            let node_reason = $('#infocard-modal-reason');
+            let name = node_name.val() || null;
+            let reason = node_reason.val() || node_reason.attr('placeholder');
+            if (!name || !reason) {
+                alert('Name and Reason are required');
+            }else if(appLayout.isDuplicatedName(name)){
+                alert('A duplicated name is not allowed.')
+            }else {
+                $('#infocard-modal').modal('hide');
+                submit_d.name = name;
+                submit_d.reason = reason;
 
-        var c = d.coordinates,
-            cMinLat = Math.min(c[0].lat, c[1].lat),
-            cMaxLat = Math.max(c[0].lat, c[1].lat),
-            cMinLong = Math.min(c[0].lng, c[1].lng),
-            cMaxLong = Math.max(c[0].lng, c[1].lng);
-
-        d.box = {lat: [cMinLat, cMaxLat], lng: [cMinLong, cMaxLong]};
-        d.label = areas.length;
-        d.labelPrefix = 'Location';
-
-        var selectedLocations =
-                toLocations(subjectGeos).filter(function(a){
-            return (a.lat < cMaxLat && a.lat > cMinLat && a.long < cMaxLong && a.long > cMinLong);
-        })
-        var links = pipeline()
-        .group({
-            $by: ['user'],
-            value: {'location': '$count'}
-        })
-        (selectedLocations);
-        // console.log(links);
-        areas.push(d);
-        igraph.addNodes({
-            label: d.label,
-            labelPrefix: 'Location ',
-            type: "location",
-            pos: [0,0],
-            value: selectedLocations.length
-        }).update();
-
-        links.forEach(function(li){
-            li.source = igraph.findNode({type: 'people', tag: li.user});
-            li.target = igraph.findNode({type: 'location', tag: d.label});
+                if(submit_d.type === 'rect'){
+                    selectedNum = 0;
+                }else if(submit_d.type === 'point'){    //very temporary
+                    selectedNum = 0;
+                }else if(submit_d.type === 'polyline'){
+                    selectedNum = 0;
+                }else if(submit_d.type === 'polygon'){
+                    selectedNum = 0;
+                }
+                appLayout.map.onRenew();
+                var visData = igraph.fetchVisData();
+                if(visData.areas.length > 0){
+                    appLayout.map.loadMap(visData);
+                }
+                appLayout.map.addImportantGeos(submit_d);
+                submit_d.leaflet.on('click', function(){
+                    if(lastSubmit !== null){
+                        appLayout.map.cancelMarkGeo(lastSubmit)
+                    }
+                    lastSubmit = submit_d;
+                    appLayout.map.markGeo(submit_d);
+                    appLayout.onCallRespondingOntologyGraph(id);
+                });
+                // submit_d.leaflet.addContextMenuItem({
+                //     text: "Remove",
+                //     index: 0,
+                //     callback: appLayout.map.removeImportantGeos.bind(this, submit_d)
+                // })
+                // submit_d.leaflet.addContextMenuItem({
+                //     text: "Hide",
+                //     index: 0,
+                //     callback: appLayout.map.removeImportantGeos.bind(this, submit_d)
+                // })
+                appLayout.onAddToConceptMap(submit_d, selectedNum);
+                node_name.val('');
+                node_reason.val('');
+            }
         });
-        // console.log(links);
-        igraph.addLinks(links)
-        .update();
+
+
     })
 
     /// TODO: consider defining class Rect.
@@ -192,6 +251,13 @@ return function(arg) {
         }, locs);
         console.log(minmax);
         return minmax;
+    }
+    appLayout.markIdLocation = (id) => {
+        if(lastId >= 0){
+            appLayout.map.cancelMarkGeo(lastSubmit);
+        }
+        lastId = id;
+        appLayout.map.markGeo(appLayout.areas[id]);
     }
 
     let flyToLocations = (locs) => {
@@ -295,7 +361,7 @@ return function(arg) {
                 let areasToLinks =
                         R.pipe(
                             R.map(generateLinks(allLocs)(d)), R.flatten);
-                let newLinks = areasToLinks(areas);
+                let newLinks = areasToLinks(appLayout.areas);
 
                 console.log(newLinks);
 
@@ -367,7 +433,7 @@ return function(arg) {
             onSelect = options.onselect;
 
         views.timeline.clear();
-
+        if(data.length === 0) return;
         if(timeMode == 0) {
             var timespan = stats.domains(data, ['time']).time,
                 duration = timespan[1] - timespan[0];
@@ -386,8 +452,6 @@ return function(arg) {
                 })
                 .sortBy({timestep: 1})
                 (data);
-
-
 
                 var timeSeries = new Array(people.length);
                 people.forEach(

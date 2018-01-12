@@ -3,7 +3,7 @@ define(function(require){
 return function geoLocation(options) {
     var options = options || {};
     var mapRenderer = L.canvas();
-    var onAdd = options.onadd || function() {};
+    var onAdd = options.onadd || function() {console.log("spatiotemporal onadd callback hasn't been defined yet.")};
     var colorScheme = options.colorScheme;
     var relatedLocations = new L.LayerGroup();
     var primaryLocations = new L.LayerGroup();
@@ -35,19 +35,56 @@ return function geoLocation(options) {
     // important locations
     var importantGeoColor = colorScheme.area;
     importantGeos = [];
+
     var removeImportantGeo = (geo) => {
         var index = importantGeos.indexOf(geo);
         if (index > -1) {
             importantGeos.splice(index, 1);
+            if(geo.leaflet === null){
+                fillAreasLeafletByData([geo]);
+            }
             importantLocations.removeLayer(geo.leaflet);
         }
     }
+
+    var removeImportantGeos = (query) => {
+        if(query.all){
+            // console.log(importantGeos);
+            while(importantGeos.length > 0){
+                removeImportantGeo(importantGeos[0]);
+            }
+            return;
+        }else if(query.visData){
+            for(var i = 0; i < importantGeos.length; i++){
+                if(importantGeos[i].name === query.visData.area.name){
+                    removeImportantGeo(importantGeos[i]);
+                    return;
+                }
+            }
+        }
+        else{
+            query = Array.isArray(query)? query : [query];
+            query.forEach(function(geo){
+                removeImportantGeo(geo);
+            });
+        }
+    }
+
     let setCursorToCrosshair = () => map._container.style.cursor = 'crosshair';
     let resetCursor = () => map._container.style.cursor = '';
     let prepareAddImportantLocation = (e) => {
         setCursorToCrosshair();
         map.on('click',  addImportantLocation);
     }
+
+    var addImportantGeos = (geos) => {
+        geos = Array.isArray(geos)? geos : [geos];
+        geos.forEach(function(geo){
+            importantGeos.push(geo);
+            geo.leaflet.addTo(importantLocations);
+        })
+    }
+
     var addImportantLocation = (e) => {
         //console.log('addImportantLocation');
         var geo = {
@@ -64,14 +101,9 @@ return function geoLocation(options) {
                     separator: true,
                     index: 0
                 }]
-            }).addTo(importantLocations)
+            })
         }
-        geo.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, geo)
-        })
-        importantGeos.push(geo);
+
         map.off('click', addImportantLocation);
         resetCursor();
         onAdd.call(this, geo);
@@ -91,7 +123,7 @@ return function geoLocation(options) {
                     separator: true,
                     index: 0
                 }]
-            }).addTo(importantLocations)
+            })
         };
         map.on('click', addingImportantPath, thePath);
         map.on('dblclick', doneAddImportantPath, thePath);
@@ -104,11 +136,11 @@ return function geoLocation(options) {
     let doneAddImportantPath = function(e) {
         let thePath = this;
         importantGeos.push(thePath);
-        thePath.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, thePath)
-        });
+        // thePath.leaflet.addContextMenuItem({
+        //     text: "Remove",
+        //     index: 0,
+        //     callback: removeImportantGeo.bind(this, thePath)
+        // });
         resetCursor();
         map.doubleClickZoom.enable();
         map.off('click', addingImportantPath, thePath);
@@ -137,6 +169,7 @@ return function geoLocation(options) {
         map.on('click', addingImportantPolygon, thePolygon);
         map.on('dblclick', doneAddImportantPolygon, thePolygon);
         // isAddingImportantPolygon = true;
+        // onAdd.call(this, thePolygon);
     }
     var addingImportantPolygon = function(e) {
         let thePolygon = this;
@@ -146,11 +179,11 @@ return function geoLocation(options) {
     var doneAddImportantPolygon = function(e) {
         let thePolygon = this;
         importantGeos.push(thePolygon);
-        thePolygon.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, thePolygon)
-        })
+        // thePolygon.leaflet.addContextMenuItem({
+        //     text: "Remove",
+        //     index: 0,
+        //     callback: removeImportantGeo.bind(this, thePolygon)
+        // })
         resetCursor();
         map.doubleClickZoom.enable();
         map.off('click', addingImportantPolygon, thePolygon);
@@ -187,7 +220,7 @@ return function geoLocation(options) {
                 separator: true,
                 index: 0
             }]
-        }).addTo(importantLocations)
+        })
         L.DomEvent.stop(e);
     }
     var addingImportantRect = function(e) {
@@ -202,12 +235,11 @@ return function geoLocation(options) {
         //console.log('doneAddImportantRect');
         let theRect = this;
         theRect.coordinates[1] = e.latlng;
-        importantGeos.push(theRect);
-        theRect.leaflet.addContextMenuItem({
-            text: "Remove",
-            index: 0,
-            callback: removeImportantGeo.bind(this, theRect)
-        });
+        // theRect.leaflet.addContextMenuItem({
+        //     text: "Remove",
+        //     index: 0,
+        //     callback: removeImportantGeo.bind(this, theRect)
+        // });
         resetCursor();
         map.off('mousedown', startAddImportantRect, theRect);
         map.off('mousemove', addingImportantRect, theRect);
@@ -343,13 +375,93 @@ return function geoLocation(options) {
         //     return L.circleMarker(loc.latlng, options).addTo(highlightLocationsLayer)
         // }, locObjs);
     }
+    function markGeo(geo){
+        if(geo.type == 'point'){
+            geo.leaflet.bindPopup("<b>" + geo.name + "</b><br>" + geo.reason + "</br>").openPopup();
+        }else{
+            removeImportantGeos(geo);
+            geo.leaflet.options.color = '#FE2E2E';
+            geo.leaflet.options.fillColor = '#FE642E';
+            addImportantGeos(geo);
+        }
+    }
+    function cancelMarkGeo(geo){
+        removeImportantGeos(geo);
+        geo.leaflet.options.color = colorScheme.area;
+        geo.leaflet.options.fillColor = colorScheme.area;
+        addImportantGeos(geo);
+    }
 
+<<<<<<< HEAD
     function exportAsImage(callback) {
         leafletImage(map, function(err, canvas) {
             callback(canvas.toDataURL());
         })
     }
 
+=======
+    function fillAreasLeafletByData(areas){
+        if(areas.length === 0){
+            return;
+        }
+        for(var i = 0; i < areas.length; i++){
+            if(areas[i].type === 'rect'){
+                areas[i].leaflet = L.rectangle(areas[i].coordinates, {
+                    color: importantGeoColor,
+                    opacity: 0.8,
+                    weight: 1,
+                    fillColor: importantGeoColor,
+                    fillOpacity: 0.5,
+                    contextmenu: true,
+                    contextmenuItems: [{
+                        separator: true,
+                        index: 0
+                    }]
+                })
+            }else if (areas[i].type === 'point'){
+                areas[i].leaflet = L.marker(areas[i].coordinates, {
+                        color: 'none',
+                        fillColor: importantGeoColor,
+                        // weight: 1,
+                        fillOpacity: 0.5,
+                        radius: 10,
+                        contextmenu: true,
+                        contextmenuItems: [{
+                            separator: true,
+                            index: 0
+                        }]
+                    })
+            }else if(areas[i].type === 'polyline'){
+                areas[i].leaflet = L.polyline(areas[i].coordinates, {
+                    color: importantGeoColor,
+                    opacity: 0.8,
+                    weight: 8,
+                    contextmenu: true,
+                    contextmenuItems: [{
+                        separator: true,
+                        index: 0
+                    }]
+                })
+            }else if(areas[i].type === 'polygon'){
+                areas[i].leaflet = L.polygon(areas[i].coordinates, {
+                    color: importantGeoColor,
+                    opacity: 0.8,
+                    weight: 1,
+                    fillColor: importantGeoColor,
+                    fillOpacity: 0.5,
+                    contextmenu: true,
+                    contextmenuItems: [{
+                        separator: true,
+                        index: 0
+                    }]
+                })
+            }else{
+                console.log("Undefined type");
+            }
+        }
+        return areas;
+    }
+>>>>>>> 961de66b3cb6c22bc0b491b463d3c8fd0f23248f
     return {
         relatedLocations: relatedLocations,
         primaryLocations: primaryLocations,
@@ -360,11 +472,22 @@ return function geoLocation(options) {
         highlightLocations: highlightLocations,
         highlightPaths: highlightPaths,
         flyToBounds: R.bind(map.flyToBounds, map),
+<<<<<<< HEAD
         setView: R.bind(map.setView, map),
         fitBounds: R.bind(map.fitBounds, map),
         flyTo: R.bind(map.flyTo, map),
         exportAsImage: exportAsImage,
         once: R.bind(map.once, map)
+=======
+        flyTo: R.bind(map.flyTo, map),
+        removeImportantGeos: removeImportantGeos,
+        addImportantGeos: addImportantGeos,
+        getZoom: () => map.getZoom(),
+        getCenter: () => map.getCenter(),
+        markGeo: markGeo,
+        cancelMarkGeo: cancelMarkGeo,
+        fillAreasLeafletByData: fillAreasLeafletByData,
+>>>>>>> 961de66b3cb6c22bc0b491b463d3c8fd0f23248f
     }
 }
 
