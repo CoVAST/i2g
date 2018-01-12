@@ -477,7 +477,7 @@ return function(arg) {
                     color: 'user',
                 }
             })
-        }else if(timeMode == 2) {
+        } else if(timeMode == 2) {
             var dailyStats = pipeline()
             .match({
                 user: {$in: people},

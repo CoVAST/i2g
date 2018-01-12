@@ -150,7 +150,7 @@ return function(webSocket) {
             nodes: igraph.getNodes(),
             links: igraph.getLinks()
         };
-        console.log('push graph to server', graph, );
+        // console.log('push graph to server', graph, );
         webSocket.emit('push', {
             graph: graph,
             note: $('#commit-note').val()

@@ -1,7 +1,8 @@
-define(function(){
+define(function(require){
 
 return function geoLocation(options) {
     var options = options || {};
+    var mapRenderer = L.canvas();
     var onAdd = options.onadd || function() {};
     var colorScheme = options.colorScheme;
     var relatedLocations = new L.LayerGroup();
@@ -219,6 +220,7 @@ return function geoLocation(options) {
     var map = L.map('map-body', {
         center: options.mapCenter || [8.7832, -124.5085],
         zoom: options.mapZoom || 12,
+        render: L.canvas(),
         layers: [
             grayscale,
             primaryLocations,
@@ -260,15 +262,30 @@ return function geoLocation(options) {
     function addLocations(locs, params) {
         var c = params.color || 'steelblue',
             a = params.alpah || 0.5,
-            r = params.size || circleRadius;
+            r = params.size || circleRadius,
+            vmap = params.vmap || {lat: 'lat', long: 'long'},
+            colorMap = params.colorMap;
+
+        var sizeScale = function() { return r;}
+
+        if(vmap.size) {
+            sizeScale = d3.scaleLinear().range([2, 20]).domain(d3.extent(locs, d=>parseFloat(d[vmap.size])));
+
+        }
 
         return locs.map(function(loc){
-            return L.circleMarker([loc.lat, loc.long], {
+            if(vmap.color && typeof(colorMap) == 'function') {
+                c = colorMap(loc[vmap.color]);
+            }
+            return L.circleMarker([loc[vmap.lat], loc[vmap.long]], {
                 color: 'none',
                 fillColor: c,
                 // weight: 1,
                 fillOpacity: a,
-                radius: r
+                stroke: 0,
+                radius: sizeScale(parseFloat(loc[vmap.size])),
+                // render: L.canvas(),
+                renderer:  mapRenderer
             }).addTo(primaryLocations);
         })
     }
@@ -327,6 +344,12 @@ return function geoLocation(options) {
         // }, locObjs);
     }
 
+    function exportAsImage(callback) {
+        leafletImage(map, function(err, canvas) {
+            callback(canvas.toDataURL());
+        })
+    }
+
     return {
         relatedLocations: relatedLocations,
         primaryLocations: primaryLocations,
@@ -337,7 +360,11 @@ return function geoLocation(options) {
         highlightLocations: highlightLocations,
         highlightPaths: highlightPaths,
         flyToBounds: R.bind(map.flyToBounds, map),
-        flyTo: R.bind(map.flyTo, map)
+        setView: R.bind(map.setView, map),
+        fitBounds: R.bind(map.fitBounds, map),
+        flyTo: R.bind(map.flyTo, map),
+        exportAsImage: exportAsImage,
+        once: R.bind(map.once, map)
     }
 }
 

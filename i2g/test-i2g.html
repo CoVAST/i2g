@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    .links line {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+
+    .context-menu-icon.context-menu-icon--fa::before {
+        color: rgb(11, 170, 160);
+    }
+
+    .context-menu-item:hover{
+        background-color: #CCC;
+    }
+    </style>
+
+
+    <title>CoVA | Collaborative Visual Analytics</title>
+    <!-- <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script> -->
+    <script src="/npm/jquery/dist/jquery.min.js"></script>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script src="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
+    <script src="npm/requirejs/require.js"></script>
+  </head>
+  <body>
+    <div id="i2g">
+
+    </div>
+
+    <script>
+       require(['i2g'], function(i2g){
+           i2g({
+               container: 'i2g',
+
+           })
+       })
+
+    </script>
+
+  </body>
+</html>

@@ -6,9 +6,9 @@ var fs = require('fs'),
     server = require('http').Server(app),
     io = require('socket.io')(server);
 
-var port = process.env.PORT || 7000,
+var port = process.env.PORT || 8080,
     host = process.env.HOST || "localhost";
-
+require('amdefine/intercept');
 console.log("initializing server ");
 
 // Static files
@@ -19,8 +19,9 @@ app.use("/npm", express.static('node_modules'));
 // ivastack libs
 var srcDir = {
     davi: './davi/src',
-    i2v: './node_modules/i2v/src',
-    p4: './node_modules/p4.js/src',
+    i2v: '../ivastack/i2v/src',
+    p4: '../p4/src',
+    // p4: './node_modules/p4.js/src',
 }
 
 let dataPath = process.env.COVA_DATASRC || 'selection.js';
@@ -115,6 +116,56 @@ io.on('connection', function (socket) {
 
 //require('./dataroutes.js').setupRoutes(app);
 
+var nodeDsv = require('../p4/src/io/node-dsv'),
+    p4 = require('../p4/src/core/pipeline');
+
+var data = [],
+    attributes = {
+        "iyear" : "numeric",
+        "imonth": "numeric",
+        "iday": "numeric",
+        "country": "categorical",
+        "region": "categorical",
+        "latitude": "numeric",
+        "longitude": "numeric",
+        "success": "numeric",
+        "suicide": "numeric",
+        "attacktype": "categorical",
+        "targtype": "categorical",
+        "gname": "categorical",
+        "weaptype" :"categorical",
+        "nkill": "numeric",
+        "nwound": "numeric"
+};
+
+var readValue = {
+    categorical: function(d) { return d},
+    numeric: parseFloat
+}
+
+nodeDsv.read({
+    filepath: './data/terrorists.csv',
+    delimiter: ';',
+    skip: 1,
+    onload: function(rows) {
+        rows.forEach(function(row){
+            var rec = {};
+            Object.keys(attributes).forEach(function(attr, i) {
+                rec[attr] = readValue[attributes[attr]](row[i]);
+            });
+            data.push(rec);
+        })
+    },
+    oncomplete: function() {
+        data = data.filter(d=>d.iyear > 1999);
+        data.forEach(function(d){ d.date = new Date([d.iyear, d.imonth, d.iday].join('-'))});
+        console.log('total records: ', data.length);
+    }
+})
+
+app.get('/terrorists', (req, res) => {
+    res.send(data);
+});
 
 server.listen(port, host, function(){
     console.log("server started, listening", host, port);

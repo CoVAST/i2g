@@ -23,9 +23,17 @@ define(function(require){
             domainX = option.domainX || false,
             formatX = option.formatX || format(".3s"),
             formatY = option.formatY || format(".3s"),
-            scaleX = options.scaleX || 'ordinal',
-            scatter = plot.append("g");
+            scaleX = option.scaleX || 'ordinal';
 
+        plot.append('g').append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', this.$width+this.$padding.left + this.$padding.right-2)
+            .attr('height', this.$height+this.$padding.top + this.$padding.bottom-2)
+            .style('fill', '#f5f5f5')
+            .style('stroke', '#777');
+
+        var scatter = plot.append("g");
 
         var that = this,
             height = this.$height,
@@ -65,7 +73,7 @@ define(function(require){
             align: align,
             ticks: yDomains.length,
             labelPos: {x: -5, y: -4},
-            format: function(d) { return 'P' + d},
+            format: formatY,
         };
 
         if(align == 'right'){
