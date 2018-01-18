@@ -1,7 +1,10 @@
 define(function(require) {
-    var logos = require('./icons');
+    var logos = require('./icons'); 
+
     return function(arg) {
         'use strict';
+
+        // get all the setting from input
         var options = arg || {},
             container = options.container || "body",
             domain = options.domain || [0, 1],
@@ -13,23 +16,31 @@ define(function(require) {
             onselect = options.onselect || function() {},
             graphId = options.graphId || 'igraph-svg',
             graphName = options.graphName || '',
-            scale = options.scale || 1;
+            scale = options.scale || 1,
+            colorScheme = options.colorScheme;
 
+        // initialize the graph as a object and initialize the graph nodes and links
         var i2g = {},
             nodes = graph.nodes,
             links = graph.links;
 
+        // pretty useless variable, maybe remove later
         var maxLinkValue = 0,
             nodeCounter = 0;
 
+        // set up the svg
         var svg = d3.select(container).append('svg:svg');
-        svg.attr('id', graphId).attr("width", width).attr("height", height);
+        svg.attr('id', graphId)
+        .attr("width", width)
+        .attr("height", height)
+        .style("border", "solid 3px black");
 
+        // set up the direction arrow
         svg.append("svg:defs").append("svg:marker")
-              .attr("id",'end')
+              .attr("id",'directionArrow')
               .attr("viewBox", "0 -5 10 10")
                .attr("markerUnits", "userSpaceOnUse")
-              .attr("refX", 0)
+              .attr("refX", 5)
               .attr("refY", 0)
               .attr("markerWidth", 15)
               .attr("markerHeight", 15)
@@ -42,17 +53,20 @@ define(function(require) {
             //   .attr("d", logos('info'));
               .attr("d", "M0,-5L10,0L0,5");
 
+        // useless variable
         var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
 
+        // set up node type color
         var nodeTypeColor = {
-            location: 'steelblue',
-            people: 'green',
-            time:  'orange',
-            date: 'orange',
-            day: 'orange',
-            datetime: 'orange'
+            location: colorScheme.area,
+            people: colorScheme.people,
+            time: colorScheme.time,
+            date: colorScheme.time,
+            day: colorScheme.time,
+            datetime: colorScheme.time
         }
 
+        // set up a nodeColor function to determine the color of the node based on its type
         var nodeColor = function(d) {
             if(nodeTypeColor.hasOwnProperty(d.type))
                 return nodeTypeColor[d.type];
@@ -60,16 +74,19 @@ define(function(require) {
                 return 'black';
         }
 
+        // set up a function to determine the size of the node (using d3)
         var nodeSize = d3.scalePow()
             .exponent(0.20)
             .domain([1, 3000])
             .range([5, 500]);
 
+        // set up a function to determine the width of the link (using d3)
         var linkSize = d3.scalePow()
             .exponent(0.2)
             .domain([0, 3000])
             .range([1*scale, 6*scale]);
 
+        // set up a function to plot the graph use d3 force diagram
         var simulation = d3.forceSimulation(nodes)
             .force("charge", d3.forceManyBody().strength(-1000))
             .force("link", d3.forceLink(links).distance(200).strength(1).iterations(20))
@@ -80,48 +97,67 @@ define(function(require) {
             // .alphaTarget(0.3)
             .stop();
 
-        var g = svg.append("g"),
-            link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
-            node = g.append("g").attr("stroke-width", 2).attr("stroke", "none").selectAll(".node");
 
-        var linkIcons = [],
-            linkLabels = [];
 
-        var icons = g.append("g"),
-            nodeIcons = {};
-
-        var nodeInfo = g.append("g"),
-            nodeLabels = {};
-
-        var nodeHash = {};
-
-        restart();
-
+        /** Use a temp link to show the link when add a new link */
         var linkSource = null,
             linkTarget = null,
             newArrivingNode = null;
 
         var tempLink = svg.append('g')
             .append('line')
+            .attr('id', 'tempLink')
             .attr('stroke', '#CCC')
             .attr('stroke-width', 0)
             .attr('x1', 0)
             .attr('y1', 0)
             .attr('x2', 0)
-            .attr('y2', 0);
+            .attr('y2', 0)
+            .style("stroke-dasharray", ("3, 3"));
 
+        // change the destination of the temp link when move the mouse
         svg.on('mousemove', function(e){
             if(linkSource !== null){
                 var pos = d3.mouse(this);
                 tempLink.attr('x2', pos[0]-3)
                     .attr('y2', pos[1]-3);
             }
-        })
+        });
+
+
+
+
+
+        var g = svg.append("g"), //append a graph to plot all the links and nodes
+            link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
+            node = g.append("g").attr("stroke-width", 2).attr("stroke", "none").selectAll(".node");
+
+        var linkIcons = [], // unknown
+            linkLabels = []; // unknown
+
+        var icons = g.append("g"), // append a graph to plot all the node icons
+            nodeIcons = {};
+
+        var nodeInfo = g.append("g"), // append a graph to plot all the node names
+            nodeLabels = {};
+
+        var nodeHash = {}; // unknown probably to store the hashcode of nodes
+
+        restart(); // call restart function
+
+
+
+
+
+
 
         //=====================================================================
         // Private Functions
         //=====================================================================
+        
+        /** Set up a restart function to plot all the nodes and links. */
         function restart() {
+
             // Apply the general update pattern to the nodes.
             nodes = Object.keys(nodeHash).map(function(k){
                 return nodeHash[k];
@@ -131,20 +167,25 @@ define(function(require) {
                 return d.id;
             });
 
+            // Remove the previous nodes from the graph
             node.exit().remove();
+
+            // Add updated nodes into the graph
             node = node.enter()
                 .append("circle")
                 .attr('class', 'nodeHolder')
                 // .attr("fill", function(d) {
                 //     return nodeColor(d.type);
                 // })
-                .attr("fill", "transparent")
-                .attr("r", 40)
+                .attr("fill", "white")
+                .attr("r", 30)
                 .merge(node)
-                .on('click', function(d){
+                .on('click', function(d){   
                     // d.fx = d3.mouse(this)[0];
                     // d.fy = d3.mouse(this)[1];
                 // console.log('clicked on node', d.id);
+
+                // modify the templink
                 if(linkSource !== null && linkTarget === null) {
                         linkTarget = d;
                         // console.log(linkTarget);
@@ -155,7 +196,9 @@ define(function(require) {
                             datalink: false
                         })
 
+                        // set temp link to original state
                         linkSource = linkTarget = null;
+                        
                         tempLink
                             .attr('stroke-width', 0)
                             .attr('x1', 0)
@@ -163,41 +206,49 @@ define(function(require) {
                             .attr('x2', 0)
                             .attr('y2', 0);
 
-                        restart();
+                        restart(); // call restart again to update the graph
                     }
                 })
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
-                    .on("end", dragended))
+                    .on("end", dragended)
+                );
 
+            // Unknown action 
             node
             .append('title')
-            .text((d)=>{ if(d.detail) return d.detail})
+            .text((d)=>{ if(d.detail) return d.detail});
             // console.log(node);
+            
+            // For each node add icon and labels
             node.data(nodes, function(d){
                 addNodeIcon(d);
                 addNodeLabel(d);
             });
 
             // Apply the general update pattern to the links.
-            links = links.filter(function(li){
-                return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
+            links = links.filter(function(d){
+                return nodeHash.hasOwnProperty(d.source.id) && nodeHash.hasOwnProperty(d.target.id);
             });
 
             link = link.data(links, function(d) {
                 return d.source.id + "-" + d.target.id;
             });
+
+            // Remove the previous link from the graph
             link.exit().remove();
 
             maxLinkValue = d3.max(links.map((d)=>d.value));
             linkSize.domain([0, maxLinkValue]);
+
+            // Add new links to the graph
             link = link.enter()
                 .append("path")
                 .attr('class', 'graphLinks')
                 .attr("stroke-width", (d)=>linkSize(d.value))
                 // .attr("stroke", (d)=>linkColor(d.dest))
-                .attr("marker-mid", "url(#end)")
+                .attr("marker-mid", "url(#directionArrow)")
                 .merge(link);
 
             link.append('title')
@@ -213,6 +264,7 @@ define(function(require) {
             simulation.alphaTarget(0.3).restart();
         }
 
+        /** Unknown Set up a ticked function to plot all the nodes and links with force layout. */
         function ticked() {
             node.attr("cx", function(d) {return d.x;})
                 .attr("cy", function(d) {return d.y;})
@@ -222,10 +274,18 @@ define(function(require) {
             //     .attr("x2", function(d) {return d.target.x;})
             //     .attr("y2", function(d) {return d.target.y;});
 
+            var sourceXChange,
+                sourceYChange,
+                targetXChange,
+                targetYChange;
+
+            sourceXChange = sourceYChange = targetYChange = 0;
+            targetXChange = 0;
+
             link.attr("d", function(d){
-                return "M" + d.source.x + "," + d.source.y
-                + " L" + ((d.target.x + d.source.x)/2) + "," +((d.target.y + d.source.y)/2)
-                + "," + d.target.x + "," + d.target.y;
+                return "M" + (d.source.x + sourceXChange) + "," + (d.source.y + sourceYChange)
+                + " L" + (((d.target.x + targetXChange) + (d.source.x + sourceXChange))/2) + "," +(((d.target.y + targetYChange) + (d.source.y + sourceYChange))/2)
+                + "," + (d.target.x + targetXChange) + "," + (d.target.y + targetYChange);
             })
 
             var paddingSpace = 50;
@@ -253,6 +313,8 @@ define(function(require) {
             // })
         }
 
+
+        /** Set up a group of drag functions. */
         function dragstarted(d) {
             // if (!d3.event.active) simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
@@ -274,6 +336,8 @@ define(function(require) {
             //   d.fy = null;
         }
 
+
+        /** Add node label functions */
         function addNodeLabel(d) {
             if (!nodeLabels.hasOwnProperty(d.id)) {
 
@@ -290,7 +354,7 @@ define(function(require) {
         function labelNode(d) {
             var label = (d.hasOwnProperty('label')) ? d.label : d.id;
             if(label.length > 20)
-                label = label.slice(0, 7) + '...';
+                label = label.slice(0, 17) + '...';
             if(d.hasOwnProperty('labelPrefix'))
                 label = d.labelPrefix + label;
             nodeLabels[d.id].text(label);
@@ -303,35 +367,65 @@ define(function(require) {
             }
         }
 
+
+        /** Add node Icon functions */
         function addNodeIcon(d) {
             if(!nodeIcons.hasOwnProperty(d.id) || nodeIcons[d.id] === null){
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
 
                 nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
+                    .attr("class", "nodeIcons")
                     .attr("transform", "scale(" + scale * 0.1 + ")")
                     .attr("d", logos(d.icon || d.type))
-                    .attr("fill", nodeColor(d))
+                    .attr("fill", nodeColor(d));
             }
         }
 
+        /** Add node Icon functions */
         function addLinkIcon(d) {
-            links[d.id].icon = icons.append("g")
-                .attr("pointer-events", "none");
-            links[d.id].icon.attr("transform", "translate(" +
-                (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
-                (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
 
-            links[d.id].icon.append("path")
-                .attr("transform", "scale(0.05)")
-                .attr("d", logos('info'))
-                .attr("fill", 'red');
+                links[d.id].icon = icons.append("g")
+                    .attr("pointer-events", "none");
+                links[d.id].icon.attr("transform", "translate(" +
+                    (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
+                    (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
+
+                links[d.id].icon.append("path")
+                    .attr("transform", "scale(0.05)")
+                    .attr("d", logos('info'))
+                    .attr("fill", 'red');
         }
 
 
         function updateNodeIcon(d) {
-            nodeIcons[d.id]
-            .attr("transform", "translate(" + (d.x-20) + "," + (d.y-20) + ")")
+            var iconInfo = nodeIcons[d.id].node().getBBox();
+            nodeIcons[d.id].attr("transform", "translate(" + (d.x - (iconInfo.width / 2)) + ", " + (d.y - (iconInfo.width / 2) - 4) + ")");
+        }
+
+
+
+
+        /** Set up a group of context menu functions. */
+        function svgMenu() {
+            $.contextMenu({
+                selector: container, 
+                callback: function(key, options, event) {
+                    if(key == 'addNode') {
+                        i2g.addNodes({
+                            label: 'New node',
+                            type: 'question',
+                            fx: event.pageX,
+                            fy: event.pageY,
+                            value: 0,
+                            datalink: false
+                        }).update();
+                    }
+                },
+                items: {
+                    addNode: {name: "Add node", icon: "fa-plus-square"}
+                }
+            });
         }
 
         function nodeMenu() {
@@ -406,6 +500,7 @@ define(function(require) {
         //End of Private Functions
         //=====================================================================
 
+        svgMenu();
         nodeMenu();
         linkMenu();
 
@@ -413,6 +508,8 @@ define(function(require) {
         //=====================================================================
         // Public Functions
         //=====================================================================
+
+        /** This is a function for adding a new node. */
         i2g.addNodes = function(newNodes) {
             var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
             newNodes.forEach(function(newNode){
@@ -424,17 +521,18 @@ define(function(require) {
                 newNode.tag = newNode.label;
                 newNode.x = pos[0];
                 newNode.y = pos[1];
-                if(graphName!==null)
+                if(graphName !== null)
                     newNode.id = graphName + newNode.id;
                 nodeHash[newNode.id] = newNode;
 
                 addNodeIcon(newNode);
                 addNodeLabel(newNode);
 
-            })
+            });
             return i2g;
         }
 
+        /** This is a function for adding a new link. */
         i2g.addLinks = function(newLinks){
             var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
             newLinks.forEach(function(li){
@@ -455,7 +553,7 @@ define(function(require) {
             return i2g;
         };
 
-
+        /** This is a function for modifying a node. */
         i2g.modifyNode = function(d, props) {
             var theNode = (typeof d == 'object') ? d : nodeHash[d];
 
@@ -468,6 +566,7 @@ define(function(require) {
             }
         }
 
+        /** This is a sub function for removing a node. */
         function removeNode(nodeId) {
             nodeIcons[nodeId]._icon.remove();
             nodeIcons[nodeId].remove();
@@ -480,12 +579,14 @@ define(function(require) {
             })
         }
 
+        /** This is a sub function for removing a link. */
         function removeLink(linkId) {
             var removedLink = links.splice(linkId,1)[0];
             if(removeLink.hasOwnProperty('icon'))
             removedLink.icon.remove();
         }
 
+        /** This is a function for removing a list of nodes. */
         i2g.removeNodes = function(query) {
             var nodeIds,
                 query = query ||  {};

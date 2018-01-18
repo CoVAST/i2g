@@ -44,6 +44,6 @@ define(function(){
     };
 
     return function(type) {
-        return logos.hasOwnProperty(type) ? icons[type] : icons['unknown'];
+        return icons.hasOwnProperty(type) ? icons[type] : icons['unknown'];
     }
 })
