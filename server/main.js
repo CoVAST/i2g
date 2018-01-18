@@ -15,6 +15,7 @@ console.log("initializing server ");
 app.use(express.static('ui'));
 app.use("/data", express.static('data'));
 app.use("/npm", express.static('node_modules'));
+app.use("/i2g", express.static('i2g'));
 
 // ivastack libs
 var srcDir = {
@@ -158,7 +159,7 @@ io.on('connection', function (socket) {
         }
     });
 
-//belongTo ancestor to purge not ancestor branches  
+//belongTo ancestor to purge not ancestor branches
 //Merge: provide last node needed
 
     socket.on('pullRequest', function(node){

@@ -13,8 +13,7 @@ define(function(require) {
             onselect = options.onselect || function() {},
             graphId = options.graphId || 'igraph-svg',
             graphName = options.graphName || '',
-            scale = options.scale || 1,
-            colorScheme = options.colorScheme;
+            scale = options.scale || 1;
 
         var i2g = {},
             nodes = graph.nodes,
@@ -46,12 +45,12 @@ define(function(require) {
         var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
 
         var nodeTypeColor = {
-            location: colorScheme.area,
-            people: colorScheme.people,
-            time: colorScheme.time,
-            date: colorScheme.time,
-            day: colorScheme.time,
-            datetime: colorScheme.time
+            location: 'steelblue',
+            people: 'green',
+            time:  'orange',
+            date: 'orange',
+            day: 'orange',
+            datetime: 'orange'
         }
 
         var nodeColor = function(d) {
@@ -79,8 +78,7 @@ define(function(require) {
             // .force("x", d3.forceX())
             // .force("y", d3.forceY())
             // .alphaTarget(0.3)
-            .stop()
-            ;
+            .stop();
 
         var g = svg.append("g"),
             link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
@@ -318,17 +316,16 @@ define(function(require) {
         }
 
         function addLinkIcon(d) {
+            links[d.id].icon = icons.append("g")
+                .attr("pointer-events", "none");
+            links[d.id].icon.attr("transform", "translate(" +
+                (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
+                (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
 
-                links[d.id].icon = icons.append("g")
-                    .attr("pointer-events", "none");
-                links[d.id].icon.attr("transform", "translate(" +
-                    (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
-                    (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
-
-                links[d.id].icon.append("path")
-                    .attr("transform", "scale(0.05)")
-                    .attr("d", logos('info'))
-                    .attr("fill", 'red');
+            links[d.id].icon.append("path")
+                .attr("transform", "scale(0.05)")
+                .attr("d", logos('info'))
+                .attr("fill", 'red');
         }
 
 
