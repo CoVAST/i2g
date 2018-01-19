@@ -410,20 +410,44 @@ define(function(require) {
         function svgMenu() {
             $.contextMenu({
                 selector: container, 
-                callback: function(key, options, event) {
-                    if(key == 'addNode') {
-                        i2g.addNodes({
-                            label: 'New node',
-                            type: 'question',
-                            fx: event.pageX,
-                            fy: event.pageY,
-                            value: 0,
-                            datalink: false
-                        }).update();
+                callback: function(key, options) {
+                    var newNodeType;
+                    var newNodePosition = $(".context-menu-root").first().position();
+                    if(key == 'location') {
+                        newNodeType = 'location';
+                    } else if(key == 'people') {
+                        newNodeType = 'people';
+                    } else if(key == 'time') {
+                        newNodeType = 'time';
                     }
+                    i2g.addNodes({
+                        label: 'New ' + key,
+                        type: newNodeType,
+                        fx: newNodePosition.left,
+                        fy: newNodePosition.top,
+                        value: 0,
+                        datalink: false
+                    }).update();
                 },
                 items: {
-                    addNode: {name: "Add node", icon: "fa-plus-square"}
+                    addNode: {
+                        name: "Add node",
+                        icon: "fa-plus-square",
+                        items: {
+                            location: {
+                                name: "Location",
+                                icon: "fa-map-marker"
+                            },
+                            people: {
+                                name: "People",
+                                icon: "fa-user"
+                            },
+                            time: {
+                                name: "Time",
+                                icon: "fa-clock-o"
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -576,7 +600,7 @@ define(function(require) {
             delete nodeHash[nodeId];
             nodes = nodes.filter(function(d){
                 d.id != nodeId;
-            })
+            });
         }
 
         /** This is a sub function for removing a link. */
@@ -664,7 +688,7 @@ define(function(require) {
             return i2g;
         }
 
-        i2g.remake = function(graph) {
+        i2g.remake = function() {
             // nodes = graph.nodes;
             // nodeHash = {};
 
