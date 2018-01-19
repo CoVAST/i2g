@@ -474,7 +474,7 @@ function geoLocation(options) {
         fitBounds: R.bind(map.fitBounds, map),
         flyTo: R.bind(map.flyTo, map),
         exportAsImage: exportAsImage,
-        once: R.bind(map.once, map)
+        once: R.bind(map.once, map),
         removeImportantGeos: removeImportantGeos,
         addImportantGeos: addImportantGeos,
         getZoom: () => map.getZoom(),
