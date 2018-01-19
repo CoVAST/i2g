@@ -1,6 +1,6 @@
-define(function(require){
+if(typeof define === 'function') define(function(require){ return geoLocation; });
 
-return function geoLocation(options) {
+function geoLocation(options) {
     var options = options || {};
     var container = options.container || 'map-body';
     var mapRenderer = L.canvas();
@@ -485,4 +485,3 @@ return function geoLocation(options) {
     }
 }
 
-})
