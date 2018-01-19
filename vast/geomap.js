@@ -2,6 +2,7 @@ define(function(require){
 
 return function geoLocation(options) {
     var options = options || {};
+    var container = options.container || 'map-body';
     var mapRenderer = L.canvas();
     var onAdd = options.onadd || function() {console.log("spatiotemporal onadd callback hasn't been defined yet.")};
     var colorScheme = options.colorScheme;
@@ -249,7 +250,7 @@ return function geoLocation(options) {
         // isAddingImportantRect = false;
     }
     // set map center at SF
-    var map = L.map('map-body', {
+    var map = L.map(container, {
         center: options.mapCenter || [8.7832, -124.5085],
         zoom: options.mapZoom || 12,
         render: L.canvas(),
@@ -392,14 +393,12 @@ return function geoLocation(options) {
         addImportantGeos(geo);
     }
 
-<<<<<<< HEAD
     function exportAsImage(callback) {
         leafletImage(map, function(err, canvas) {
             callback(canvas.toDataURL());
         })
     }
 
-=======
     function fillAreasLeafletByData(areas){
         if(areas.length === 0){
             return;
@@ -461,7 +460,6 @@ return function geoLocation(options) {
         }
         return areas;
     }
->>>>>>> 961de66b3cb6c22bc0b491b463d3c8fd0f23248f
     return {
         relatedLocations: relatedLocations,
         primaryLocations: primaryLocations,
@@ -472,14 +470,11 @@ return function geoLocation(options) {
         highlightLocations: highlightLocations,
         highlightPaths: highlightPaths,
         flyToBounds: R.bind(map.flyToBounds, map),
-<<<<<<< HEAD
         setView: R.bind(map.setView, map),
         fitBounds: R.bind(map.fitBounds, map),
         flyTo: R.bind(map.flyTo, map),
         exportAsImage: exportAsImage,
         once: R.bind(map.once, map)
-=======
-        flyTo: R.bind(map.flyTo, map),
         removeImportantGeos: removeImportantGeos,
         addImportantGeos: addImportantGeos,
         getZoom: () => map.getZoom(),
@@ -487,7 +482,6 @@ return function geoLocation(options) {
         markGeo: markGeo,
         cancelMarkGeo: cancelMarkGeo,
         fillAreasLeafletByData: fillAreasLeafletByData,
->>>>>>> 961de66b3cb6c22bc0b491b463d3c8fd0f23248f
     }
 }
 
