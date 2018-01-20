@@ -1,10 +1,14 @@
-if(typeof define === 'function') define(function(require){ return geoLocation; });
+if (typeof define === 'function') define(function(require) {
+    return geoLocation;
+});
 
 function geoLocation(options) {
     var options = options || {};
     var container = options.container || 'map-body';
     var mapRenderer = L.canvas();
-    var onAdd = options.onadd || function() {console.log("spatiotemporal onadd callback hasn't been defined yet.")};
+    var onAdd = options.onadd || function() {
+        console.log("spatiotemporal onadd callback hasn't been defined yet.")
+    };
     var colorScheme = options.colorScheme;
     var relatedLocations = new L.LayerGroup();
     var primaryLocations = new L.LayerGroup();
@@ -14,18 +18,27 @@ function geoLocation(options) {
     var circleRadius = 5;
 
     var mbAttr = 'Map data &copy; ' +
-            '<a href="http://openstreetmap.org">OpenStreetMap</a> ' +
-            '© <a href="http://mapbox.com">Mapbox</a>',
-        mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?acc'
-              + 'ess_token=pk.eyJ1IjoianBsaTEyMjEiLCJhIjoiY2oyM3B4NTcxMDA'
-              + 'wbTMzc2M5eGltbzY0MyJ9.HD8mo8i8kawQNmrbZbYo-g';
+        '<a href="http://openstreetmap.org">OpenStreetMap</a> ' +
+        '© <a href="http://mapbox.com">Mapbox</a>',
+        mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?acc' +
+        'ess_token=pk.eyJ1IjoianBsaTEyMjEiLCJhIjoiY2oyM3B4NTcxMDA' +
+        'wbTMzc2M5eGltbzY0MyJ9.HD8mo8i8kawQNmrbZbYo-g';
 
-    var grayscale  =
-            L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
+    var grayscale =
+        L.tileLayer(mbUrl, {
+            id: 'mapbox.light',
+            attribution: mbAttr
+        }),
         streets =
-            L.tileLayer(
-                mbUrl, {id: 'mapbox.streets',   attribution: mbAttr}),
-        baseLayers = {"Grayscale": grayscale, "Streets": streets},
+        L.tileLayer(
+            mbUrl, {
+                id: 'mapbox.streets',
+                attribution: mbAttr
+            }),
+        baseLayers = {
+            "Grayscale": grayscale,
+            "Streets": streets
+        },
         overlays = {
             "Primary Locations": primaryLocations,
             "Related People": relatedLocations,
@@ -41,7 +54,7 @@ function geoLocation(options) {
         var index = importantGeos.indexOf(geo);
         if (index > -1) {
             importantGeos.splice(index, 1);
-            if(geo.leaflet === null){
+            if (geo.leaflet === null) {
                 fillAreasLeafletByData([geo]);
             }
             importantLocations.removeLayer(geo.leaflet);
@@ -49,23 +62,22 @@ function geoLocation(options) {
     }
 
     var removeImportantGeos = (query) => {
-        if(query.all){
+        if (query.all) {
             // console.log(importantGeos);
-            while(importantGeos.length > 0){
+            while (importantGeos.length > 0) {
                 removeImportantGeo(importantGeos[0]);
             }
             return;
-        }else if(query.visData){
-            for(var i = 0; i < importantGeos.length; i++){
-                if(importantGeos[i].name === query.visData.area.name){
+        } else if (query.visData) {
+            for (var i = 0; i < importantGeos.length; i++) {
+                if (importantGeos[i].name === query.visData.area.name) {
                     removeImportantGeo(importantGeos[i]);
                     return;
                 }
             }
-        }
-        else{
-            query = Array.isArray(query)? query : [query];
-            query.forEach(function(geo){
+        } else {
+            query = Array.isArray(query) ? query : [query];
+            query.forEach(function(geo) {
                 removeImportantGeo(geo);
             });
         }
@@ -75,12 +87,12 @@ function geoLocation(options) {
     let resetCursor = () => map._container.style.cursor = '';
     let prepareAddImportantLocation = (e) => {
         setCursorToCrosshair();
-        map.on('click',  addImportantLocation);
+        map.on('click', addImportantLocation);
     }
 
     var addImportantGeos = (geos) => {
-        geos = Array.isArray(geos)? geos : [geos];
-        geos.forEach(function(geo){
+        geos = Array.isArray(geos) ? geos : [geos];
+        geos.forEach(function(geo) {
             importantGeos.push(geo);
             geo.leaflet.addTo(importantLocations);
         })
@@ -264,8 +276,7 @@ function geoLocation(options) {
         ],
         contextmenu: true,
         contextmenuWidth: 140,
-        contextmenuItems: [
-            {
+        contextmenuItems: [{
                 text: 'Add location',
                 callback: prepareAddImportantLocation
             },
@@ -296,18 +307,23 @@ function geoLocation(options) {
         var c = params.color || 'steelblue',
             a = params.alpah || 0.5,
             r = params.size || circleRadius,
-            vmap = params.vmap || {lat: 'lat', long: 'long'},
+            vmap = params.vmap || {
+                lat: 'lat',
+                long: 'long'
+            },
             colorMap = params.colorMap;
 
-        var sizeScale = function() { return r;}
+        var sizeScale = function() {
+            return r;
+        }
 
-        if(vmap.size) {
-            sizeScale = d3.scaleLinear().range([2, 20]).domain(d3.extent(locs, d=>parseFloat(d[vmap.size])));
+        if (vmap.size) {
+            sizeScale = d3.scaleLinear().range([2, 20]).domain(d3.extent(locs, d => parseFloat(d[vmap.size])));
 
         }
 
-        return locs.map(function(loc){
-            if(vmap.color && typeof(colorMap) == 'function') {
+        return locs.map(function(loc) {
+            if (vmap.color && typeof(colorMap) == 'function') {
                 c = colorMap(loc[vmap.color]);
             }
             return L.circleMarker([loc[vmap.lat], loc[vmap.long]], {
@@ -318,13 +334,13 @@ function geoLocation(options) {
                 stroke: 0,
                 radius: sizeScale(parseFloat(loc[vmap.size])),
                 // render: L.canvas(),
-                renderer:  mapRenderer
+                renderer: mapRenderer
             }).addTo(primaryLocations);
         })
     }
 
     function removeLocations(locs) {
-        locs.forEach(function(loc){
+        locs.forEach(function(loc) {
             primaryLocations.removeLayer(loc);
         })
     }
@@ -354,7 +370,9 @@ function geoLocation(options) {
         let nNewCircles = locObjs.length - highlightLocationsLayer.getLayers().length;
         if (nNewCircles > 0) {
             for (let i = 0; i < nNewCircles; ++i) {
-                L.circleMarker([0, 0], { radius: circleRadius }).addTo(highlightLocationsLayer);
+                L.circleMarker([0, 0], {
+                    radius: circleRadius
+                }).addTo(highlightLocationsLayer);
             }
         }
         let layers = highlightLocationsLayer.getLayers();
@@ -364,7 +382,10 @@ function geoLocation(options) {
             layers[i].setStyle(locObjs[i].options);
         }
         for (let i = locObjs.length; i < layers.length; ++i) {
-            layers[i].setStyle({ opacity: 0, fillOpacity: 0 });
+            layers[i].setStyle({
+                opacity: 0,
+                fillOpacity: 0
+            });
         }
 
         // highlightLocationsLayer.clearLayers();
@@ -376,17 +397,19 @@ function geoLocation(options) {
         //     return L.circleMarker(loc.latlng, options).addTo(highlightLocationsLayer)
         // }, locObjs);
     }
-    function markGeo(geo){
-        if(geo.type == 'point'){
+
+    function markGeo(geo) {
+        if (geo.type == 'point') {
             geo.leaflet.bindPopup("<b>" + geo.name + "</b><br>" + geo.reason + "</br>").openPopup();
-        }else{
+        } else {
             removeImportantGeos(geo);
             geo.leaflet.options.color = '#FE2E2E';
             geo.leaflet.options.fillColor = '#FE642E';
             addImportantGeos(geo);
         }
     }
-    function cancelMarkGeo(geo){
+
+    function cancelMarkGeo(geo) {
         removeImportantGeos(geo);
         geo.leaflet.options.color = colorScheme.area;
         geo.leaflet.options.fillColor = colorScheme.area;
@@ -399,12 +422,12 @@ function geoLocation(options) {
         })
     }
 
-    function fillAreasLeafletByData(areas){
-        if(areas.length === 0){
+    function fillAreasLeafletByData(areas) {
+        if (areas.length === 0) {
             return;
         }
-        for(var i = 0; i < areas.length; i++){
-            if(areas[i].type === 'rect'){
+        for (var i = 0; i < areas.length; i++) {
+            if (areas[i].type === 'rect') {
                 areas[i].leaflet = L.rectangle(areas[i].coordinates, {
                     color: importantGeoColor,
                     opacity: 0.8,
@@ -417,20 +440,20 @@ function geoLocation(options) {
                         index: 0
                     }]
                 })
-            }else if (areas[i].type === 'point'){
+            } else if (areas[i].type === 'point') {
                 areas[i].leaflet = L.marker(areas[i].coordinates, {
-                        color: 'none',
-                        fillColor: importantGeoColor,
-                        // weight: 1,
-                        fillOpacity: 0.5,
-                        radius: 10,
-                        contextmenu: true,
-                        contextmenuItems: [{
-                            separator: true,
-                            index: 0
-                        }]
-                    })
-            }else if(areas[i].type === 'polyline'){
+                    color: 'none',
+                    fillColor: importantGeoColor,
+                    // weight: 1,
+                    fillOpacity: 0.5,
+                    radius: 10,
+                    contextmenu: true,
+                    contextmenuItems: [{
+                        separator: true,
+                        index: 0
+                    }]
+                })
+            } else if (areas[i].type === 'polyline') {
                 areas[i].leaflet = L.polyline(areas[i].coordinates, {
                     color: importantGeoColor,
                     opacity: 0.8,
@@ -441,7 +464,7 @@ function geoLocation(options) {
                         index: 0
                     }]
                 })
-            }else if(areas[i].type === 'polygon'){
+            } else if (areas[i].type === 'polygon') {
                 areas[i].leaflet = L.polygon(areas[i].coordinates, {
                     color: importantGeoColor,
                     opacity: 0.8,
@@ -454,7 +477,7 @@ function geoLocation(options) {
                         index: 0
                     }]
                 })
-            }else{
+            } else {
                 console.log("Undefined type");
             }
         }
@@ -464,17 +487,17 @@ function geoLocation(options) {
         relatedLocations: relatedLocations,
         primaryLocations: primaryLocations,
         importantLocations: importantLocations,
-        onadd: function(cb) { onAdd = cb;},
+        onadd: function(cb) {onAdd = cb;},
         addLocations: addLocations,
         removeLocations: removeLocations,
         highlightLocations: highlightLocations,
         highlightPaths: highlightPaths,
-        flyToBounds: R.bind(map.flyToBounds, map),
-        setView: R.bind(map.setView, map),
-        fitBounds: R.bind(map.fitBounds, map),
-        flyTo: R.bind(map.flyTo, map),
+        flyToBounds: map.flyToBounds,
+        setView: map.setView,
+        fitBounds: map.fitBounds,
+        flyTo: map.flyTo,
         exportAsImage: exportAsImage,
-        once: R.bind(map.once, map),
+        once: map.once,
         removeImportantGeos: removeImportantGeos,
         addImportantGeos: addImportantGeos,
         getZoom: () => map.getZoom(),
@@ -484,4 +507,3 @@ function geoLocation(options) {
         fillAreasLeafletByData: fillAreasLeafletByData,
     }
 }
-
