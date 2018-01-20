@@ -1,5 +1,6 @@
 define(function(require) {
-    var logos = require('./icons'); 
+    var logos = require('./icons'),
+        download = require('./downloadFunc'); 
 
     return function(arg) {
         'use strict';
@@ -408,26 +409,104 @@ define(function(require) {
 
         /** Set up a group of context menu functions. */
         function svgMenu() {
+            $.contextMenu.types.label = function(item, opt, root) {
+                // this === item.$node
+                $('<div>Please input a file<div>\
+                    <input type="file" id="myFile" multiple size="50">\
+                    <div id="demo"></div>')
+                    .appendTo(this)
+                    .on('change', function() {
+                        var x = document.getElementById("myFile");
+                        var txt = "";
+                        if ('files' in x) {
+                            if (x.files.length == 0) {
+                                txt = "Select one or more files.";
+                            } else {
+                                for (var i = 0; i < x.files.length; i++) {
+                                    txt += "<br><strong>" + (i+1) + ". file</strong><br>";
+                                    var file = x.files[i];
+                                    if ('name' in file) {
+                                        txt += "name: " + file.name + "<br>";
+                                    }
+                                    if ('size' in file) {
+                                        txt += "size: " + file.size + " bytes <br>";
+                                    }
+                                }
+                            }
+                        } 
+                        else {
+                            if (x.value == "") {
+                                txt += "Select one or more files.";
+                            } else {
+                                txt += "The files property is not supported by your browser!";
+                                txt  += "<br>The path of the selected file: " + x.value; // If the browser does not support the files property, it will return the path of the selected file instead. 
+                            }
+                        }
+                        document.getElementById("demo").innerHTML = txt;
+                    });
+            };
+
             $.contextMenu({
                 selector: container, 
                 callback: function(key, options) {
                     var newNodeType;
                     var newNodePosition = $(".context-menu-root").first().position();
-                    if(key == 'location') {
-                        newNodeType = 'location';
-                    } else if(key == 'people') {
-                        newNodeType = 'people';
-                    } else if(key == 'time') {
-                        newNodeType = 'time';
+                    if(key == 'uploadFile') {
+                        var x = document.getElementById("myFile").files[0];
+                        var reader = new FileReader();
+                        reader.onload = function(){
+                            var graphData = JSON.parse(reader.result);
+                            nodes.forEach((d) => {
+                                d3.select(d).remove();
+                                removeNode(d.id);
+                                restart();
+                            });
+                           	nodeCounter = 0;
+                            var uploadNodes = graphData.nodes;
+                            uploadNodes.forEach((d) => {
+                                i2g.addNodes({
+						            label: d.label,
+						            type: d.type,
+						            fx: d.fx,
+						            fy: d.fy,
+						            value: d.value,
+						            datalink: d.datalink
+						        }).update();
+                            });
+                            var uploadLinks = graphData.links;
+                            uploadLinks.forEach((d) => {
+                                i2g.addLinks({
+						            source: d.source.id,
+						            target: d.target.id,
+						            value: d.value
+						        }).update();
+                            });
+                        };
+                        reader.readAsText(x);
+                    } else if(key == 'saveFile') {
+                        var graphData = ({
+                            nodes: nodes,
+                            links: links
+                        });
+                        var fileName = options.inputs["downloadFileName"].$input.val();
+                        download(graphData, fileName);
+                    } else {
+                        if(key == 'location') {
+                            newNodeType = 'location';
+                        } else if(key == 'people') {
+                            newNodeType = 'people';
+                        } else if(key == 'time') {
+                            newNodeType = 'time';
+                        }
+                        i2g.addNodes({
+                            label: 'New ' + key,
+                            type: newNodeType,
+                            fx: newNodePosition.left,
+                            fy: newNodePosition.top,
+                            value: 0,
+                            datalink: false
+                        }).update();
                     }
-                    i2g.addNodes({
-                        label: 'New ' + key,
-                        type: newNodeType,
-                        fx: newNodePosition.left,
-                        fy: newNodePosition.top,
-                        value: 0,
-                        datalink: false
-                    }).update();
                 },
                 items: {
                     addNode: {
@@ -447,7 +526,39 @@ define(function(require) {
                                 icon: "fa-clock-o"
                             }
                         }
-                    }
+                    },
+                    importGraph: {
+                        name: "Import graph",
+                        icon: "fa-upload",
+                        items: {
+                            uploadFileName: {
+                                name: "Please input a file",
+                                type: 'label',
+                                callback: function(){ return false; }
+                            },
+                            sep1: "---------",
+                            uploadFile: {
+                                name: "upload file",
+                                icon: "fa-folder-open"
+                            }
+                        }
+                    },
+                    exportGraph: {
+                        name: "Export graph",
+                        icon: "fa-download",
+                        items: {
+                            downloadFileName: {
+                                name: "Please input the file name",
+                                type: 'text', 
+                                value: ""
+                            },
+                            sep1: "---------",
+                            saveFile: {
+                                name: "Save file",
+                                icon: "fa-floppy-o"
+                            }
+                        }
+                    },
                 }
             });
         }
@@ -460,10 +571,7 @@ define(function(require) {
                         thisNodeId = thisNode.__data__.id;
                     if(key == 'removeNode') {
                         d3.select(thisNode).remove();
-                        nodeLabels[thisNodeId].remove();
-                        nodeIcons[thisNodeId].remove();
-                        delete nodeLabels[thisNodeId];
-                        delete nodeHash[thisNodeId];
+                        removeNode(thisNodeId);
                         restart();
                     } else if(key == 'annotate') {
                         d3.select(thisNode).attr('stroke', 'orange');
@@ -572,8 +680,7 @@ define(function(require) {
 
                 if(!li.hasOwnProperty('datalink')) li.datalink = false;
                 links.push(li);
-
-            })
+            });
             return i2g;
         };
 
@@ -724,7 +831,7 @@ define(function(require) {
             return i2g.getNodes(query)[0];
         }
 
-        i2g.getLinks = function() { return links;};
+        i2g.getLinks = function() { return links; };
 
         return i2g;
     }
