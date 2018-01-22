@@ -34,7 +34,23 @@ define(function(require) {
         svg.attr('id', graphId)
         .attr("width", width)
         .attr("height", height)
-        .style("border", "solid 3px black");
+        .style("border", "solid 3px black")
+        .on('click', function(d){   
+            // modify the templink
+            if(linkSource !== null) {
+                //reset linkSource
+                linkSource = null;
+                
+                tempLink
+                    .attr('stroke-width', 0)
+                    .attr('x1', 0)
+                    .attr('y1', 0)
+                    .attr('x2', 0)
+                    .attr('y2', 0);
+
+                restart(); // call restart again to update the graph
+            }
+        });
 
         // set up the direction arrow
         svg.append("svg:defs").append("svg:marker")
