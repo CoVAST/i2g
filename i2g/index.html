@@ -12,37 +12,7 @@
     <script src="http://d3js.org/d3.v4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-selection/1.1.0/d3-selection.min.js"></script>
     <script src="./node_modules/d3-extended/build/d3-extended.min.js"></script>
-    <style>
-    body {
-        overflow: hidden;
-        background-color: #fff;
-    }
-
-    img {
-      max-width: 100% !important;
-    }
-
-    a.active {
-        border-bottom: 4px solid teal;
-    }
-
-    .nodeLabels {
-        font-size: 1.5em;
-    }
-    /*.selected.item  {
-        border: 3px solid teal;
-    }*/
-
-    .selected.item > div, .selected.item > i {
-        color: #000;
-    }
-    
-    .links line {
-      stroke: #999;
-      stroke-opacity: 0.6;
-    }
-
-    </style>
+    <link rel="stylesheet" href="./style/style.css"/>
     <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' /> 
     <link rel="stylesheet" href="/npm/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="/npm/leaflet-contextmenu/dist/leaflet.contextmenu.css"/>
@@ -63,6 +33,7 @@
   </head>
   <body>
     <div id = "ontoGraph"></div>
+    <div id = "nodePadModal" class = "modal"></div>
     <script src="./node_modules/requirejs/require.js"></script>
     <script>
         require(["ontoGraph"], function(ontoGraph) {

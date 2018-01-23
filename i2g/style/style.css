@@ -1,0 +1,192 @@
+body {
+    overflow: hidden;
+    background-color: #fff;
+}
+
+img {
+  max-width: 100% !important;
+}
+
+/* remove focus for all the tags */
+:focus {
+    outline: 0;
+}
+
+a.active {
+    border-bottom: 4px solid teal;
+}
+
+.nodeLabels {
+    font-size: 1.5em;
+}
+/*.selected.item  {
+    border: 3px solid teal;
+}*/
+
+.selected.item > div, .selected.item > i {
+    color: #000;
+}
+
+.links line {
+    stroke: #999;
+    stroke-opacity: 0.6;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 3; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.2); /* Black w/ opacity */
+}
+
+/*Login*/
+.nodePadModal-container {
+    padding: 20px;
+    background-color: #F7F7F7;
+    border-radius: 2px;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    font-family: inherit;
+}
+
+.nodePadModal {
+    text-align: center;
+    font-size: 14px;
+    font-family: 'Arial', sans-serif;
+    font-weight: 700;
+    height: 36px;
+    padding: 0 8px;
+/* border-radius: 3px; */
+/* -webkit-user-select: none;
+  user-select: none; */
+}
+
+.nodePadModal-container h1 {
+    text-align: center;
+    font-size: 1.5em;
+    font-family: inherit;
+}
+
+.nodePadModal-container button[type = button] {
+    width: 150px;
+    height: 35px;
+    display: block;
+    margin: auto;
+    font-size: 1.3em;
+    border-radius: 5px !important;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.nodePadModal-container input[type = text], input[type = password] {
+    height: 44px;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: 10px;
+    -webkit-appearance: none;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-top: 1px solid #c0c0c0;
+    /* border-radius: 2px; */
+    padding: 0 8px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.nodePadDropdown {
+    height: 35px;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.nodePadModal-container input[type=text]:hover, input[type=password]:hover {
+    border: 1px solid #b9b9b9;
+    border-top: 1px solid #a0a0a0;
+    -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+
+/* Button part */
+.btn {
+    font-weight: 350 !important;
+    font-size: 1.1em !important;
+    color: #fff !important;
+}
+
+.btn-success {
+    background-color: #555 !important;
+    border-color: #555 !important;
+}
+
+.btn-success:hover, .btn-success:active, .btn-success:visited {
+    background-color: #111 !important;
+    border-color: #111 !important;
+}
+
+
+
+/*dropdown modal*/
+.dropdownButton {
+    background-color: #555;
+    color: white;
+    font-size: 16px;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    border-width: 0px;
+    cursor: pointer;
+}
+
+.dropdownButton:hover, .dropdownButton:focus {
+    background-color: #111;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    z-index: 4;
+}
+
+.dropdownItem {
+    color: black;
+    padding: 7px 0px;
+    text-align: center;
+    font-size: 1.1em;
+    border-bottom: solid 1.5px #999;
+}
+
+.dropdownItem:hover {
+    background-color: #E09C93;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

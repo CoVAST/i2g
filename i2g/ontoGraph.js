@@ -16,5 +16,14 @@ define(function(require) {
 	        historyList: [],
 	        colorScheme: colorScheme
 	    });
+
+	    igraph.addNodes({
+	    	label: "New Label",
+            type: "people",
+            fx: 600,
+            fy: 300,
+            value: 0,
+            datalink: false
+	    }).update();
     };
 })

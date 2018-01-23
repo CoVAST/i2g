@@ -1,6 +1,7 @@
 define(function(require) {
     var logos = require('./icons'),
-        download = require('./downloadFunc'); 
+        download = require('./downloadFunc'),
+        nodePad = require('./ui/nodePad');
 
     return function(arg) {
         'use strict';
@@ -39,7 +40,7 @@ define(function(require) {
             // modify the templink
             if(linkSource !== null) {
                 //reset linkSource
-                linkSource = null;
+                linkSource = linkTarget = null;
                 
                 tempLink
                     .attr('stroke-width', 0)
@@ -391,12 +392,16 @@ define(function(require) {
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
 
-                nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
-                    .attr("class", "nodeIcons")
-                    .attr("transform", "scale(" + scale * 0.1 + ")")
-                    .attr("d", logos(d.icon || d.type))
-                    .attr("fill", nodeColor(d));
+                drawNodeIcon(d);
             }
+        }
+
+        function drawNodeIcon(d) {
+            nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
+                .attr("class", "nodeIcons")
+                .attr("transform", "scale(" + scale * 0.1 + ")")
+                .attr("d", logos(d.icon || d.type))
+                .attr("fill", nodeColor(d));
         }
 
         /** Add node Icon functions */
@@ -466,7 +471,7 @@ define(function(require) {
                 selector: container, 
                 callback: function(key, options) {
                     var newNodeType;
-                    var newNodePosition = $(".context-menu-root").first().position();
+                    var newNodePosition = $(".context-menu-root:eq(0)").position();
                     if(key == 'uploadFile') {
                         var x = document.getElementById("myFile").files[0];
                         var reader = new FileReader();
@@ -582,30 +587,39 @@ define(function(require) {
         function nodeMenu() {
             $.contextMenu({
                 selector: '.nodeHolder',
-                callback: function(key, options) {
+                callback: function(key, options, event) {
                     var thisNode = this[0],
-                        thisNodeId = thisNode.__data__.id;
+                        thisNodeId = thisNode.__data__.id,
+                        thisNodePosition = $(".context-menu-root:eq(1)").position();
+
+                    console.log(thisNodePosition);
+
                     if(key == 'removeNode') {
                         d3.select(thisNode).remove();
                         removeNode(thisNodeId);
                         restart();
-                    } else if(key == 'annotate') {
+                    } else if(key == 'modifyNode') {
                         d3.select(thisNode).attr('stroke', 'orange');
-                        // console.log(nodeHash[thisNodeId]);
-                        notePanel.setNote({
-                            label: nodeHash[thisNodeId].labelPrefix+nodeHash[thisNodeId].label,
-                            detail: nodeHash[thisNodeId].detail
-                        })
-                        notePanel.show();
-                        notePanel.onsave = function() {
-                            var info = notePanel.getNote();
-                            info.labelPrefix = '';
-                            i2g.modifyNode(thisNodeId, info);
+
+                        var saveChanges = function(newLabelText, newLabelType) {
                             d3.select(thisNode).attr('stroke', 'transparent');
+                            var changes = {
+                                label: newLabelText,
+                                type: newLabelType
+                            }
+                            i2g.modifyNode(thisNodeId, changes);
                         }
-                        notePanel.oncancel = function() {
-                            d3.select(thisNode).attr('stroke', 'transparent');
-                        }
+
+                        nodePad({
+                            container: $("#nodePadModal"),
+                            nodeLabel: nodeLabels[thisNodeId].text(),
+                            nodeType: thisNode.__data__.type,
+                            width: 300,
+                            marginTop: thisNodePosition.top + 10,
+                            marginLeft: thisNodePosition.left + 10,
+                            callback: saveChanges
+                        });
+
                     } else if(key == 'addLink'){
                         linkSource = nodeHash[thisNodeId];
                         linkTarget = null;
@@ -620,7 +634,7 @@ define(function(require) {
                 items: {
                     removeNode: {name: "Remove this node", icon: "fa-times"},
                     addLink: {name: "Add link", icon: "fa-long-arrow-right"},
-                    annotate: {name: "Annotate", icon: "fa-commenting"},
+                    modifyNode: {name: "Modify node", icon: "fa-commenting"},
                 }
             });
         }
@@ -702,6 +716,9 @@ define(function(require) {
 
         /** This is a function for modifying a node. */
         i2g.modifyNode = function(d, props) {
+
+            console.log(props);
+
             var theNode = (typeof d == 'object') ? d : nodeHash[d];
 
             for(var p in props) {
@@ -710,6 +727,11 @@ define(function(require) {
 
             if(props.hasOwnProperty('label')) {
                 labelNode(theNode);
+            }
+
+            if(props.hasOwnProperty('type')) {
+                nodeIcons[theNode.id]._icon.remove();
+                drawNodeIcon(theNode);
             }
         }
 

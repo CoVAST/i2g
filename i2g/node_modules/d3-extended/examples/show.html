@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    body {
+        font-family: Verdana;
+    }
+
+    .test {
+        background-color: #baffc9;
+        display: none;
+    }
+</style>
+
+<body>
+    <h1>Show</h1>
+    <div class="test">Test</div>
+    <button id="button">Show</button>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="../build/d3-extended.js"></script>
+    <script>
+        d3.select('button')
+            .on('click', function() {
+                d3.select('.test').show();
+            });
+    </script>
+</body>
