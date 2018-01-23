@@ -15,6 +15,25 @@ define(function(require) {
             links = data.links,
             nodeHash = {}; // hash table for storing nodes based on node names
 
+        /** This is a sub function for removing a node. */
+        function removeNode(nodeId) {
+            nodeIcons[nodeId]._icon.remove();
+            nodeIcons[nodeId].remove();
+            nodeLabels[nodeId].remove();
+            delete nodeIcons[nodeId];
+            delete nodeLabels[nodeId];
+            delete nodeHash[nodeId];
+            nodes = nodes.filter(function(d){
+                d.id != nodeId;
+            });
+        }
+
+        /** This is a sub function for removing a link. */
+        function removeLink(linkId) {
+            var removedLink = links.splice(linkId,1)[0];
+            if(removeLink.hasOwnProperty('icon'))
+            removedLink.icon.remove();
+        }
 
         /** This is a function for adding a new node. */
         model.addNodes = function(newNodes) {
@@ -73,25 +92,6 @@ define(function(require) {
             }
         }
 
-        /** This is a sub function for removing a node. */
-        function removeNode(nodeId) {
-            nodeIcons[nodeId]._icon.remove();
-            nodeIcons[nodeId].remove();
-            nodeLabels[nodeId].remove();
-            delete nodeIcons[nodeId];
-            delete nodeLabels[nodeId];
-            delete nodeHash[nodeId];
-            nodes = nodes.filter(function(d){
-                d.id != nodeId;
-            });
-        }
-
-        /** This is a sub function for removing a link. */
-        function removeLink(linkId) {
-            var removedLink = links.splice(linkId,1)[0];
-            if(removeLink.hasOwnProperty('icon'))
-            removedLink.icon.remove();
-        }
 
         /** This is a function for removing a list of nodes. */
         model.removeNodes = function(query) {
@@ -152,7 +152,7 @@ define(function(require) {
             return model;
         }
 
-        model.update = function(subgraph) {
+        model.appendGraph = function(subgraph) {
             var subgraph = subgraph || {nodes: null, links: null},
                 newNodes = subgraph.nodes || [],
                 newLinks = subgraph.links || [];
@@ -164,55 +164,9 @@ define(function(require) {
             return model;
         };
 
-        model.append = function(subgraph) {
-            model.addNodes(subgraph.nodes);
-            model.addLinks(subgraph.links);
-            simulate();
-            return model;
-        }
-
-        model.remake = function() {
-            // nodes = graph.nodes;
-            // nodeHash = {};
-
-            graph.nodes.forEach(function(n){
-                n.fx = null;
-                n.fy = null;
-            })
-            model.addNodes(graph.nodes);
-            simulate();
-
-            var newLinks = graph.links.map(function(sl){
-                return {
-                    source: nodeHash[sl.source.id],
-                    target: nodeHash[sl.target.id],
-                    value: sl.value,
-                };
-            });
-            model.addLinks(newLinks);
-
-            simulate();
-            return model;
-        }
-
-        model.getNodes = function(query) {
-            if(typeof query === 'undefined')
-                return nodes;
-            else {
-                return [];
-            }
-        };
-
-        model.findNode = function(query) {
-            return model.getNodes(query)[0];
-        }
-
-        model.getLinks = function() { return links; };
-
         model.nodeHash = nodeHash;
         model.nodes = nodes;
         model.links = links;
-
 
         return model;
     }
