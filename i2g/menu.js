@@ -50,7 +50,7 @@ define(function(require) {
                         var reader = new FileReader();
                         reader.onload = function(){
                             var graphData = JSON.parse(reader.result);
-                            nodes.forEach((d) => {
+                            i2g.nodes.forEach((d) => {
                                 d3.select(d).remove();
                                 removeNode(d.id);
                                 restart();
