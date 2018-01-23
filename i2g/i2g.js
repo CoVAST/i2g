@@ -1,6 +1,5 @@
 define(function(require) {
     var logos = require('./icons'),
-        download = require('./downloadFunc'),
         dataModel = require('./model'),
         nodePad = require('./ui/nodePad'),
         menu = require('./menu');
@@ -29,7 +28,19 @@ define(function(require) {
                 addNodeIcon(newNode);
                 addNodeLabel(newNode);
             },
-            onNodeModified : labelNode
+            nodeNodeRemoved: function(nodeId) {
+                nodeIcons[nodeId]._icon.remove();
+                nodeIcons[nodeId].remove();
+                nodeLabels[nodeId].remove();
+                delete nodeIcons[nodeId];
+                delete nodeLabels[nodeId];
+                delete nodeHash[nodeId];
+            },
+            onNodeModified : function(theNode) {
+                labelNode(theNode);
+                drawNodeIcon(theNode);
+            }
+
         });
 
         // initialize the graph as a object and initialize the graph nodes and links
@@ -386,13 +397,13 @@ define(function(require) {
             if(!nodeIcons.hasOwnProperty(d.id) || nodeIcons[d.id] === null){
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
-
+                nodeIcons[d.id]._icon = nodeIcons[d.id].append("path");
                 drawNodeIcon(d);
             }
         }
 
         function drawNodeIcon(d) {
-            nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
+            nodeIcons[d.id]._icon
                 .attr("class", "nodeIcons")
                 .attr("transform", "scale(" + scale * 0.1 + ")")
                 .attr("d", logos(d.icon || d.type))
@@ -423,6 +434,7 @@ define(function(require) {
         menu.linkMenu(model);
 
         model.update = restart;
+        i2g.model = model;
 
         return i2g;
     }

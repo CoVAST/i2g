@@ -1,5 +1,6 @@
 define(function(require) {
-    var nodePad = require('./ui/nodePad');
+    var nodePad = require('./ui/nodePad'),
+        download = require('./downloadFunc');
 
     /** Set up a group of context menu functions. */
     function svgMenu(container, i2g) {
@@ -51,10 +52,10 @@ define(function(require) {
                     var reader = new FileReader();
                     reader.onload = function(){
                         var graphData = JSON.parse(reader.result);
-                        i2g.getNodes().forEach((d) => {
+                        i2g.nodes.forEach((d) => {
                             d3.select(d).remove();
-                            removeNode(d.id);
-                            restart();
+                            i2g.removeNode(d.id);
+                            i2g.update();
                         });
                        	nodeCounter = 0;
                         var uploadNodes = graphData.nodes;
@@ -80,8 +81,8 @@ define(function(require) {
                     reader.readAsText(x);
                 } else if(key == 'saveFile') {
                     var graphData = ({
-                        nodes: nodes,
-                        links: links
+                        nodes: i2g.nodes,
+                        links: i2g.links
                     });
                     var fileName = options.inputs["downloadFileName"].$input.val();
                     download(graphData, fileName);
@@ -169,8 +170,8 @@ define(function(require) {
 
                 if(key == 'removeNode') {
                     d3.select(thisNode).remove();
-                    removeNode(thisNodeId);
-                    restart();
+                    i2g.removeNode(thisNodeId);
+                    i2g.update();
                 } else if(key == 'modifyNode') {
                     d3.select(thisNode).attr('stroke', 'orange');
 
