@@ -20,29 +20,36 @@ function i2gModel(arg) {
         nodes = nodes.filter(function(d){
             d.id != nodeId;
         });
+        delete nodeHash[nodeId];
         onNodeRemoved(nodeId);
     }
 
     model.removeLink = function(linkId) {
         var removedLink = links.splice(linkId,1)[0];
-        if(removeLink.hasOwnProperty('icon'))
-        removedLink.icon.remove();
+        if(removedLink.hasOwnProperty('icon')) {
+            removedLink.icon.remove();
+        }
     }
 
     model.addNodes = function(newNodes) {
         var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
         newNodes.forEach(function(newNode){
             var pos = newNode.pos || [0, 0];
-            if(!newNode.hasOwnProperty('id'))
-                newNode.id = nodeCounter++;
-            if(!newNode.hasOwnProperty('datalink'))
+            if(!newNode.hasOwnProperty('id')) {
+                newNode.id = nodeCounter;
+            }
+            nodeCounter++;
+            if(!newNode.hasOwnProperty('datalink')) {
                 newNode.datalink = false;
+            }
             newNode.tag = newNode.label;
             newNode.x = pos[0];
             newNode.y = pos[1];
-            if(tag !== null)
+            if(tag !== null) {
                 newNode.id = tag + newNode.id;
+            }
             nodeHash[newNode.id] = newNode;
+            nodes.push(newNode);
             onNodeAdded(newNode);
         });
         return model;
@@ -61,7 +68,9 @@ function i2gModel(arg) {
                 li.target = nodeHash[targetId];
             }
 
-            if(!li.hasOwnProperty('datalink')) li.datalink = false;
+            if(!li.hasOwnProperty('datalink')) { 
+                li.datalink = false;
+            }
             links.push(li);
         });
 
@@ -87,7 +96,7 @@ function i2gModel(arg) {
 
         if(query.all) {
             nodes.forEach(function(n) {
-                removeNode(n.id);
+                model.removeNode(n.id);
             })
         } else {
             if(query.id) {
@@ -105,9 +114,10 @@ function i2gModel(arg) {
             }
 
             nodeIds.forEach(function(nid){
-                removeNode(nid);
+                model.removeNode(nid);
             });
         }
+
         return model;
     }
 

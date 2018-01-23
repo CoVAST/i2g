@@ -28,13 +28,15 @@ define(function(require) {
                 addNodeIcon(newNode);
                 addNodeLabel(newNode);
             },
-            nodeNodeRemoved: function(nodeId) {
+            onNodeRemoved: function(nodeId) {
                 nodeIcons[nodeId]._icon.remove();
                 nodeIcons[nodeId].remove();
                 nodeLabels[nodeId].remove();
                 delete nodeIcons[nodeId];
                 delete nodeLabels[nodeId];
-                delete nodeHash[nodeId];
+                nodes = nodes.filter(function(d){
+                    d.id != nodeId;
+                });
             },
             onNodeModified : function(theNode) {
                 labelNode(theNode);
