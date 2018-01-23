@@ -5,15 +5,23 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Collaborative Analysis of Spatiotemporal Data</title>
+
+    <link rel="stylesheet" href="./style/style.css"/>
+    
     <script src="/npm/jquery/dist/jquery.min.js"></script>
     <link rel="stylesheet" href="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.css"/>
     <link rel="stylesheet" href="/npm/font-awesome/css/font-awesome.min.css"/>
+
     <script src="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
     <script src="http://d3js.org/d3.v4.min.js"></script>
   </head>
   <body>
     <div id = "ontoGraph"></div>
+
+    <div id = "nodePadModal" class = "modal"></div>
+
     <script src="/npm/requirejs/require.js"></script>
+
     <script>
         require(["i2g", "color-scheme"], function(i2g, colorScheme) {
             var igraph = i2g({

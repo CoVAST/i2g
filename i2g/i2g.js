@@ -2,6 +2,7 @@ define(function(require) {
     var logos = require('./icons'),
         download = require('./downloadFunc'),
         dataModel = require('./model'),
+        nodePad = require('./ui/nodePad'),
         menu = require('./menu');
 
     return function(arg) {
@@ -27,7 +28,8 @@ define(function(require) {
             onNodeAdded: function(newNode) {
                 addNodeIcon(newNode);
                 addNodeLabel(newNode);
-            }
+            },
+            onNodeModified : labelNode
         });
 
         // initialize the graph as a object and initialize the graph nodes and links
@@ -385,12 +387,16 @@ define(function(require) {
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
 
-                nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
-                    .attr("class", "nodeIcons")
-                    .attr("transform", "scale(" + scale * 0.1 + ")")
-                    .attr("d", logos(d.icon || d.type))
-                    .attr("fill", nodeColor(d));
+                drawNodeIcon(d);
             }
+        }
+
+        function drawNodeIcon(d) {
+            nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
+                .attr("class", "nodeIcons")
+                .attr("transform", "scale(" + scale * 0.1 + ")")
+                .attr("d", logos(d.icon || d.type))
+                .attr("fill", nodeColor(d));
         }
 
         /** Add node Icon functions */
@@ -416,6 +422,7 @@ define(function(require) {
         menu.svgMenu(container, model);
         menu.nodeMenu(model, tempLink);
         menu.linkMenu(model);
+
 
         return i2g;
     }

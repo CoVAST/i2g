@@ -6,6 +6,7 @@ define(function(require) {
         var options = arg || {},
             simulate = options.simulate || options.change || function() {},
             onNodeAdded  = options.onNodeAdded || function() {},
+            onNodeModified  = options.onNodeModified || function() {},
             data = options.data || {nodes: [], links: []},
             tag = options.tag || '';
 
@@ -68,7 +69,7 @@ define(function(require) {
             }
 
             if(props.hasOwnProperty('label')) {
-                labelNode(theNode);
+                onNodeModified(theNode);
             }
         }
 
