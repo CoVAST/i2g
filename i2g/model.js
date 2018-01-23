@@ -4,7 +4,6 @@ define(function(require) {
         var model = {};
 
         var options = arg || {},
-            simulate = options.simulate || options.change || function() {},
             onNodeAdded  = options.onNodeAdded || function() {},
             onNodeModified  = options.onNodeModified || function() {},
             data = options.data || {nodes: [], links: []},
@@ -160,7 +159,6 @@ define(function(require) {
             if(newNodes.length) model.addNodes(newNodes);
             if(newLinks.length) model.addLinks(newLinks);
 
-            simulate();
             return model;
         };
 

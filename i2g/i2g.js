@@ -235,7 +235,7 @@ define(function(require) {
             .text((d)=>{ if(d.detail) return d.detail});
             // console.log(node);
 
-            // For each node add icon and labels
+            // For each node add icon and label
             node.data(nodes, function(d){
                 addNodeIcon(d);
                 addNodeLabel(d);
@@ -413,7 +413,6 @@ define(function(require) {
                 .attr("fill", 'red');
         }
 
-
         function updateNodeIcon(d) {
             var iconInfo = nodeIcons[d.id].node().getBBox();
             nodeIcons[d.id].attr("transform", "translate(" + (d.x - (iconInfo.width / 2)) + ", " + (d.y - (iconInfo.width / 2) - 4) + ")");
@@ -423,6 +422,7 @@ define(function(require) {
         menu.nodeMenu(model, tempLink);
         menu.linkMenu(model);
 
+        model.update = restart;
 
         return i2g;
     }
