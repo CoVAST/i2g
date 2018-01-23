@@ -15,8 +15,15 @@
     <div id = "ontoGraph"></div>
     <script src="/npm/requirejs/require.js"></script>
     <script>
-        require(["ontoGraph"], function(ontoGraph) {
-            ontoGraph();
+        require(["i2g", "color-scheme"], function(i2g, colorScheme) {
+            var igraph = i2g({
+    	        container: "#ontoGraph",
+    	        width: 1900,
+    	        height: 1000,
+    	        domain: [0, 1],
+    	        graph: {nodes: [], links: []},
+    	        colorScheme: colorScheme
+    	    });
         });
     </script>
   </body>
