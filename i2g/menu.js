@@ -3,7 +3,7 @@ define(function(require) {
         download = require('./downloadFunc');
 
     /** Set up a group of context menu functions. */
-    function svgMenu(container, i2g) {
+    function svgMenu(container, i2gModel) {
         $.contextMenu.types.label = function(item, opt, root) {
             // this === item.$node
             $('<div>Please input a file<div>\
@@ -52,26 +52,12 @@ define(function(require) {
                     var reader = new FileReader();
                     reader.onload = function(){
                         var graphData = JSON.parse(reader.result);
-                        i2g.nodes.forEach((d) => {
-                            d3.select(d).remove();
-                            i2g.removeNode(d.id);
-                            i2g.update();
-                        });
-                       	nodeCounter = 0;
-                        var uploadNodes = graphData.nodes;
-                        uploadNodes.forEach((d) => {
-                            i2g.addNodes({
-					            label: d.label,
-					            type: d.type,
-					            fx: d.fx,
-					            fy: d.fy,
-					            value: d.value,
-					            datalink: d.datalink
-					        }).update();
-                        });
-                        var uploadLinks = graphData.links;
-                        uploadLinks.forEach((d) => {
-                            i2g.addLinks({
+
+                        i2gModel.removeNodes({all: true})
+                            .addNodes(graphData.nodes).update();
+
+                        graphData.links.forEach((d) => {
+                            i2gModel.addLinks({
 					            source: d.source.id,
 					            target: d.target.id,
 					            value: d.value
@@ -81,8 +67,8 @@ define(function(require) {
                     reader.readAsText(x);
                 } else if(key == 'saveFile') {
                     var graphData = ({
-                        nodes: i2g.nodes,
-                        links: i2g.links
+                        nodes: i2gModel.nodes,
+                        links: i2gModel.links
                     });
                     var fileName = options.inputs["downloadFileName"].$input.val();
                     download(graphData, fileName);
@@ -94,7 +80,7 @@ define(function(require) {
                     } else if(key == 'time') {
                         newNodeType = 'time';
                     }
-                    i2g.addNodes({
+                    i2gModel.addNodes({
                         label: 'New ' + key,
                         type: newNodeType,
                         fx: newNodePosition.left,
@@ -160,7 +146,7 @@ define(function(require) {
     }
 
 
-    function nodeMenu(i2g, tempLink) { //TODO: remove tempLink after separating model and view
+    function nodeMenu(i2gModel, tempLink) { //TODO: remove tempLink after separating model and view
         $.contextMenu({
             selector: '.nodeHolder',
             callback: function(key, options) {
@@ -170,8 +156,8 @@ define(function(require) {
 
                 if(key == 'removeNode') {
                     d3.select(thisNode).remove();
-                    i2g.removeNode(thisNodeId);
-                    i2g.update();
+                    i2gModel.removeNode(thisNodeId);
+                    i2gModel.update();
                 } else if(key == 'modifyNode') {
                     d3.select(thisNode).attr('stroke', 'orange');
 
@@ -181,7 +167,7 @@ define(function(require) {
                             label: newLabelText,
                             type: newLabelType
                         }
-                        i2g.modifyNode(thisNodeId, changes);
+                        i2gModel.modifyNode(thisNodeId, changes);
                     }
 
                     nodePad({
@@ -195,7 +181,7 @@ define(function(require) {
                     });
 
                 } else if(key == 'addLink'){
-                    tempLink.source = i2g.nodeHash[thisNodeId];
+                    tempLink.source = i2gModel.nodeHash[thisNodeId];
 
                     tempLink.target = null;
                     tempLink.svg
