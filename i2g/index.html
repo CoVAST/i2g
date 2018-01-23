@@ -5,39 +5,33 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Collaborative Analysis of Spatiotemporal Data</title>
-    <script src="./node_modules/jquery/dist/jquery.min.js"></script>
-    <link rel="stylesheet" href="./node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.css"/>
-    <script src="./node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
-    <link rel="stylesheet" href="./node_modules/font-awesome/css/font-awesome.min.css"/>
-    <script src="http://d3js.org/d3.v4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-selection/1.1.0/d3-selection.min.js"></script>
-    <script src="./node_modules/d3-extended/build/d3-extended.min.js"></script>
+
     <link rel="stylesheet" href="./style/style.css"/>
-    <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' /> 
-    <link rel="stylesheet" href="/npm/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="/npm/leaflet-contextmenu/dist/leaflet.contextmenu.css"/>
     
-    
-    <script src="/npm/d3/build/d3.min.js"></script>
-    <script src='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script> 
-    <script src="/npm/leaflet/dist/leaflet.js"></script>
-    <script src="/npm/leaflet-contextmenu/dist/leaflet.contextmenu.js"></script>
-    <script src="/semantic/dist/semantic.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/npm/ramda/dist/ramda.min.js"></script>
-    <script src="/npm/moment/min/moment-with-locales.js"></script>
+    <script src="/npm/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.css"/>
+    <link rel="stylesheet" href="/npm/font-awesome/css/font-awesome.min.css"/>
+
     <script src="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
-    <script src="/npm/moment-timezone/builds/moment-timezone-with-data.min.js"></script>
-    <script src="/npm/oboe/dist/oboe-browser.min.js"></script>
-    <script src="/npm/tinycolor2/dist/tinycolor-min.js"></script>-->
+    <script src="http://d3js.org/d3.v4.min.js"></script>
   </head>
   <body>
     <div id = "ontoGraph"></div>
+
     <div id = "nodePadModal" class = "modal"></div>
-    <script src="./node_modules/requirejs/require.js"></script>
+
+    <script src="/npm/requirejs/require.js"></script>
+
     <script>
-        require(["ontoGraph"], function(ontoGraph) {
-            ontoGraph();
+        require(["i2g", "color-scheme"], function(i2g, colorScheme) {
+            var igraph = i2g({
+    	        container: "#ontoGraph",
+    	        width: 1900,
+    	        height: 1000,
+    	        domain: [0, 1],
+    	        graph: {nodes: [], links: []},
+    	        colorScheme: colorScheme
+    	    });
         });
     </script>
   </body>
