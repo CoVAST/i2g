@@ -34,6 +34,7 @@ define(function(require) {
                 nodeLabels[nodeId].remove();
                 delete nodeIcons[nodeId];
                 delete nodeLabels[nodeId];
+                console.log(model.nodes);
                 nodes = nodes.filter(function(d){
                     d.id != nodeId;
                 });
