@@ -17,10 +17,10 @@ function i2gModel(arg) {
         nodeHash = {}; // hash table for storing nodes based on node names
 
     model.removeNode = function(nodeId) {
-        nodes = nodes.filter(function(d){
-            d.id != nodeId;
-        });
         delete nodeHash[nodeId];
+        nodes = nodes.filter(function(d){
+            return d.id != nodeId;
+        });
         onNodeRemoved(nodeId);
     }
 
@@ -51,6 +51,7 @@ function i2gModel(arg) {
             nodeHash[newNode.id] = newNode;
             nodes.push(newNode);
             onNodeAdded(newNode);
+
         });
         return model;
     }
@@ -68,7 +69,7 @@ function i2gModel(arg) {
                 li.target = nodeHash[targetId];
             }
 
-            if(!li.hasOwnProperty('datalink')) { 
+            if(!li.hasOwnProperty('datalink')) {
                 li.datalink = false;
             }
             links.push(li);
@@ -163,6 +164,9 @@ function i2gModel(arg) {
     model.nodeHash = nodeHash;
     model.nodes = nodes;
     model.links = links;
+    model.nodeCounter = nodeCounter;
+    model.getNodes = function() { return nodes };
+    model.getLinks = function() { return links };
 
     return model;
 }

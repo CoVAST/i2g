@@ -20,12 +20,13 @@ define(function(require) {
             scale = options.scale || 1,
             colorScheme = options.colorScheme;
 
+
         var model = dataModel({
             data: graph,
             tag: graphName,
             onNodeAdded: function(newNode) {
-                addNodeIcon(newNode);
-                addNodeLabel(newNode);
+                // addNodeIcon(newNode);
+                // addNodeLabel(newNode);
             },
             onNodeRemoved: function(nodeId) {
                 nodeIcons[nodeId]._icon.remove();
@@ -33,9 +34,6 @@ define(function(require) {
                 nodeLabels[nodeId].remove();
                 delete nodeIcons[nodeId];
                 delete nodeLabels[nodeId];
-                nodes = nodes.filter(function(d){
-                    d.id != nodeId;
-                });
             },
             onNodeModified : function(theNode) {
                 labelNode(theNode);
@@ -44,10 +42,13 @@ define(function(require) {
 
         });
 
-        // initialize the graph as a object and initialize the graph nodes and links
+
         var i2g = {},
-            nodes = model.nodes,
-            links = model.links;
+            nodes = model.getNodes(),
+            links = model.getLinks();
+
+        // initialize the graph as a object and initialize the graph nodes and links
+
 
         // pretty useless variable, maybe remove later
         var maxLinkValue = 0;
@@ -132,7 +133,7 @@ define(function(require) {
             .range([1*scale, 6*scale]);
 
         // set up a function to plot the graph use d3 force diagram
-        // var simulation = d3.forceSimulation(model.nodes)
+        // var simulation = d3.forceSimulation(nodes)
         //     .force("charge", d3.forceManyBody().strength(-1000))
         //     .force("link", d3.forceLink(links).distance(200).strength(1).iterations(20))
         //     .force("center", d3.forceCenter(width / 2, height / 2))
@@ -185,10 +186,10 @@ define(function(require) {
 
         /** Set up a restart function to plot all the nodes and links. */
         function renderNodes() {
+            nodes = model.getNodes();
+            nodes.forEach(function(d){ d.x = d.fx; d.y = d.fy;})
 
-            model.nodes.forEach(function(d){ d.x = d.fx; d.y = d.fy;})
-
-            node = node.data(model.nodes);
+            node = node.data(nodes);
 
             // Remove the previous nodes from the graph
             node.exit().remove();
@@ -196,13 +197,14 @@ define(function(require) {
             // Add updated nodes into the graph
             node = node.enter()
                 .append("circle")
+                .merge(node)
                 .attr('class', 'nodeHolder')
                 // .attr("fill", function(d) {
                 //     return nodeColor(d.type);
                 // })
                 .attr("cx", function(d) { return d.fx; })
                 .attr("cy", function(d) { return d.fy; })
-                .attr("fill", "transparent")
+                .attr("fill", "white")
                 .attr("r", 30)
                 .on('click', function(d){
 
@@ -237,14 +239,13 @@ define(function(require) {
                 );
 
             // Unknown action
-            node
-            .append('title')
-            .text((d)=>{ if(d.detail) return d.detail});
+            // node
+            // .append('title')
+            // .text((d)=>{ if(d.detail) return d.detail});
             // console.log(node);
 
             // For each node add icon and label
-            model.nodes.forEach(function(d){
-                console.log(d);
+            nodes.forEach(function(d){
                 addNodeIcon(d);
                 addNodeLabel(d);
                 updateNodeLabel(d);
@@ -255,11 +256,9 @@ define(function(require) {
         function renderLinks() {
 
             // Apply the general update pattern to the links.
-            links = model.links.filter(function(d){
-                return model.nodeHash.hasOwnProperty(d.source.id) && model.nodeHash.hasOwnProperty(d.target.id);
-            });
+            links = model.getLinks();
 
-            link = link.data(model.links, function(d) {
+            link = link.data(links, function(d) {
                 return d.source.id + "-" + d.target.id;
             });
 
@@ -280,8 +279,6 @@ define(function(require) {
             link.append('title')
                 .text((d)=>(d.value))
 
-
-            console.log(model.links);
             link.attr("d", function(d){
                 return "M" + (d.source.x ) + "," + (d.source.y)
                 + " L" + (((d.target.x ) + (d.source.x ))/2) + "," +(((d.target.y ) + (d.source.y ))/2)
@@ -294,16 +291,15 @@ define(function(require) {
             //         addLinkIcon(li);
             // })
             // Update and restart the simulation.
-            // simulation.nodes(model.nodes);
-            // simulation.force("link").links(model.links).iterations(10);
+            // simulation.nodes(nodes);
+            // simulation.force("link").links(links).iterations(10);
             // simulation.alphaTarget(0.3).restart();
         }
 
         function updateNode(d) {
             updateNodeLabel(d);
             updateNodeIcon(d);
-            node.attr('cx', function(d){return d.x})
-                .attr('cy', function(d){return d.y});
+
 
             link.filter(function(li){
                 return li.source.id == d.id || li.target.id == d.id;
@@ -317,7 +313,7 @@ define(function(require) {
 
         /** Set up a group of drag functions. */
         function dragstarted(d) {
-;
+            console.log(d.id);
             // if (!d3.event.active) simulation.alphaTarget(0.3).restart();
             updateNode(d);
 
@@ -326,6 +322,7 @@ define(function(require) {
         function dragged(d) {
             d.x = d.fx = d3.event.x;
             d.y = d.fy = d3.event.y;
+            d3.select(this).attr('cx', d.x).attr('cy', d.y);
             updateNode(d);
         }
 
