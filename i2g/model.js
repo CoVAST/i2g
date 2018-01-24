@@ -5,9 +5,6 @@ function i2gModel(arg) {
     var model = {};
 
     var options = arg || {},
-        onNodeAdded  = options.onNodeAdded || function() {},
-        onNodeRemoved  = options.onNodeRemoved || function() {},
-        onNodeModified  = options.onNodeModified || function() {},
         data = options.data || {nodes: [], links: []},
         tag = options.tag || '';
 
@@ -17,18 +14,22 @@ function i2gModel(arg) {
         nodeHash = {}; // hash table for storing nodes based on node names
 
     model.removeNode = function(nodeId) {
-        nodes = nodes.filter(function(d){
-            d.id != nodeId;
-        });
         delete nodeHash[nodeId];
-        onNodeRemoved(nodeId);
+        nodes = nodes.filter(function(d){
+            return d.id != nodeId;
+        });
+        links.filter(function(link){
+            return link.source.id === nodeId || link.target.id === nodeId;
+        }).forEach(function(link){
+            model.removeLink(link.id);
+        })
     }
 
     model.removeLink = function(linkId) {
-        var removedLink = links.splice(linkId,1)[0];
-        if(removedLink.hasOwnProperty('icon')) {
-            removedLink.icon.remove();
-        }
+        links = links.filter(function(li){
+            return li.id != linkId;
+        });
+
     }
 
     model.addNodes = function(newNodes) {
@@ -50,7 +51,7 @@ function i2gModel(arg) {
             }
             nodeHash[newNode.id] = newNode;
             nodes.push(newNode);
-            onNodeAdded(newNode);
+
         });
         return model;
     }
@@ -68,7 +69,7 @@ function i2gModel(arg) {
                 li.target = nodeHash[targetId];
             }
 
-            if(!li.hasOwnProperty('datalink')) { 
+            if(!li.hasOwnProperty('datalink')) {
                 li.datalink = false;
             }
             links.push(li);
@@ -85,9 +86,7 @@ function i2gModel(arg) {
             theNode[p] = props[p];
         }
 
-        if(props.hasOwnProperty('label')) {
-            onNodeModified(theNode);
-        }
+
     }
 
     model.removeNodes = function(query) {
@@ -161,8 +160,9 @@ function i2gModel(arg) {
     };
 
     model.nodeHash = nodeHash;
-    model.nodes = nodes;
-    model.links = links;
+
+    model.getNodes = function() { return nodes };
+    model.getLinks = function() { return links };
 
     return model;
 }

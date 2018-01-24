@@ -20,39 +20,18 @@ define(function(require) {
             scale = options.scale || 1,
             colorScheme = options.colorScheme;
 
+
         var model = dataModel({
             data: graph,
-            tag: graphName,
-            simulate: restart,
-            onNodeAdded: function(newNode) {
-                addNodeIcon(newNode);
-                addNodeLabel(newNode);
-            },
-            onNodeRemoved: function(nodeId) {
-                nodeIcons[nodeId]._icon.remove();
-                nodeIcons[nodeId].remove();
-                nodeLabels[nodeId].remove();
-                delete nodeIcons[nodeId];
-                delete nodeLabels[nodeId];
-                console.log(model.nodes);
-                nodes = nodes.filter(function(d){
-                    d.id != nodeId;
-                });
-            },
-            onNodeModified : function(theNode) {
-                labelNode(theNode);
-                drawNodeIcon(theNode);
-            }
+            tag: graphName
 
         });
 
-        // initialize the graph as a object and initialize the graph nodes and links
-        var i2g = {},
-            nodes = model.nodes,
-            links = model.links;
 
-        // pretty useless variable, maybe remove later
-        var maxLinkValue = 0;
+        var i2g = {},
+            nodes = model.getNodes(),
+            links = model.getLinks();
+
 
         /** Use a temp link to show the link when add a new link */
         var tempLink = {
@@ -80,7 +59,7 @@ define(function(require) {
                     .attr('x2', 0)
                     .attr('y2', 0);
 
-                restart(); // call restart again to update the graph
+                renderLinks(); // call restart again to update the graph
             }
         });
 
@@ -95,9 +74,7 @@ define(function(require) {
               .attr("markerHeight", 15)
               .attr("orient", "auto")
             .append("svg:path")
-            //   .attr("stroke", "red")
-            //   .attr("stroke", "none")
-              .attr("fill", "#999")
+              .attr("fill", "purple")
             //   .attr("transform", "scale(0.05)")
             //   .attr("d", logos('info'));
               .attr("d", "M0,-5L10,0L0,5");
@@ -136,15 +113,15 @@ define(function(require) {
             .range([1*scale, 6*scale]);
 
         // set up a function to plot the graph use d3 force diagram
-        var simulation = d3.forceSimulation(model.nodes)
-            .force("charge", d3.forceManyBody().strength(-1000))
-            .force("link", d3.forceLink(links).distance(200).strength(1).iterations(20))
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .on("tick", ticked)
+        // var simulation = d3.forceSimulation(nodes)
+        //     .force("charge", d3.forceManyBody().strength(-1000))
+        //     .force("link", d3.forceLink(links).distance(200).strength(1).iterations(20))
+        //     .force("center", d3.forceCenter(width / 2, height / 2))
+        //     .on("tick", ticked)
             // .force("x", d3.forceX())
             // .force("y", d3.forceY())
             // .alphaTarget(0.3)
-            .stop();
+            // .stop();
 
         tempLink.svg = svg.append('g')
             .append('line')
@@ -170,8 +147,10 @@ define(function(require) {
         });
 
         var g = svg.append("g"), //append a graph to plot all the links and nodes
-            link = g.append("g").attr("stroke", "#999").selectAll(".link"),
-            node = g.append("g").attr("stroke-width", 2).attr("stroke", "none").selectAll(".node");
+            link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
+            nodeSvg = g.append("g");
+
+        nodeSvg.attr("stroke-width", 2).attr("stroke", "none");
 
         var linkIcons = [], // unknown
             linkLabels = []; // unknown
@@ -183,38 +162,37 @@ define(function(require) {
             nodeLabels = {};
 
 
-        restart(); // call restart function
+        renderNodes(); // call restart function
+        renderLinks(); // call restart function
 
 
         /** Set up a restart function to plot all the nodes and links. */
-        function restart() {
+        function renderNodes() {
+            nodes = model.getNodes();
+            nodes.forEach(function(d){ d.x = d.fx; d.y = d.fy;})
 
-            // Apply the general update pattern to the nodes.
-            model.nodes = Object.keys(model.nodeHash).map(function(k){
-                return model.nodeHash[k];
-            });
-
-            node = node.data(model.nodes, function(d) {
-                return d.id;
-            });
+            var node = nodeSvg.selectAll("circle").data(nodes);
 
             // Remove the previous nodes from the graph
             node.exit().remove();
 
             // Add updated nodes into the graph
-            node = node.enter()
-                .append("circle")
+            var nodeStruct = node.enter();
+
+            nodeStruct.append("circle")
+                // .merge(node)
                 .attr('class', 'nodeHolder')
                 // .attr("fill", function(d) {
                 //     return nodeColor(d.type);
                 // })
+                .attr("cx", function(d) { return d.fx; })
+                .attr("cy", function(d) { return d.fy; })
                 .attr("fill", "white")
                 .attr("r", 30)
-                .merge(node)
                 .on('click', function(d){
 
-                // modify the templink
-                if(tempLink.source !== null && tempLink.target === null) {
+                    // modify the templink
+                    if(tempLink.source !== null && tempLink.target === null) {
                         tempLink.target = d;
                         // console.log(tempLink.target);
                         model.addLinks({
@@ -234,7 +212,7 @@ define(function(require) {
                             .attr('x2', 0)
                             .attr('y2', 0);
 
-                        restart(); // call restart again to update the graph
+                        renderLinks(); // call restart again to update the graph
                     }
                 })
                 .call(d3.drag()
@@ -243,32 +221,28 @@ define(function(require) {
                     .on("end", dragended)
                 );
 
-            // Unknown action
-            node
-            .append('title')
-            .text((d)=>{ if(d.detail) return d.detail});
-            // console.log(node);
-
             // For each node add icon and label
-            node.data(nodes, function(d){
+            nodes.forEach(function(d){
                 addNodeIcon(d);
                 addNodeLabel(d);
-            });
+                updateNodeLabel(d);
+                updateNodeIcon(d);
+            })
+        }
+
+        function renderLinks() {
 
             // Apply the general update pattern to the links.
-            links = model.links.filter(function(d){
-                return model.nodeHash.hasOwnProperty(d.source.id) && model.nodeHash.hasOwnProperty(d.target.id);
-            });
+            links = model.getLinks();
 
-            link = link.data(model.links, function(d) {
+            link = link.data(links, function(d) {
                 return d.source.id + "-" + d.target.id;
             });
 
             // Remove the previous link from the graph
             link.exit().remove();
 
-            maxLinkValue = d3.max(links.map((d)=>d.value));
-            linkSize.domain([0, maxLinkValue]);
+            linkSize.domain([0, d3.max(links.map((d)=>d.value))]);
 
             // Add new links to the graph
             link = link.enter()
@@ -282,84 +256,56 @@ define(function(require) {
             link.append('title')
                 .text((d)=>(d.value))
 
+            link.attr("d", function(d){
+                return "M" + (d.source.x ) + "," + (d.source.y)
+                + " L" + (((d.target.x ) + (d.source.x ))/2) + "," +(((d.target.y ) + (d.source.y ))/2)
+                + "," + (d.target.x) + "," + (d.target.y);
+            })
+
+
             // link.data(links, function(li){
             //     if(!li.hasOwnProperty('icon'))
             //         addLinkIcon(li);
             // })
             // Update and restart the simulation.
-            simulation.nodes(model.nodes);
-            simulation.force("link").links(model.links).iterations(10);
-            simulation.alphaTarget(0.3).restart();
+            // simulation.nodes(nodes);
+            // simulation.force("link").links(links).iterations(10);
+            // simulation.alphaTarget(0.3).restart();
         }
 
-        /** Unknown Set up a ticked function to plot all the nodes and links with force layout. */
-        function ticked() {
-            node.attr("cx", function(d) {return d.x;})
-                .attr("cy", function(d) {return d.y;})
+        function updateNode(d) {
+            updateNodeLabel(d);
+            updateNodeIcon(d);
 
-            // link.attr("x1", function(d) {return d.source.x;})
-            //     .attr("y1", function(d) {return d.source.y;})
-            //     .attr("x2", function(d) {return d.target.x;})
-            //     .attr("y2", function(d) {return d.target.y;});
-
-            var sourceXChange,
-                sourceYChange,
-                targetXChange,
-                targetYChange;
-
-            sourceXChange = sourceYChange = targetYChange = 0;
-            targetXChange = 0;
-
-            link.attr("d", function(d){
-                return "M" + (d.source.x + sourceXChange) + "," + (d.source.y + sourceYChange)
-                + " L" + (((d.target.x + targetXChange) + (d.source.x + sourceXChange))/2) + "," +(((d.target.y + targetYChange) + (d.source.y + sourceYChange))/2)
-                + "," + (d.target.x + targetXChange) + "," + (d.target.y + targetYChange);
+            link.filter(function(li){
+                return li.source.id == d.id || li.target.id == d.id;
             })
-
-            var paddingSpace = 50;
-            node.data(nodes, function(d, i){
-                updateNodeLabel(d);
-                updateNodeIcon(d);
-
-                if(d.x > width - paddingSpace) {
-                    d.fx = width - paddingSpace;
-                } else if(d.x < paddingSpace) {
-                    d.fx = paddingSpace
-                }
-
-                if(d.y > height - paddingSpace) {
-                    d.fy = height -paddingSpace;
-                } else if(d.y < paddingSpace) {
-                    d.fy = paddingSpace;
-                }
-            });
-
-            // link.data(links, function(li, i){
-            //     li.icon.attr("transform", "translate(" +
-            //         (li.source.x + (li.target.x-li.source.x)/2 - 8) + "," +
-            //         (li.source.y + (li.target.y-li.source.y)/2 - 8) + ")")
-            // })
+            .attr("d", function(d){
+                return "M" + (d.source.x ) + "," + (d.source.y)
+                + " L" + (((d.target.x ) + (d.source.x ))/2) + "," +(((d.target.y ) + (d.source.y ))/2)
+                + "," + (d.target.x) + "," + (d.target.y);
+            })
         }
-
 
         /** Set up a group of drag functions. */
         function dragstarted(d) {
             // if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
+            updateNode(d);
+
         }
 
         function dragged(d) {
-            d.fx = d3.event.x;
-            d.fy = d3.event.y;
-            nodeLabels[d.id].attr("x", d.fx);
-            nodeLabels[d.id].attr("y", d.fy);
+            d.x = d.fx = d3.event.x;
+            d.y = d.fy = d3.event.y;
+            d3.select(this).attr('cx', d.x).attr('cy', d.y);
+            updateNode(d);
         }
 
         function dragended(d) {
             // if (!d3.event.active) simulation.alphaTarget(0);
             //   this.style.fill = selectionColor(d.id);
             onselect.call(this, d);
+            updateNode(d);
             //   d.fx = null;
             //   d.fy = null;
         }
@@ -417,6 +363,7 @@ define(function(require) {
         function addLinkIcon(d) {
             links[d.id].icon = icons.append("g")
                 .attr("pointer-events", "none");
+
             links[d.id].icon.attr("transform", "translate(" +
                 (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
                 (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
@@ -432,12 +379,41 @@ define(function(require) {
             nodeIcons[d.id].attr("transform", "translate(" + (d.x - (iconInfo.width / 2)) + ", " + (d.y - (iconInfo.width / 2) - 4) + ")");
         }
 
-        menu.svgMenu(container, model);
-        menu.nodeMenu(model, tempLink);
-        menu.linkMenu(model);
+        i2g.addNode = function(newNode) {
+            model.addNodes(newNode);
+            addNodeIcon(newNode);
+            addNodeLabel(newNode);
+            return i2g;
+        }
 
-        model.update = restart;
+        i2g.addNodes = function(newNodes){
+            model.addNodes(newNodes);
+            return i2g;
+        }
+
+        i2g.removeNode = function(nodeId) {
+            model.removeNode(nodeId);
+            nodeIcons[nodeId]._icon.remove();
+            nodeIcons[nodeId].remove();
+            nodeLabels[nodeId].remove();
+            delete nodeIcons[nodeId];
+            delete nodeLabels[nodeId];
+            return i2g;
+        }
+
+        i2g.update = function () {
+            renderNodes();
+            renderLinks();
+            return i2g;
+        }
+
+        i2g.tempLink = tempLink;
         i2g.model = model;
+        i2g.container = container;
+        menu.svgMenu(i2g);
+        menu.nodeMenu(i2g);
+        menu.linkMenu(i2g);
+
 
         return i2g;
     }
