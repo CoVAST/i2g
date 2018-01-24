@@ -176,7 +176,8 @@ define(function(require) {
                             label: newLabelText,
                             type: newLabelType
                         }
-                        i2g.modifyNode(thisNodeId, changes);
+                        i2g.model.modifyNode(thisNodeId, changes);
+                        i2g.update();
                     }
 
                     nodePad({
@@ -217,7 +218,8 @@ define(function(require) {
                     thisLinkId = thisLink.__data__.id;
                 if(key == 'removeLink') {
                     d3.select(thisLink).remove();
-                    i2g.removeLink(thisLinkId);
+                    i2g.model.removeLink(thisLinkId);
+                    i2g.update();
                 } else if(key == 'annotate') {
 
                 }

@@ -24,7 +24,6 @@ define(function(require) {
         var model = dataModel({
             data: graph,
             tag: graphName
-
         });
 
 
@@ -74,7 +73,7 @@ define(function(require) {
               .attr("markerHeight", 15)
               .attr("orient", "auto")
             .append("svg:path")
-              .attr("fill", "purple")
+              .attr("fill", "#555")
             //   .attr("transform", "scale(0.05)")
             //   .attr("d", logos('info'));
               .attr("d", "M0,-5L10,0L0,5");
@@ -147,7 +146,7 @@ define(function(require) {
         });
 
         var g = svg.append("g"), //append a graph to plot all the links and nodes
-            link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
+            link = g.append("g").attr("stroke", "#777").selectAll(".link"),
             nodeSvg = g.append("g");
 
         nodeSvg.attr("stroke-width", 2).attr("stroke", "none");
@@ -224,7 +223,9 @@ define(function(require) {
             // For each node add icon and label
             nodes.forEach(function(d){
                 addNodeIcon(d);
+                drawNodeIcon(d);
                 addNodeLabel(d);
+                labelNode(d);
                 updateNodeLabel(d);
                 updateNodeIcon(d);
             })
@@ -321,7 +322,6 @@ define(function(require) {
                     // .attr("dy", ".35em")
                     .attr("x", d.x)
                     .attr("y", d.y);
-                labelNode(d);
             }
         }
 
@@ -347,7 +347,6 @@ define(function(require) {
                 nodeIcons[d.id] = icons.append("g")
                     .attr("pointer-events", "none");
                 nodeIcons[d.id]._icon = nodeIcons[d.id].append("path");
-                drawNodeIcon(d);
             }
         }
 
@@ -377,13 +376,6 @@ define(function(require) {
         function updateNodeIcon(d) {
             var iconInfo = nodeIcons[d.id].node().getBBox();
             nodeIcons[d.id].attr("transform", "translate(" + (d.x - (iconInfo.width / 2)) + ", " + (d.y - (iconInfo.width / 2) - 4) + ")");
-        }
-
-        i2g.addNode = function(newNode) {
-            model.addNodes(newNode);
-            addNodeIcon(newNode);
-            addNodeLabel(newNode);
-            return i2g;
         }
 
         i2g.addNodes = function(newNodes){
