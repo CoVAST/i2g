@@ -82,14 +82,15 @@ define(function(require) {
                     } else if(key == 'time') {
                         newNodeType = 'time';
                     }
-                    i2g.addNodes({
+                    i2g.model.addNodes({
                         label: 'New ' + key,
                         type: newNodeType,
-                        fx: newNodePosition.left,
-                        fy: newNodePosition.top,
+                        x: newNodePosition.left,
+                        y: newNodePosition.top,
                         value: 0,
                         datalink: false
-                    }).update();
+                    });
+                    i2g.update();
                 }
             },
             items: {
@@ -147,9 +148,7 @@ define(function(require) {
         });
     }
 
-
-    function nodeMenu(i2g) { //TODO: remove tempLink after separating model and view
-        var tempLink = i2g.tempLink;
+    function nodeMenu(i2g) {
         $.contextMenu({
             selector: '.nodeHolder',
             callback: function(key, options) {
@@ -158,21 +157,19 @@ define(function(require) {
                     thisNodePosition = $(".context-menu-root:eq(1)").position();
 
                 if(key == 'removeNode') {
-                    d3.select(thisNode).remove();
-                    i2g.removeNode(thisNodeId);
+                    i2g.model.removeNode(thisNodeId);
                     i2g.update();
                 } else if(key == 'modifyNode') {
-                    d3.select(thisNode).attr('stroke', 'orange');
-
+                    i2g.updateNode(thisNode, {stroke: 'orange'});
                     var saveChanges = function(newLabelText, newLabelType) {
-                        d3.select(thisNode).attr('stroke', 'transparent');
+                        i2g.updateNode(thisNode, {stroke: 'transparent'});
                         var changes = {
                             label: newLabelText,
                             type: newLabelType
                         }
-                        i2g.modifyNode(thisNodeId, changes);
+                        i2g.model.modifyNode(thisNodeId, changes);
+                        i2g.update();
                     }
-
                     nodePad({
                         container: $("#nodePadModal"),
                         nodeLabel: thisNode.__data__.label,
@@ -184,15 +181,7 @@ define(function(require) {
                     });
 
                 } else if(key == 'addLink'){
-                    tempLink.source = i2g.model.nodeHash[thisNodeId];
-
-                    tempLink.target = null;
-                    tempLink.svg
-                        .attr('x1', tempLink.source.x)
-                        .attr('y1', tempLink.source.y)
-                        .attr('x2', tempLink.source.x)
-                        .attr('y2', tempLink.source.y)
-                        .attr('stroke-width', 4);
+                    i2g.startAddingLink(thisNodeId);
                 }
             },
             items: {
@@ -210,8 +199,8 @@ define(function(require) {
                 var thisLink = this[0],
                     thisLinkId = thisLink.__data__.id;
                 if(key == 'removeLink') {
-                    d3.select(thisLink).remove();
-                    i2g.removeLink(thisLinkId);
+                    i2g.model.removeLink(thisLinkId);
+                    i2g.update();
                 } else if(key == 'annotate') {
 
                 }
@@ -223,13 +212,10 @@ define(function(require) {
         });
     }
 
-
     return {
         svgMenu: svgMenu,
         linkMenu: linkMenu,
         nodeMenu: nodeMenu
     }
-
-
 
 })
