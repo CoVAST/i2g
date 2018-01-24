@@ -200,7 +200,7 @@ define(function(require) {
         });
     }
 
-    function linkMenu() {
+    function linkMenu(i2gModel) {
         $.contextMenu({
             selector: '.graphLinks',
             callback: function(key, options) {
@@ -208,7 +208,7 @@ define(function(require) {
                     thisLinkId = thisLink.__data__.id;
                 if(key == 'removeLink') {
                     d3.select(thisLink).remove();
-                    removeLink(thisLinkId);
+                    i2gModel.removeLink(thisLinkId);
                 } else if(key == 'annotate') {
 
                 }

@@ -33,6 +33,9 @@ define(function(require) {
                 nodeLabels[nodeId].remove();
                 delete nodeIcons[nodeId];
                 delete nodeLabels[nodeId];
+                nodes = nodes.filter(function(d){
+                    d.id != nodeId;
+                });
             },
             onNodeModified : function(theNode) {
                 labelNode(theNode);
