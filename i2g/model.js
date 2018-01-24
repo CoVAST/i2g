@@ -39,6 +39,10 @@ function i2gModel(arg) {
 
             if(!newNode.hasOwnProperty('id')) {
                 newNode.id = nodeCounter;
+            } else { //remove existing node with the same id
+                if(nodeHash.hasOwnProperty(newNode.id)) {
+                    model.removeNode(newNode.id);
+                }
             }
             nodeCounter++;
             if(!newNode.hasOwnProperty('datalink')) {

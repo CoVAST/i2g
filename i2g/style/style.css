@@ -27,7 +27,7 @@ a.active {
     color: #000;
 }
 
-.links line {
+.graphLinks line {
     stroke: #999;
     stroke-opacity: 0.6;
 }

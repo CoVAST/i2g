@@ -53,8 +53,11 @@ define(function(require) {
                     reader.onload = function(){
                         var graphData = JSON.parse(reader.result);
 
-                        i2g.model.removeNodes({all: true})
-                        .addNodes(graphData.nodes);
+                        i2g.model
+                            .removeNodes({all: true});
+                        i2g.update();
+                        i2g.model.addNodes(graphData.nodes);
+                        i2g.update();
 
                         graphData.links.forEach((d) => {
                             i2g.model.addLinks({
