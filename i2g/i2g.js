@@ -89,7 +89,7 @@ define(function(require) {
               .attr("id",'directionArrow')
               .attr("viewBox", "0 -5 10 10")
                .attr("markerUnits", "userSpaceOnUse")
-              .attr("refX", 5)
+              .attr("refX", 30)
               .attr("refY", 0)
               .attr("markerWidth", 15)
               .attr("markerHeight", 15)
@@ -97,7 +97,7 @@ define(function(require) {
             .append("svg:path")
             //   .attr("stroke", "red")
             //   .attr("stroke", "none")
-              .attr("fill", "purple")
+              .attr("fill", "#999")
             //   .attr("transform", "scale(0.05)")
             //   .attr("d", logos('info'));
               .attr("d", "M0,-5L10,0L0,5");
@@ -170,7 +170,7 @@ define(function(require) {
         });
 
         var g = svg.append("g"), //append a graph to plot all the links and nodes
-            link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
+            link = g.append("g").attr("stroke", "#999").selectAll(".link"),
             node = g.append("g").attr("stroke-width", 2).attr("stroke", "none").selectAll(".node");
 
         var linkIcons = [], // unknown
@@ -274,9 +274,9 @@ define(function(require) {
             link = link.enter()
                 .append("path")
                 .attr('class', 'graphLinks')
-                .attr("stroke-width", (d)=>linkSize(d.value))
+                .attr("stroke-width", 2)
                 // .attr("stroke", (d)=>linkColor(d.dest))
-                .attr("marker-mid", "url(#directionArrow)")
+                .attr("marker-end", "url(#directionArrow)")
                 .merge(link);
 
             link.append('title')

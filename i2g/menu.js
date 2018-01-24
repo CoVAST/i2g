@@ -2,43 +2,49 @@ define(function(require) {
     var nodePad = require('./ui/nodePad'),
         download = require('./downloadFunc');
 
+    var uploadFile;
+
     /** Set up a group of context menu functions. */
     function svgMenu(container, i2gModel) {
         $.contextMenu.types.label = function(item, opt, root) {
             // this === item.$node
-            $('<div>Please input a file<div>\
-                <input type="file" id="myFile" multiple size="50">\
-                <div id="demo"></div>')
-                .appendTo(this)
-                .on('change', function() {
-                    var x = document.getElementById("myFile");
-                    var txt = "";
-                    if ('files' in x) {
-                        if (x.files.length == 0) {
-                            txt = "Select one or more files.";
-                        } else {
-                            for (var i = 0; i < x.files.length; i++) {
-                                txt += "<br><strong>" + (i+1) + ". file</strong><br>";
-                                var file = x.files[i];
-                                if ('name' in file) {
-                                    txt += "name: " + file.name + "<br>";
-                                }
-                                if ('size' in file) {
-                                    txt += "size: " + file.size + " bytes <br>";
-                                }
+            /*
+            <div>Please input a file<div>
+            <input type="file" id="myFile" multiple size="50">
+            <div id="demo"></div>
+            */
+            var uploadText = $('<div>Please input a file<div>').appendTo(this);
+            uploadFile = $('<input type="file" multiple size="50">').appendTo(this);
+            var uploadFileDemo = $('<div/>').appendTo(this);
+            uploadFile.on('change', function() {
+                var x = uploadFile[0];
+                var txt = "";
+                if ('files' in x) {
+                    if (x.files.length == 0) {
+                        txt = "Select one or more files.";
+                    } else {
+                        for (var i = 0; i < x.files.length; i++) {
+                            txt += "<br><strong>" + (i+1) + ". file</strong><br>";
+                            var file = x.files[i];
+                            if ('name' in file) {
+                                txt += "name: " + file.name + "<br>";
+                            }
+                            if ('size' in file) {
+                                txt += "size: " + file.size + " bytes <br>";
                             }
                         }
                     }
-                    else {
-                        if (x.value == "") {
-                            txt += "Select one or more files.";
-                        } else {
-                            txt += "The files property is not supported by your browser!";
-                            txt  += "<br>The path of the selected file: " + x.value; // If the browser does not support the files property, it will return the path of the selected file instead.
-                        }
+                }
+                else {
+                    if (x.value == "") {
+                        txt += "Select one or more files.";
+                    } else {
+                        txt += "The files property is not supported by your browser!";
+                        txt  += "<br>The path of the selected file: " + x.value; // If the browser does not support the files property, it will return the path of the selected file instead.
                     }
-                    document.getElementById("demo").innerHTML = txt;
-                });
+                }
+                uploadFileDemo.html(txt);
+            });
         };
 
 
@@ -48,7 +54,7 @@ define(function(require) {
                 var newNodeType;
                 var newNodePosition = $(".context-menu-root:eq(0)").position();
                 if(key == 'uploadFile') {
-                    var x = document.getElementById("myFile").files[0];
+                    var x = uploadFile[0].files[0];
                     var reader = new FileReader();
                     reader.onload = function(){
                         var graphData = JSON.parse(reader.result);
