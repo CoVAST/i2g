@@ -410,7 +410,10 @@ define(function(require) {
         menu.svgMenu(container, model);
         menu.nodeMenu(model, tempLink);
         menu.linkMenu(model);
-        model.update = renderNodes;
+        model.update = function () {
+            renderNodes();
+            renderLinks();
+        }
         i2g.model = model;
 
         return i2g;
