@@ -3,7 +3,7 @@ define(function(require) {
         download = require('./downloadFunc');
 
     /** Set up a group of context menu functions. */
-    function svgMenu(container, i2gModel) {
+    function svgMenu(i2g) {
         $.contextMenu.types.label = function(item, opt, root) {
             // this === item.$node
             $('<div>Please input a file<div>\
@@ -43,7 +43,7 @@ define(function(require) {
 
 
         $.contextMenu({
-            selector: container,
+            selector: i2g.container,
             callback: function(key, options) {
                 var newNodeType;
                 var newNodePosition = $(".context-menu-root:eq(0)").position();
@@ -53,22 +53,24 @@ define(function(require) {
                     reader.onload = function(){
                         var graphData = JSON.parse(reader.result);
 
-                        i2gModel.removeNodes({all: true})
-                            .addNodes(graphData.nodes).update();
+                        i2g.model.removeNodes({all: true})
+                        .addNodes(graphData.nodes);
 
                         graphData.links.forEach((d) => {
-                            i2gModel.addLinks({
+                            i2g.model.addLinks({
 					            source: d.source.id,
 					            target: d.target.id,
 					            value: d.value
-					        }).update();
+					        });
                         });
+
+                        i2g.update();
                     };
                     reader.readAsText(x);
                 } else if(key == 'saveFile') {
                     var graphData = ({
-                        nodes: i2gModel.nodes,
-                        links: i2gModel.links
+                        nodes: i2g.nodes,
+                        links: i2g.links
                     });
                     var fileName = options.inputs["downloadFileName"].$input.val();
                     download(graphData, fileName);
@@ -80,7 +82,7 @@ define(function(require) {
                     } else if(key == 'time') {
                         newNodeType = 'time';
                     }
-                    i2gModel.addNodes({
+                    i2g.addNodes({
                         label: 'New ' + key,
                         type: newNodeType,
                         fx: newNodePosition.left,
@@ -146,7 +148,8 @@ define(function(require) {
     }
 
 
-    function nodeMenu(i2gModel, tempLink) { //TODO: remove tempLink after separating model and view
+    function nodeMenu(i2g) { //TODO: remove tempLink after separating model and view
+        var tempLink = i2g.tempLink;
         $.contextMenu({
             selector: '.nodeHolder',
             callback: function(key, options) {
@@ -156,8 +159,8 @@ define(function(require) {
 
                 if(key == 'removeNode') {
                     d3.select(thisNode).remove();
-                    i2gModel.removeNode(thisNodeId);
-                    i2gModel.update();
+                    i2g.removeNode(thisNodeId);
+                    i2g.update();
                 } else if(key == 'modifyNode') {
                     d3.select(thisNode).attr('stroke', 'orange');
 
@@ -167,7 +170,7 @@ define(function(require) {
                             label: newLabelText,
                             type: newLabelType
                         }
-                        i2gModel.modifyNode(thisNodeId, changes);
+                        i2g.modifyNode(thisNodeId, changes);
                     }
 
                     nodePad({
@@ -181,7 +184,7 @@ define(function(require) {
                     });
 
                 } else if(key == 'addLink'){
-                    tempLink.source = i2gModel.nodeHash[thisNodeId];
+                    tempLink.source = i2g.model.nodeHash[thisNodeId];
 
                     tempLink.target = null;
                     tempLink.svg
@@ -200,7 +203,7 @@ define(function(require) {
         });
     }
 
-    function linkMenu(i2gModel) {
+    function linkMenu(i2g) {
         $.contextMenu({
             selector: '.graphLinks',
             callback: function(key, options) {
@@ -208,7 +211,7 @@ define(function(require) {
                     thisLinkId = thisLink.__data__.id;
                 if(key == 'removeLink') {
                     d3.select(thisLink).remove();
-                    i2gModel.removeLink(thisLinkId);
+                    i2g.removeLink(thisLinkId);
                 } else if(key == 'annotate') {
 
                 }

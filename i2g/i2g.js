@@ -23,22 +23,7 @@ define(function(require) {
 
         var model = dataModel({
             data: graph,
-            tag: graphName,
-            onNodeAdded: function(newNode) {
-                // addNodeIcon(newNode);
-                // addNodeLabel(newNode);
-            },
-            onNodeRemoved: function(nodeId) {
-                nodeIcons[nodeId]._icon.remove();
-                nodeIcons[nodeId].remove();
-                nodeLabels[nodeId].remove();
-                delete nodeIcons[nodeId];
-                delete nodeLabels[nodeId];
-            },
-            onNodeModified : function(theNode) {
-                labelNode(theNode);
-                drawNodeIcon(theNode);
-            }
+            tag: graphName
 
         });
 
@@ -47,11 +32,6 @@ define(function(require) {
             nodes = model.getNodes(),
             links = model.getLinks();
 
-        // initialize the graph as a object and initialize the graph nodes and links
-
-
-        // pretty useless variable, maybe remove later
-        var maxLinkValue = 0;
 
         /** Use a temp link to show the link when add a new link */
         var tempLink = {
@@ -168,7 +148,9 @@ define(function(require) {
 
         var g = svg.append("g"), //append a graph to plot all the links and nodes
             link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
-            node = g.append("g").attr("stroke-width", 2).attr("stroke", "none").selectAll(".node");
+            nodeSvg = g.append("g");
+
+        nodeSvg.attr("stroke-width", 2).attr("stroke", "none");
 
         var linkIcons = [], // unknown
             linkLabels = []; // unknown
@@ -189,15 +171,16 @@ define(function(require) {
             nodes = model.getNodes();
             nodes.forEach(function(d){ d.x = d.fx; d.y = d.fy;})
 
-            node = node.data(nodes);
+            var node = nodeSvg.selectAll("circle").data(nodes);
 
             // Remove the previous nodes from the graph
             node.exit().remove();
 
             // Add updated nodes into the graph
-            node = node.enter()
-                .append("circle")
-                .merge(node)
+            var nodeStruct = node.enter();
+
+            nodeStruct.append("circle")
+                // .merge(node)
                 .attr('class', 'nodeHolder')
                 // .attr("fill", function(d) {
                 //     return nodeColor(d.type);
@@ -237,12 +220,6 @@ define(function(require) {
                     .on("drag", dragged)
                     .on("end", dragended)
                 );
-
-            // Unknown action
-            // node
-            // .append('title')
-            // .text((d)=>{ if(d.detail) return d.detail});
-            // console.log(node);
 
             // For each node add icon and label
             nodes.forEach(function(d){
@@ -300,7 +277,6 @@ define(function(require) {
             updateNodeLabel(d);
             updateNodeIcon(d);
 
-
             link.filter(function(li){
                 return li.source.id == d.id || li.target.id == d.id;
             })
@@ -313,7 +289,6 @@ define(function(require) {
 
         /** Set up a group of drag functions. */
         function dragstarted(d) {
-            console.log(d.id);
             // if (!d3.event.active) simulation.alphaTarget(0.3).restart();
             updateNode(d);
 
@@ -404,14 +379,41 @@ define(function(require) {
             nodeIcons[d.id].attr("transform", "translate(" + (d.x - (iconInfo.width / 2)) + ", " + (d.y - (iconInfo.width / 2) - 4) + ")");
         }
 
-        menu.svgMenu(container, model);
-        menu.nodeMenu(model, tempLink);
-        menu.linkMenu(model);
-        model.update = function () {
+        i2g.addNode = function(newNode) {
+            model.addNodes(newNode);
+            addNodeIcon(newNode);
+            addNodeLabel(newNode);
+            return i2g;
+        }
+
+        i2g.addNodes = function(newNodes){
+            model.addNodes(newNodes);
+            return i2g;
+        }
+
+        i2g.removeNode = function(nodeId) {
+            model.removeNode(nodeId);
+            nodeIcons[nodeId]._icon.remove();
+            nodeIcons[nodeId].remove();
+            nodeLabels[nodeId].remove();
+            delete nodeIcons[nodeId];
+            delete nodeLabels[nodeId];
+            return i2g;
+        }
+
+        i2g.update = function () {
             renderNodes();
             renderLinks();
+            return i2g;
         }
+
+        i2g.tempLink = tempLink;
         i2g.model = model;
+        i2g.container = container;
+        menu.svgMenu(i2g);
+        menu.nodeMenu(i2g);
+        menu.linkMenu(i2g);
+
 
         return i2g;
     }
