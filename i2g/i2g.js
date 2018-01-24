@@ -25,24 +25,11 @@ define(function(require) {
         });
 
         // set up the svg
-        var svg = d3.select(container).append("svg:svg");
-
-        svg.attr("id", graphId)
-            .attr("width", width)
-            .attr("height", height)
-            .style("border", "solid 3px black")
-            .on("click", function(d){
-                // modify the templink
-                if(tempLink.source !== null) {
-                    tempLink.source = null;
-                    tempLink.svg
-                        .attr("stroke-width", 0)
-                        .attr("x1", 0)
-                        .attr("y1", 0)
-                        .attr("x2", 0)
-                        .attr("y2", 0);
-                }
-            });
+        var svg = d3.select(container)
+            .append("svg:svg")
+                .attr("id", graphId)
+                .attr("width", width)
+                .attr("height", height)
 
         // set up the direction arrow
         svg.append("svg:defs").append("svg:marker")
@@ -211,7 +198,6 @@ define(function(require) {
                 .attr("fill", "red");
         }
 
-
         //Use a temporary link for indication when adding a new link from a node
         var tempLink = {
             source: null,
@@ -239,6 +225,20 @@ define(function(require) {
                     .attr("y2", pos[1]-3);
             }
         });
+
+        // modify the templink
+        svg.on("click", function(d){
+            if(tempLink.source !== null) {
+                tempLink.source = null;
+                tempLink.svg
+                    .attr("stroke-width", 0)
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", 0)
+                    .attr("y2", 0);
+            }
+        });
+
 
         i2g.startAddingLink = function(thisNodeId) {
             tempLink.source = model.nodeHash[thisNodeId];
