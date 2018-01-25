@@ -42,21 +42,21 @@
             "value": 0,
             "datalink": false,
             "id": "3",
-            "tag": "New Node"
+            "tag": "Tehrik-I-Taliban Pakistan"
         },
         {
             "label": "Explosives/Bombs/...",
             "type": "default",
             "annotation": "",
-            "x": 0.48624215011961724,
-            "y": 0.48763961501901165,
+            "x": 0.49222301136363633,
+            "y": 0.45436965304182547,
             "value": 0,
             "datalink": false,
             "id": "4",
-            "tag": "New Node"
+            "tag": "Explosives/Bombs/..."
         },
         {
-            "label": "New Node",
+            "label": "Al-Shabaab",
             "type": "people",
             "annotation": "",
             "x": 0.654304351076555,
@@ -76,6 +76,50 @@
             "datalink": false,
             "id": "7",
             "tag": "Boko Haram"
+        },
+        {
+            "label": "Sub-Saharan Africa",
+            "type": "location",
+            "annotation": "",
+            "x": 0.4904287529904306,
+            "y": 0.6131149001901138,
+            "value": 0,
+            "datalink": false,
+            "id": "14",
+            "tag": "Sub-Saharan Africa"
+        },
+        {
+            "label": "1979-2015",
+            "type": "time",
+            "annotation": "",
+            "x": 0.16447181519138757,
+            "y": 0.3431529230038023,
+            "value": 0,
+            "datalink": false,
+            "id": "15",
+            "tag": "1979-2015"
+        },
+        {
+            "label": "2009-2015",
+            "type": "time",
+            "annotation": "",
+            "x": 0.16387372906698564,
+            "y": 0.5551301093155894,
+            "value": 0,
+            "datalink": false,
+            "id": "16",
+            "tag": "2009-2015"
+        },
+        {
+            "label": "2007-2015",
+            "type": "time",
+            "annotation": "",
+            "x": 0.7685388008373208,
+            "y": 0.45151794201520906,
+            "value": 0,
+            "datalink": false,
+            "id": "17",
+            "tag": "2007-2015"
         }
     ],
     "links": [
@@ -149,16 +193,16 @@
                 "label": "Explosives/Bombs/...",
                 "type": "default",
                 "annotation": "",
-                "x": 0.48624215011961724,
-                "y": 0.48763961501901165,
+                "x": 0.49222301136363633,
+                "y": 0.45436965304182547,
                 "value": 0,
                 "datalink": false,
                 "id": "4",
-                "tag": "New Node"
+                "tag": "Explosives/Bombs/..."
             },
             "value": 2,
-            "datalink": false,
-            "id": 2
+            "id": 2,
+            "datalink": false
         },
         {
             "source": {
@@ -170,7 +214,7 @@
                 "value": 0,
                 "datalink": false,
                 "id": "3",
-                "tag": "New Node"
+                "tag": "Tehrik-I-Taliban Pakistan"
             },
             "target": {
                 "label": "South Asia",
@@ -184,8 +228,8 @@
                 "tag": "South Asia"
             },
             "value": 2,
-            "datalink": false,
-            "id": 3
+            "id": 3,
+            "datalink": false
         },
         {
             "source": {
@@ -197,7 +241,7 @@
                 "value": 0,
                 "datalink": false,
                 "id": "3",
-                "tag": "New Node"
+                "tag": "Tehrik-I-Taliban Pakistan"
             },
             "target": {
                 "label": "Firearms",
@@ -211,8 +255,8 @@
                 "tag": "Firearms"
             },
             "value": 2,
-            "datalink": false,
-            "id": 4
+            "id": 4,
+            "datalink": false
         },
         {
             "source": {
@@ -224,26 +268,26 @@
                 "value": 0,
                 "datalink": false,
                 "id": "3",
-                "tag": "New Node"
+                "tag": "Tehrik-I-Taliban Pakistan"
             },
             "target": {
                 "label": "Explosives/Bombs/...",
                 "type": "default",
                 "annotation": "",
-                "x": 0.48624215011961724,
-                "y": 0.48763961501901165,
+                "x": 0.49222301136363633,
+                "y": 0.45436965304182547,
                 "value": 0,
                 "datalink": false,
                 "id": "4",
-                "tag": "New Node"
+                "tag": "Explosives/Bombs/..."
             },
             "value": 2,
-            "datalink": false,
-            "id": 5
+            "id": 5,
+            "datalink": false
         },
         {
             "source": {
-                "label": "New Node",
+                "label": "Al-Shabaab",
                 "type": "people",
                 "annotation": "",
                 "x": 0.654304351076555,
@@ -265,12 +309,12 @@
                 "tag": "Firearms"
             },
             "value": 2,
-            "datalink": false,
-            "id": 6
+            "id": 6,
+            "datalink": false
         },
         {
             "source": {
-                "label": "New Node",
+                "label": "Al-Shabaab",
                 "type": "people",
                 "annotation": "",
                 "x": 0.654304351076555,
@@ -284,16 +328,16 @@
                 "label": "Explosives/Bombs/...",
                 "type": "default",
                 "annotation": "",
-                "x": 0.48624215011961724,
-                "y": 0.48763961501901165,
+                "x": 0.49222301136363633,
+                "y": 0.45436965304182547,
                 "value": 0,
                 "datalink": false,
                 "id": "4",
-                "tag": "New Node"
+                "tag": "Explosives/Bombs/..."
             },
             "value": 2,
-            "datalink": false,
-            "id": 7
+            "id": 7,
+            "datalink": false
         },
         {
             "source": {
@@ -319,8 +363,8 @@
                 "tag": "Firearms"
             },
             "value": 2,
-            "datalink": false,
-            "id": 8
+            "id": 8,
+            "datalink": false
         },
         {
             "source": {
@@ -338,16 +382,178 @@
                 "label": "Explosives/Bombs/...",
                 "type": "default",
                 "annotation": "",
-                "x": 0.48624215011961724,
-                "y": 0.48763961501901165,
+                "x": 0.49222301136363633,
+                "y": 0.45436965304182547,
                 "value": 0,
                 "datalink": false,
                 "id": "4",
-                "tag": "New Node"
+                "tag": "Explosives/Bombs/..."
+            },
+            "value": 2,
+            "id": 9,
+            "datalink": false
+        },
+        {
+            "source": {
+                "label": "Boko Haram",
+                "type": "people",
+                "annotation": "",
+                "x": 0.3205722936602871,
+                "y": 0.5304152804182508,
+                "value": 0,
+                "datalink": false,
+                "id": "7",
+                "tag": "Boko Haram"
+            },
+            "target": {
+                "label": "Sub-Saharan Africa",
+                "type": "location",
+                "annotation": "",
+                "x": 0.4904287529904306,
+                "y": 0.6131149001901138,
+                "value": 0,
+                "datalink": false,
+                "id": "14",
+                "tag": "Sub-Saharan Africa"
             },
             "value": 2,
             "datalink": false,
-            "id": 9
+            "id": 10
+        },
+        {
+            "source": {
+                "label": "Al-Shabaab",
+                "type": "people",
+                "annotation": "",
+                "x": 0.654304351076555,
+                "y": 0.559882961026616,
+                "value": 0,
+                "datalink": false,
+                "id": "6",
+                "tag": "New Node"
+            },
+            "target": {
+                "label": "Sub-Saharan Africa",
+                "type": "location",
+                "annotation": "",
+                "x": 0.4904287529904306,
+                "y": 0.6131149001901138,
+                "value": 0,
+                "datalink": false,
+                "id": "14",
+                "tag": "Sub-Saharan Africa"
+            },
+            "value": 2,
+            "datalink": false,
+            "id": 11
+        },
+        {
+            "source": {
+                "label": "Maoists",
+                "type": "people",
+                "annotation": "",
+                "x": 0.3229646381578939,
+                "y": 0.34410349334600754,
+                "value": 0,
+                "datalink": false,
+                "id": "13",
+                "tag": "Maoists"
+            },
+            "target": {
+                "label": "1979-2015",
+                "type": "time",
+                "annotation": "",
+                "x": 0.16447181519138757,
+                "y": 0.3431529230038023,
+                "value": 0,
+                "datalink": false,
+                "id": "15",
+                "tag": "1979-2015"
+            },
+            "value": 2,
+            "datalink": false,
+            "id": 12
+        },
+        {
+            "source": {
+                "label": "Boko Haram",
+                "type": "people",
+                "annotation": "",
+                "x": 0.3205722936602871,
+                "y": 0.5304152804182508,
+                "value": 0,
+                "datalink": false,
+                "id": "7",
+                "tag": "Boko Haram"
+            },
+            "target": {
+                "label": "2009-2015",
+                "type": "time",
+                "annotation": "",
+                "x": 0.16387372906698564,
+                "y": 0.5551301093155894,
+                "value": 0,
+                "datalink": false,
+                "id": "16",
+                "tag": "2009-2015"
+            },
+            "value": 2,
+            "datalink": false,
+            "id": 13
+        },
+        {
+            "source": {
+                "label": "Tehrik-I-Taliban Pakistan",
+                "type": "people",
+                "annotation": "",
+                "x": 0.6674622458133971,
+                "y": 0.3412517823193917,
+                "value": 0,
+                "datalink": false,
+                "id": "3",
+                "tag": "Tehrik-I-Taliban Pakistan"
+            },
+            "target": {
+                "label": "2007-2015",
+                "type": "time",
+                "annotation": "",
+                "x": 0.7685388008373208,
+                "y": 0.45151794201520906,
+                "value": 0,
+                "datalink": false,
+                "id": "17",
+                "tag": "2007-2015"
+            },
+            "value": 2,
+            "datalink": false,
+            "id": 14
+        },
+        {
+            "source": {
+                "label": "Al-Shabaab",
+                "type": "people",
+                "annotation": "",
+                "x": 0.654304351076555,
+                "y": 0.559882961026616,
+                "value": 0,
+                "datalink": false,
+                "id": "6",
+                "tag": "New Node"
+            },
+            "target": {
+                "label": "2007-2015",
+                "type": "time",
+                "annotation": "",
+                "x": 0.7685388008373208,
+                "y": 0.45151794201520906,
+                "value": 0,
+                "datalink": false,
+                "id": "17",
+                "tag": "2007-2015"
+            },
+            "value": 2,
+            "datalink": false,
+            "id": 15
         }
     ]
 }

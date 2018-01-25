@@ -38,13 +38,13 @@ function i2gModel(arg) {
         newNodes.forEach(function(newNode){
 
             if(!newNode.hasOwnProperty('id')) {
-                newNode.id = nodeCounter;
+                newNode.id = nodeCounter++;
             } else { //remove existing node with the same id
                 if(nodeHash.hasOwnProperty(newNode.id)) {
                     model.removeNode(newNode.id);
                 }
+                nodeCounter = parseInt(newNode.id) > nodeCounter ? (parseInt(newNode.id) + 1) : nodeCounter;
             }
-            nodeCounter++;
             if(!newNode.hasOwnProperty('datalink')) {
                 newNode.datalink = false;
             }
