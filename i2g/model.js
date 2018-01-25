@@ -160,8 +160,8 @@ function i2gModel(arg) {
     };
 
     model.nodeHash = nodeHash;
-    model.getNodes = function() { return nodes };
-    model.getLinks = function() { return links };
+    model.getNodes = function() { return nodes; }
+    model.getLinks = function() { return links; }
 
     return model;
 }

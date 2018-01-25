@@ -83,6 +83,8 @@ define(function(require) {
                     var fileName = options.inputs["downloadFileName"].$input.val();
                     download(graphData, fileName);
                 } else {
+                    var svgWidth = i2g.svg.attr('width');
+                    var svgHeight = i2g.svg.attr('height');
                     if(key == 'location') {
                         newNodeType = 'location';
                     } else if(key == 'people') {
@@ -93,8 +95,8 @@ define(function(require) {
                     i2g.model.addNodes({
                         label: 'New ' + key,
                         type: newNodeType,
-                        x: newNodePosition.left,
-                        y: newNodePosition.top,
+                        x: (newNodePosition.left / svgWidth),
+                        y: (newNodePosition.top / svgHeight),
                         value: 0,
                         datalink: false
                     });
@@ -169,11 +171,12 @@ define(function(require) {
                     i2g.update();
                 } else if(key == 'modifyNode') {
                     i2g.updateNode(thisNode, {stroke: 'orange'});
-                    var saveChanges = function(newLabelText, newLabelType) {
+                    var saveChanges = function(newNodeLabel, newNodeType, newNodeAnnotation) {
                         i2g.updateNode(thisNode, {stroke: 'transparent'});
                         var changes = {
-                            label: newLabelText,
-                            type: newLabelType
+                            label: newNodeLabel,
+                            type: newNodeType,
+                            annotation: newNodeAnnotation
                         }
                         i2g.model.modifyNode(thisNodeId, changes);
                         i2g.update();
@@ -182,6 +185,7 @@ define(function(require) {
                         container: $("#nodePadModal"),
                         nodeLabel: thisNode.__data__.label,
                         nodeType: thisNode.__data__.type,
+                        nodeAnnotation: thisNode.__data__.annotation,
                         width: 300,
                         marginTop: thisNodePosition.top + 10,
                         marginLeft: thisNodePosition.left + 10,

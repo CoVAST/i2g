@@ -29,7 +29,7 @@ define(function(require) {
             .append("svg:svg")
                 .attr("id", graphId)
                 .attr("width", width)
-                .attr("height", height)
+                .attr("height", height);
 
         // set up the direction arrow
         svg.append("svg:defs").append("svg:marker")
@@ -128,7 +128,7 @@ define(function(require) {
             var allNodes = nodeStruct
                 .merge(node)
                 .attr("transform", function(d) {
-                    return "translate(" + d.x + "," + d.y + ")";
+                    return "translate(" + (d.x * width) + "," + (d.y * height) + ")";
                 });
 
             allNodes.selectAll('.nodeLabels').text(function(d){
@@ -177,8 +177,8 @@ define(function(require) {
         }
 
         function drag(d) {
-            d.x += d3.event.dx;
-            d.y += d3.event.dy;
+            d.x += d3.event.dx / width;
+            d.y += d3.event.dy / height;
             i2g.update();
         }
 
@@ -251,6 +251,7 @@ define(function(require) {
                 .attr("stroke-width", 4);
         };
 
+
         i2g.completeAddingLink = function(destNode) {
             if(tempLink.source !== null && tempLink.target === null) {
                 tempLink.target = destNode;
@@ -288,6 +289,7 @@ define(function(require) {
         }
 
         i2g.container = container;
+        i2g.svg = svg;
         i2g.model = model;
 
         menu.svgMenu(i2g);

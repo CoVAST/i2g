@@ -8,12 +8,13 @@ define(function(require){
         	container = option.container,
         	nodeLabel = option.nodeLabel || "New Node",
         	nodeType = option.nodeType || "unknown",
+            nodeAnnotation = option.nodeAnnotation || "",
         	width = option.width || 300,
         	marginTop = option.marginTop || 0,
         	marginLeft = option.marginLeft || 0,
         	callback = option.callback;
 
-        var newLabelText, newNodeType;
+        var newNodeLabel, newNodeType;
 
         container.empty();
 
@@ -34,9 +35,9 @@ define(function(require){
         var nodePadModalContainer = $('<div class = "nodePadModal-container"/>').appendTo(container);
         var titleText = $('<h1>Node Properties</h1>').appendTo(nodePadModalContainer);
         var nodePadForm = $('<form/>').appendTo(nodePadModalContainer);
-        var nodeLabelInput = $('<input type = "text" placeholder = "' + nodeLabel + '">').appendTo(nodePadForm);
+        var nodeLabelInput = $('<input type = "text">').appendTo(nodePadForm).val(nodeLabel);
         var nodePadDropdown = $('<div class = "nodePadDropdown"/>').appendTo(nodePadForm);
-        var nodePadAnnotation = $('<textarea class = "nodePadAnnotation"/>').appendTo(nodePadForm);
+        var nodePadAnnotation = $('<textarea class = "nodePadAnnotation"/>').appendTo(nodePadForm).val(nodeAnnotation);
         var saveSubmitButton = $('<button type = "button" class = "btn btn-success">Save Change</button>').appendTo(nodePadForm);
         
 
@@ -65,9 +66,10 @@ define(function(require){
         container.show();
 
         saveSubmitButton.click(function() {
-        	newLabelText = nodeLabelInput.val() == '' ? nodeLabel : nodeLabelInput.val();
+        	newNodeLabel = nodeLabelInput.val();
+            newNodeAnnotation = nodePadAnnotation.val();
         	container.hide();
-        	callback(newLabelText, newNodeType);
+        	callback(newNodeLabel, newNodeType, newNodeAnnotation);
         })
         
     }
