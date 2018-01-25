@@ -239,7 +239,6 @@ define(function(require) {
             }
         });
 
-
         i2g.startAddingLink = function(thisNodeId) {
             tempLink.source = model.nodeHash[thisNodeId];
             tempLink.target = null;
@@ -250,7 +249,6 @@ define(function(require) {
                 .attr("y2", tempLink.source.y * height)
                 .attr("stroke-width", 4);
         };
-
 
         i2g.completeAddingLink = function(destNode) {
             if(tempLink.source !== null && tempLink.target === null) {
@@ -268,7 +266,7 @@ define(function(require) {
                     .attr("y1", 0)
                     .attr("x2", 0)
                     .attr("y2", 0);
-                renderLinks(); // call restart again to update the graph
+                renderLinks(); // draw the link just added
             }
         };
 
@@ -291,11 +289,7 @@ define(function(require) {
         i2g.container = container;
         i2g.svg = svg;
         i2g.model = model;
-
-        menu.svgMenu(i2g);
-        menu.nodeMenu(i2g);
-        menu.linkMenu(i2g);
-
+        menu(i2g);
         return i2g.update();
     }
 })

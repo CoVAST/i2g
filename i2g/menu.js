@@ -2,6 +2,12 @@ define(function(require) {
     var nodePad = require('./ui/nodePad'),
         download = require('./downloadFunc');
 
+    return function menu(i2g) {
+        svgMenu(i2g);
+        nodeMenu(i2g);
+        linkMenu(i2g);
+    }
+
     /** Set up a group of context menu functions. */
     function svgMenu(i2g) {
         var uploadFile;
@@ -214,12 +220,6 @@ define(function(require) {
                 annotate: {name: "Annotate", icon: "fa-commenting"},
             }
         });
-    }
-
-    return {
-        svgMenu: svgMenu,
-        linkMenu: linkMenu,
-        nodeMenu: nodeMenu
     }
 
 })
