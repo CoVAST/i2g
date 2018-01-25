@@ -170,9 +170,9 @@ define(function(require) {
             //update exiting links
             newLinks
                 .attr("d", function(d){
-                    return "M" + (d.source.x ) + "," + (d.source.y)
-                    + " L" + (((d.target.x ) + (d.source.x ))/2) + "," +(((d.target.y ) + (d.source.y ))/2)
-                    + "," + (d.target.x) + "," + (d.target.y);
+                    return "M" + (d.source.x * width) + "," + (d.source.y * height)
+                    + " L" + (((d.target.x * width ) + (d.source.x * width ))/2) + "," +(((d.target.y * height) + (d.source.y * height))/2)
+                    + "," + (d.target.x * width) + "," + (d.target.y * height);
                 })
         }
 
@@ -244,10 +244,10 @@ define(function(require) {
             tempLink.source = model.nodeHash[thisNodeId];
             tempLink.target = null;
             tempLink.svg
-                .attr("x1", tempLink.source.x)
-                .attr("y1", tempLink.source.y)
-                .attr("x2", tempLink.source.x)
-                .attr("y2", tempLink.source.y)
+                .attr("x1", tempLink.source.x * width)
+                .attr("y1", tempLink.source.y * height)
+                .attr("x2", tempLink.source.x * width)
+                .attr("y2", tempLink.source.y * height)
                 .attr("stroke-width", 4);
         };
 
