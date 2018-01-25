@@ -23,29 +23,33 @@ function i2gModel(arg) {
         }).forEach(function(link){
             model.removeLink(link.id);
         })
+        return model;
     }
 
     model.removeLink = function(linkId) {
         links = links.filter(function(li){
             return li.id != linkId;
         });
-
+        return model;
     }
 
     model.addNodes = function(newNodes) {
         var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
         newNodes.forEach(function(newNode){
-            var pos = newNode.pos || [0, 0];
+
             if(!newNode.hasOwnProperty('id')) {
                 newNode.id = nodeCounter;
+            } else { //remove existing node with the same id
+                if(nodeHash.hasOwnProperty(newNode.id)) {
+                    model.removeNode(newNode.id);
+                }
             }
             nodeCounter++;
             if(!newNode.hasOwnProperty('datalink')) {
                 newNode.datalink = false;
             }
             newNode.tag = newNode.label;
-            newNode.x = pos[0];
-            newNode.y = pos[1];
+
             if(tag !== null) {
                 newNode.id = tag + newNode.id;
             }
@@ -78,15 +82,11 @@ function i2gModel(arg) {
         return model;
     };
 
-
-    model.modifyNode = function(d, props) {
-        var theNode = (typeof d == 'object') ? d : nodeHash[d];
-
+    model.modifyNode = function(theNode, props) {
+        var modNode = (typeof theNode == 'object') ? theNode : nodeHash[theNode];
         for(var p in props) {
-            theNode[p] = props[p];
+            modNode[p] = props[p];
         }
-
-
     }
 
     model.removeNodes = function(query) {
@@ -160,7 +160,6 @@ function i2gModel(arg) {
     };
 
     model.nodeHash = nodeHash;
-
     model.getNodes = function() { return nodes };
     model.getLinks = function() { return links };
 
