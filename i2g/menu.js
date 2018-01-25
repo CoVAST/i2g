@@ -82,45 +82,37 @@ define(function(require) {
                     });
                     var fileName = options.inputs["downloadFileName"].$input.val();
                     download(graphData, fileName);
-                } else {
+                } else if(key == 'addNode') {
                     var svgWidth = i2g.svg.attr('width');
                     var svgHeight = i2g.svg.attr('height');
-                    if(key == 'location') {
-                        newNodeType = 'location';
-                    } else if(key == 'people') {
-                        newNodeType = 'people';
-                    } else if(key == 'time') {
-                        newNodeType = 'time';
+                    var addNewNode = function(newNodeLabel, newNodeType, newNodeAnnotation) {
+                        i2g.model.addNodes({
+                            label: newNodeLabel,
+                            type: newNodeType,
+                            annotation: newNodeAnnotation,
+                            x: (newNodePosition.left / svgWidth),
+                            y: (newNodePosition.top / svgHeight),
+                            value: 0,
+                            datalink: false
+                        });
+                        i2g.update();
                     }
-                    i2g.model.addNodes({
-                        label: 'New ' + key,
-                        type: newNodeType,
-                        x: (newNodePosition.left / svgWidth),
-                        y: (newNodePosition.top / svgHeight),
-                        value: 0,
-                        datalink: false
+                    nodePad({
+                        container: $("#nodePadModal"),
+                        nodeLabel: 'New Node',
+                        nodeType: 'default',
+                        nodeAnnotation: '',
+                        width: 300,
+                        marginTop: newNodePosition.top + 10,
+                        marginLeft: newNodePosition.left + 10,
+                        callback: addNewNode
                     });
-                    i2g.update();
                 }
             },
             items: {
                 addNode: {
                     name: "Add node",
-                    icon: "fa-plus-square",
-                    items: {
-                        location: {
-                            name: "Location",
-                            icon: "fa-map-marker"
-                        },
-                        people: {
-                            name: "People",
-                            icon: "fa-user"
-                        },
-                        time: {
-                            name: "Time",
-                            icon: "fa-clock-o"
-                        }
-                    }
+                    icon: "fa-plus-square"
                 },
                 importGraph: {
                     name: "Import graph",
@@ -197,9 +189,9 @@ define(function(require) {
                 }
             },
             items: {
-                removeNode: {name: "Remove this node", icon: "fa-times"},
                 addLink: {name: "Add link", icon: "fa-long-arrow-right"},
                 modifyNode: {name: "Modify node", icon: "fa-commenting"},
+                removeNode: {name: "Remove this node", icon: "fa-times"},
             }
         });
     }
