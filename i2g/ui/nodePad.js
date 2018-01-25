@@ -22,7 +22,8 @@ define(function(require){
 			<h1>Node Properties</h1>
 			<form>
 				<input type="text" placeholder="' + nodeLabel + '">
-				<div></div>
+				<div class = "nodePadDropdown"/>
+                <textarea class = "nodePadAnnotation"/>
 				<button type="button" class = "btn btn-success">
 					Save Change
 				</button>
@@ -33,9 +34,10 @@ define(function(require){
         var nodePadModalContainer = $('<div class = "nodePadModal-container"/>').appendTo(container);
         var titleText = $('<h1>Node Properties</h1>').appendTo(nodePadModalContainer);
         var nodePadForm = $('<form/>').appendTo(nodePadModalContainer);
-        var nodeLabelInput = $('<input type="text" placeholder="' + nodeLabel + '">').appendTo(nodePadForm);
+        var nodeLabelInput = $('<input type = "text" placeholder = "' + nodeLabel + '">').appendTo(nodePadForm);
         var nodePadDropdown = $('<div class = "nodePadDropdown"/>').appendTo(nodePadForm);
-        var saveSubmitButton = $('<button type="button" class = "btn btn-success">Save Change</button>').appendTo(nodePadForm);
+        var nodePadAnnotation = $('<textarea class = "nodePadAnnotation"/>').appendTo(nodePadForm);
+        var saveSubmitButton = $('<button type = "button" class = "btn btn-success">Save Change</button>').appendTo(nodePadForm);
         
 
         var dropdownChange = function(dropdownText) {
@@ -45,6 +47,7 @@ define(function(require){
         nodePadModalContainer.width(width);
     	nodePadModalContainer.css('margin-top', marginTop);
     	nodePadModalContainer.css('margin-left', marginLeft);
+        nodePadAnnotation.width(width - 6);
 
         dropdown({
         	container: nodePadDropdown,

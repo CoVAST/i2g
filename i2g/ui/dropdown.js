@@ -11,31 +11,36 @@ define(function(require){
         container.empty();
 
         /*
-        <button id = "' + container + 'Button" class = "dropdownButton">' + defaultVal + '</button>
-        <div id = "' + container + 'List" class = "dropdown-content"></div>
+        <div class = "dropdownButtonBox"/>
+        <div class = "dropdownButtonText"> + defaultVal + </div>
+        <div class = "dropdownButtonArrowBox"/>
+        <div class = "dropdownButtonArrow">
+        <div id = "' + container + 'List" class = "dropdown-content"/>
         */
 
-        var dropdownButton = $('<button class = "dropdownButton">' + defaultVal + '</button>').appendTo(container);
-        var dropdownContent = $('<div class = "dropdown-content"></div>').appendTo(container);
+        var dropdownButtonBox = $('<div class = "dropdownButtonBox"/>').appendTo(container);
+        var dropdownButtonText = $('<div class = "dropdownButtonText">' + defaultVal + '</div>').appendTo(dropdownButtonBox);
+        var dropdownButtonArrowBox = $('<div class = "dropdownButtonArrowBox"/>').appendTo(dropdownButtonBox);
+        var dropdownButtonArrow = $('<div class = "dropdownButtonArrow">').appendTo(dropdownButtonBox);
+        var dropdownContent = $('<div class = "dropdown-content"/>').appendTo(container);
 
         dropdownContent.css('min-width', $('.nodePadModal-container').width());
 
-
         // dropdown list
-        dropdownButton.click(function() {
+        dropdownButtonBox.click(function() {
             dropdownContent.show();
             dropdownContent.empty();
             list.forEach((d) => {
                 $('<div style = "width: 100%;" class = "dropdownItem">' + d + '</div>').appendTo(dropdownContent).on('click', function() {
-                    dropdownButton.text(d);
+                    dropdownButtonText.text(d);
                     dropdownContent.hide();
-                    callback(dropdownButton.text());
+                    callback(dropdownButtonText.text());
                     return false;
                 });
             });
             return false;
         });
 
-        callback(dropdownButton.text());
+        callback(dropdownButtonText.text());
     }
 })

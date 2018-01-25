@@ -72,6 +72,7 @@ a.active {
     text-align: center;
     font-size: 1.5em;
     font-family: inherit;
+    margin-top: 0px;
 }
 
 .nodePadModal-container button[type = button] {
@@ -81,15 +82,15 @@ a.active {
     margin: auto;
     font-size: 1.3em;
     border-radius: 5px !important;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
     position: relative;
 }
 
 .nodePadModal-container input[type = text], input[type = password] {
     height: 44px;
-    font-size: 16px;
+    font-size: 20px;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     -webkit-appearance: none;
     background: #fff;
     border: 1px solid #d9d9d9;
@@ -104,7 +105,13 @@ a.active {
     height: 35px;
     font-size: 16px;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.nodePadAnnotation {
+    height: 80px;
+    font-size: 14px;
+    margin-bottom: 15px;
 }
 
 .nodePadModal-container input[type=text]:hover, input[type=password]:hover {
@@ -136,19 +143,50 @@ a.active {
 
 
 /*dropdown modal*/
-.dropdownButton {
-    background-color: #555;
-    color: white;
-    font-size: 16px;
+.dropdownButtonBox {
     width: 100%;
-    height: 100%;
-    border-radius: 5px;
-    border-width: 0px;
+    height: 35px;
     cursor: pointer;
 }
 
+.dropdownButtonText {
+    font-size: 20px;
+    color: #333;
+    background-color: #DDD;
+    float: left;
+    width: 80%;
+    height: 30px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    text-align: center;
+    padding-top: 5px;
+}
+
+.dropdownButtonArrowBox {
+    font-size: 20px;
+    color: #333;
+    background-color: #BBB;
+    float: left;
+    width: 20%;
+    height: 35px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.dropdownButtonArrow {
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    margin-left: 263px;
+    margin-top: 15px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: #000 #BBB #BBB;
+}
+
 .dropdownButton:hover, .dropdownButton:focus {
-    background-color: #111;
+    border: 1px solid #b9b9b9;
+    border-top: 1px solid #a0a0a0;
 }
 
 .dropdown-content {
@@ -164,12 +202,11 @@ a.active {
     color: black;
     padding: 7px 0px;
     text-align: center;
-    font-size: 1.1em;
-    border-bottom: solid 1.5px #999;
+    font-size: 20px;
 }
 
 .dropdownItem:hover {
-    background-color: #E09C93;
+    background-color: #DDD;
 }
 
 
