@@ -116,12 +116,12 @@ define(function(require) {
                 .attr("dx", nodeHolderRadius)
                 .attr("dy", ".35em")
 
-            var icons = nodeStruct.append("g")
-                .attr("transform", "translate(" + (-nodeHolderRadius+10) + ", " + (-nodeHolderRadius+5) +")")
-                .append("path")
-                    .attr("class", "nodeIcons")
-                    .attr("pointer-events", "none")
-                    .attr("transform", "scale(" + scale * 0.1 + ")");
+            var icons = nodeStruct.append("text")
+                .attr("class", "nodeIcons")
+                .attr('font-family', 'FontAwesome')
+                .attr('font-size', function(d) { return scale * 3 + 'em'} )
+                .attr("dominant-baseline", "central")
+                .style("text-anchor", "middle");
 
 
             //update existing nodes
@@ -131,7 +131,7 @@ define(function(require) {
                     return "translate(" + (d.x * width) + "," + (d.y * height) + ")";
                 });
 
-            allNodes.selectAll('.nodeLabels').text(function(d){
+            labels.text(function(d){
                 var label = (d.hasOwnProperty("label")) ? d.label : d.id;
                 if(label.length > 20)
                     label = label.slice(0, 17) + "...";
@@ -140,9 +140,8 @@ define(function(require) {
                 return label;
             })
 
-            allNodes.selectAll('.nodeIcons')
-                .attr("d", function(d){ return logos(d.icon || d.type);})
-                .attr("fill", function(d){ return nodeColor(d); });
+            icons.text((d) => { return logos(d.icon || d.type); })
+                .attr("fill",  (d) => { return nodeColor(d); });
         }
 
         function renderLinks() {
