@@ -18,9 +18,12 @@ define(function(require) {
             <input type="file" id="myFile" multiple size="50">
             <div id="demo"></div>
             */
-            var uploadText = $('<div>Please input a file<div>').appendTo(this);
-            uploadFile = $('<input type="file" multiple size="50">').appendTo(this);
-            var uploadFileDemo = $('<div/>').appendTo(this);
+            var uploadText = $('<div>Please input a file</div>')
+                .appendTo(this);
+            uploadFile = $('<input type = "file" multiple size = "50">')
+                .appendTo(this);
+            var uploadFileDemo = $('<div/>')
+                .appendTo(this);
             uploadFile.on('change', function() {
                 var x = uploadFile[0];
                 var txt = "";
@@ -91,11 +94,12 @@ define(function(require) {
                 } else if(key == 'addNode') {
                     var svgWidth = i2g.svg.attr('width');
                     var svgHeight = i2g.svg.attr('height');
-                    var addNewNode = function(newNodeLabel, newNodeType, newNodeAnnotation) {
+                    var addNewNode = function(newNodeLabel, newNodeType, newNodeAnnotation, newNodeVis) {
                         i2g.model.addNodes({
                             label: newNodeLabel,
                             type: newNodeType,
                             annotation: newNodeAnnotation,
+                            vis: newNodeVis,
                             x: (newNodePosition.left / svgWidth),
                             y: (newNodePosition.top / svgHeight),
                             value: 0,
@@ -108,6 +112,7 @@ define(function(require) {
                         nodeLabel: 'New Node',
                         nodeType: 'default',
                         nodeAnnotation: '',
+                        nodeVis: '',
                         width: 300,
                         marginTop: newNodePosition.top + 10,
                         marginLeft: newNodePosition.left + 10,
@@ -169,12 +174,13 @@ define(function(require) {
                     i2g.update();
                 } else if(key == 'modifyNode') {
                     i2g.updateNode(thisNode, {stroke: 'orange'});
-                    var saveChanges = function(newNodeLabel, newNodeType, newNodeAnnotation) {
+                    var saveChanges = function(newNodeLabel, newNodeType, newNodeAnnotation, newNodeVis) {
                         i2g.updateNode(thisNode, {stroke: 'transparent'});
                         var changes = {
                             label: newNodeLabel,
                             type: newNodeType,
-                            annotation: newNodeAnnotation
+                            annotation: newNodeAnnotation,
+                            vis: newNodeVis
                         }
                         i2g.model.modifyNode(thisNodeId, changes);
                         i2g.update();
@@ -184,6 +190,7 @@ define(function(require) {
                         nodeLabel: thisNode.__data__.label,
                         nodeType: thisNode.__data__.type,
                         nodeAnnotation: thisNode.__data__.annotation,
+                        nodeVis: thisNode.__data__.vis,
                         width: 300,
                         marginTop: thisNodePosition.top + 10,
                         marginLeft: thisNodePosition.left + 10,

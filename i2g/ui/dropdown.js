@@ -18,11 +18,16 @@ define(function(require){
         <div id = "' + container + 'List" class = "dropdown-content"/>
         */
 
-        var dropdownButtonBox = $('<div class = "dropdownButtonBox"/>').appendTo(container);
-        var dropdownButtonText = $('<div class = "dropdownButtonText">' + defaultVal + '</div>').appendTo(dropdownButtonBox);
-        var dropdownButtonArrowBox = $('<div class = "dropdownButtonArrowBox"/>').appendTo(dropdownButtonBox);
-        var dropdownButtonArrow = $('<div class = "dropdownButtonArrow">').appendTo(dropdownButtonBox);
-        var dropdownContent = $('<div class = "dropdown-content"/>').appendTo(container);
+        var dropdownButtonBox = $('<div class = "dropdownButtonBox"/>')
+            .appendTo(container);
+        var dropdownButtonText = $('<div class = "dropdownButtonText">' + defaultVal + '</div>')
+            .appendTo(dropdownButtonBox);
+        var dropdownButtonArrowBox = $('<div class = "dropdownButtonArrowBox"/>')
+            .appendTo(dropdownButtonBox);
+        var dropdownButtonArrow = $('<div class = "dropdownButtonArrow">')
+            .appendTo(dropdownButtonBox);
+        var dropdownContent = $('<div class = "dropdown-content"/>')
+            .appendTo(container);
 
         dropdownContent.css('min-width', $('.nodePadModal-container').width());
 

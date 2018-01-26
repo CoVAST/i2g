@@ -123,6 +123,14 @@ a.active {
     margin-bottom: 15px;
 }
 
+.nodePadVisBox {
+    margin-bottom: 20px;
+}
+
+.nodePadVisDemo {
+    margin-top: 10px;
+}
+
 .nodePadModal-container input[type=text]:hover, input[type=password]:hover {
     border: 1px solid #b9b9b9;
     border-top: 1px solid #a0a0a0;
