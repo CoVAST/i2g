@@ -96,12 +96,12 @@ define(function(require) {
             // Add updated nodes into the graph
             var nodeStruct = node.enter().append("g")
                 .attr("class", "graphNodes")
+                .on("click", i2g.completeAddingLink)
 
             nodeStruct.append("circle")
                 .attr("class", "nodeHolder")
                 .attr("fill", "white")
-                .attr("r", nodeHolderRadius)
-                .on("click", i2g.completeAddingLink);
+                .attr("r", nodeHolderRadius);
 
             //interaction for dragging and moving a node
             nodeStruct.call(

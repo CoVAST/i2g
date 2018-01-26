@@ -158,7 +158,7 @@ define(function(require) {
 
     function nodeMenu(i2g) {
         $.contextMenu({
-            selector: '.nodeHolder',
+            selector: '.graphNodes',
             callback: function(key, options) {
                 var thisNode = this[0],
                     thisNodeId = thisNode.__data__.id,
