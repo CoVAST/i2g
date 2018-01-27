@@ -113,8 +113,7 @@ define(function(require) {
 
             var labels = nodeStruct.append("text")
                 .attr("class", "nodeLabels")
-                .attr("dx", nodeHolderRadius)
-                .attr("dy", ".35em")
+                .attr("dominant-baseline", "central");
 
             var icons = nodeStruct.append("text")
                 .attr("class", "nodeIcons")
@@ -122,6 +121,15 @@ define(function(require) {
                 .attr('font-size', function(d) { return scale * 3 + 'em'} )
                 .attr("dominant-baseline", "central")
                 .style("text-anchor", "middle");
+
+            var rectangles = nodeStruct.append("rect")
+                .attr("class", "nodeRect")
+                .attr("stroke", "#888")
+                .attr("fill", "transparent")
+                .attr("width", nodeHolderRadius * 4)
+                .attr("height", nodeHolderRadius * 2)
+                .attr("x", -nodeHolderRadius * 2)
+                .attr("y", -nodeHolderRadius);
 
 
             //update existing nodes
@@ -132,18 +140,46 @@ define(function(require) {
                 });
 
             allNodes.selectAll(".nodeLabels")
+                .attr("dx", (d) => {
+                    if(d.type == "default") {
+                        return null;
+                    } else {
+                        return nodeHolderRadius;
+                    }
+                })
+                .style("text-anchor", (d) => {
+                    if(d.type == "default") {
+                        return "middle";
+                    } else {
+                        return "start";
+                    }
+                })
                 .text(function(d){
-                var label = (d.hasOwnProperty("label")) ? d.label : d.id;
-                if(label.length > 20)
-                    label = label.slice(0, 17) + "...";
-                if(d.hasOwnProperty("labelPrefix"))
-                    label = d.labelPrefix + label;
-                return label;
-            })
+                    var label = (d.hasOwnProperty("label")) ? d.label : d.id;
+                    if(label.length > 20) {
+                        label = label.slice(0, 17) + "...";
+                    }
+                    if(d.type == "default") {
+                        label = label.slice(0, 8) + "...";
+                    }
+                    if(d.hasOwnProperty("labelPrefix")) {
+                        label = d.labelPrefix + label;
+                    }
+                    return label;
+                })
 
             allNodes.selectAll(".nodeIcons")
                 .text((d) => { return logos(d.icon || d.type); })
                 .attr("fill",  (d) => { return nodeColor(d); });
+
+            allNodes.selectAll(".nodeRect")
+                .style("display", (d) => {
+                    if(d.type == "default") {
+                        return null;
+                    } else {
+                        return "none";
+                    }
+                });
         }
 
         function renderLinks() {
@@ -166,7 +202,7 @@ define(function(require) {
 
             var newLinks = linkStruct.append("path");
 
-            newLinks.attr("class", "graphLinks1")
+            newLinks.attr("class", "graphLinkLine")
                 .attr("stroke-width", "2")//(d) => linkSize(d.value))
                 // .attr("stroke", (d)=>linkColor(d.dest))
                 .attr("marker-end", "url(#directionArrow)");
@@ -178,7 +214,7 @@ define(function(require) {
                 .merge(link);
 
             //update exiting links
-            allLinks.selectAll('.graphLinks1')
+            allLinks.selectAll('.graphLinkLine')
                 .attr("d", function(d){
                     var x1 = d.source.x,
                         x2 = d.target.x,
@@ -188,31 +224,24 @@ define(function(require) {
                     var x1c, x2c, y1c, y2c;
                     var tline = nodeHolderRadius;
 
-                    if(x1 < x2 && y1 < y2) {
-                        var degree = Math.atan(((y2 - y1) * height) / ((x2 - x1) * width));
-                        x1c = tline * (Math.cos(degree));
-                        x2c = -x1c;
-                        y1c = tline * (Math.sin(degree));
-                        y2c = -y1c;
-                    } else if(x1 < x2 && y2 < y1) {
-                        var degree = Math.atan(((y1 - y2) * height) / ((x2 - x1) * width));
-                        x1c = tline * (Math.cos(degree));
-                        x2c = -x1c;
-                        y1c = -tline * (Math.sin(degree));
-                        y2c = -y1c;
-                    } else if(x2 < x1 && y1 < y2) {
-                        var degree = Math.atan(((y2 - y1) * height) / ((x1 - x2) * width));
-                        x1c = -tline * (Math.cos(degree));
-                        x2c = -x1c;
-                        y1c = tline * (Math.sin(degree));
-                        y2c = -y1c;
+                    var dx = (x2 - x1) * width;
+                    var dy = (y2 - y1) * height;
+                    
+                    if(d.source.type == "default") {
+                        var ratio = Math.min(Math.abs(tline / dy), Math.abs(2 * tline / dx));
                     } else {
-                        var degree = Math.atan(((y1 - y2) * height) / ((x1 - x2) * width));
-                        x1c = -tline * (Math.cos(degree));
-                        x2c = -x1c;
-                        y1c = -tline * (Math.sin(degree));
-                        y2c = -y1c;
+                        var ratio = tline / Math.sqrt(dx * dx + dy * dy);
                     }
+                    x1c = dx * ratio;
+                    y1c = dy * ratio;
+                    
+                    if(d.target.type == "default") {
+                        var ratio = Math.min(Math.abs((tline + 5) / dy), Math.abs((2 * tline + 7) / dx));
+                    } else {
+                        var ratio = tline / Math.sqrt(dx * dx + dy * dy);
+                    }
+                    x2c = -dx * ratio;
+                    y2c = -dy * ratio;
 
                     return "M" + ((x1 * width) + x1c) + "," + ((y1 * height) + y1c)
                     + " L" + ((((x1 * width ) + x1c) + ((x2 * width ) + x2c)) / 2) + ","
