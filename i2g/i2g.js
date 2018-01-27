@@ -42,7 +42,7 @@ define(function(require) {
               .attr("markerHeight", 15)
               .attr("orient", "auto")
             .append("svg:path")
-              .attr("fill", "purple")
+              .attr("fill", "#888")
             //   .attr("transform", "scale(0.05)")
             //   .attr("d", logos("info"));
               .attr("d", "M0,-5L10,0L0,5");
@@ -100,7 +100,7 @@ define(function(require) {
 
             nodeStruct.append("circle")
                 .attr("class", "nodeHolder")
-                .attr("fill", "white")
+                .attr("fill", "transparent")
                 .attr("r", nodeHolderRadius);
 
             //interaction for dragging and moving a node
@@ -131,7 +131,8 @@ define(function(require) {
                     return "translate(" + (d.x * width) + "," + (d.y * height) + ")";
                 });
 
-            labels.text(function(d){
+            allNodes.selectAll(".nodeLabels")
+                .text(function(d){
                 var label = (d.hasOwnProperty("label")) ? d.label : d.id;
                 if(label.length > 20)
                     label = label.slice(0, 17) + "...";
@@ -140,7 +141,8 @@ define(function(require) {
                 return label;
             })
 
-            icons.text((d) => { return logos(d.icon || d.type); })
+            allNodes.selectAll(".nodeIcons")
+                .text((d) => { return logos(d.icon || d.type); })
                 .attr("fill",  (d) => { return nodeColor(d); });
         }
 
@@ -159,20 +161,65 @@ define(function(require) {
                 .append("path")
                 .merge(link);
 
-            newLinks.attr("class", "graphLinks")
-                .attr("stroke-width", (d)=>linkSize(d.value))
-                // .attr("stroke", (d)=>linkColor(d.dest))
-                .attr("marker-mid", "url(#directionArrow)")
+            var linkStruct = link.enter().append("g")
+                .attr("class", "graphLinks");
 
-            newLinks.append("title").text((d)=>(d.value))
+            var newLinks = linkStruct.append("path");
+
+            newLinks.attr("class", "graphLinks1")
+                .attr("stroke-width", "2")//(d) => linkSize(d.value))
+                // .attr("stroke", (d)=>linkColor(d.dest))
+                .attr("marker-end", "url(#directionArrow)");
+
+            newLinks.append("title").text((d)=>(d.value));
+
+            //update existing links
+            var allLinks = linkStruct
+                .merge(link);
 
             //update exiting links
-            newLinks
+            allLinks.selectAll('.graphLinks1')
                 .attr("d", function(d){
-                    return "M" + (d.source.x * width) + "," + (d.source.y * height)
-                    + " L" + (((d.target.x * width ) + (d.source.x * width ))/2) + "," +(((d.target.y * height) + (d.source.y * height))/2)
-                    + "," + (d.target.x * width) + "," + (d.target.y * height);
+                    var x1 = d.source.x,
+                        x2 = d.target.x,
+                        y1 = d.source.y,
+                        y2 = d.target.y;
+
+                    var x1c, x2c, y1c, y2c;
+                    var tline = nodeHolderRadius;
+
+                    if(x1 < x2 && y1 < y2) {
+                        var degree = Math.atan(((y2 - y1) * height) / ((x2 - x1) * width));
+                        x1c = tline * (Math.cos(degree));
+                        x2c = -x1c;
+                        y1c = tline * (Math.sin(degree));
+                        y2c = -y1c;
+                    } else if(x1 < x2 && y2 < y1) {
+                        var degree = Math.atan(((y1 - y2) * height) / ((x2 - x1) * width));
+                        x1c = tline * (Math.cos(degree));
+                        x2c = -x1c;
+                        y1c = -tline * (Math.sin(degree));
+                        y2c = -y1c;
+                    } else if(x2 < x1 && y1 < y2) {
+                        var degree = Math.atan(((y2 - y1) * height) / ((x1 - x2) * width));
+                        x1c = -tline * (Math.cos(degree));
+                        x2c = -x1c;
+                        y1c = tline * (Math.sin(degree));
+                        y2c = -y1c;
+                    } else {
+                        var degree = Math.atan(((y1 - y2) * height) / ((x1 - x2) * width));
+                        x1c = -tline * (Math.cos(degree));
+                        x2c = -x1c;
+                        y1c = -tline * (Math.sin(degree));
+                        y2c = -y1c;
+                    }
+
+                    return "M" + ((x1 * width) + x1c) + "," + ((y1 * height) + y1c)
+                    + " L" + ((((x1 * width ) + x1c) + ((x2 * width ) + x2c)) / 2) + ","
+                    +((((y1 * height) + y1c) + ((y2 * height) + y2c)) / 2)
+                    + "," + ((x2 * width ) + x2c) + "," + ((y2 * height) + y2c);
                 })
+
         }
 
         function drag(d) {
