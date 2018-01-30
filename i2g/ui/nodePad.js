@@ -23,16 +23,16 @@ define(function(require){
         container.empty();
 
         /*						
-		<div class = "nodePadModal-container"/>
+		<div class = "PadModal-container"/>
 			<h1>Node Properties</h1>
 			<form>
 				<input type="text" placeholder="' + nodeLabel + '">
-				<div class = "nodePadDropdown"/>
-                <textarea class = "nodePadAnnotation"/>
-                <form class = "nodePadVisBox"/>
+				<div class = "PadDropdown"/>
+                <textarea class = "PadAnnotation"/>
+                <form class = "PadVisBox"/>
                     <div>Please input a file</div>
                     <input type = "file" multiple size = "50">
-                    <img class = "nodePadVisDemo"/>
+                    <img class = "PadVisDemo"/>
                 </form>
                 <button type="button" class = "btn btn-success">
                     Save Change
@@ -41,7 +41,7 @@ define(function(require){
 		</div>')
 		*/
 
-        var nodePadModalContainer = $('<div class = "nodePadModal-container"/>')
+        var nodePadModalContainer = $('<div class = "PadModal-container"/>')
             .appendTo(container);
         var titleText = $('<h1>Node Properties</h1>')
             .appendTo(nodePadModalContainer);
@@ -50,12 +50,12 @@ define(function(require){
         var nodeLabelInput = $('<input type = "text">')
             .appendTo(nodePadForm)
             .val(nodeLabel);
-        var nodePadDropdown = $('<div class = "nodePadDropdown"/>')
+        var nodePadDropdown = $('<div class = "PadDropdown"/>')
             .appendTo(nodePadForm);
-        var nodePadAnnotation = $('<textarea class = "nodePadAnnotation"/>')
+        var nodePadAnnotation = $('<textarea class = "PadAnnotation"/>')
             .appendTo(nodePadForm)
             .val(nodeAnnotation);
-        var nodePadVis = $('<form class = "nodePadVisBox"/>')
+        var nodePadVis = $('<form class = "PadVisBox"/>')
             .appendTo(nodePadForm);
         var nodePadVisUploadText = $('<div>Please input a image</div>')
             .appendTo(nodePadVis);
@@ -63,7 +63,7 @@ define(function(require){
             .appendTo(nodePadVis);
         var nodePadVisRemoveFile = $('<input type = "button" value = "Remove image">')
             .appendTo(nodePadVis);
-        var nodePadVisUploadFileDemo = $('<img class = "nodePadVisDemo"/>')
+        var nodePadVisUploadFileDemo = $('<img class = "PadVisDemo"/>')
             .appendTo(nodePadVis);
         var saveSubmitButton = $('<button type = "button" class = "btn btn-success">Save Change</button>')
             .appendTo(nodePadForm);

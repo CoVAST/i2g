@@ -9,9 +9,11 @@ function i2gModel(arg) {
         tag = options.tag || '';
 
     var nodeCounter = 0,
+        linkCounter = 0,
         nodes = data.nodes,
         links = data.links,
-        nodeHash = {}; // hash table for storing nodes based on node names
+        nodeHash = {}, // hash table for storing nodes based on node id
+        linkHash = {}; // hash table for storing links based on link id
 
     model.removeNode = function(nodeId) {
         delete nodeHash[nodeId];
@@ -27,6 +29,7 @@ function i2gModel(arg) {
     }
 
     model.removeLink = function(linkId) {
+        delete linkHash[linkId];
         links = links.filter(function(li){
             return li.id != linkId;
         });
@@ -48,11 +51,11 @@ function i2gModel(arg) {
             if(!newNode.hasOwnProperty('datalink')) {
                 newNode.datalink = false;
             }
-            newNode.tag = newNode.label;
 
             if(tag !== null) {
                 newNode.id = tag + newNode.id;
             }
+
             nodeHash[newNode.id] = newNode;
             nodes.push(newNode);
 
@@ -62,21 +65,34 @@ function i2gModel(arg) {
 
     model.addLinks = function(newLinks){
         var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
-        newLinks.forEach(function(li){
-            li.id = links.length;
-            if(typeof li.source !== 'object') {
-                var sourceId = (tag===null) ? li.source : tag + li.source;
-                li.source = nodeHash[sourceId];
-            }
-            if(typeof li.target !== 'object') {
-                var targetId = (tag===null) ? li.target : tag + li.target;
-                li.target = nodeHash[targetId];
-            }
+        newLinks.forEach(function(newLink) {
 
-            if(!li.hasOwnProperty('datalink')) {
-                li.datalink = false;
+            if(!newLink.hasOwnProperty('id')) {
+                newLink.id = linkCounter++;
+            } else { //remove existing node with the same id
+                if(linkHash.hasOwnProperty(newLink.id)) {
+                    model.removeNode(newLink.id);
+                }
+                linkCounter = parseInt(newLink.id) > linkCounter ? (parseInt(newLink.id) + 1) : linkCounter;
             }
-            links.push(li);
+            if(typeof newLink.source !== 'object') {
+                var sourceId = (tag===null) ? newLink.source : tag + newLink.source;
+            } else {
+                var sourceId = newLink.source.id;
+            }
+            newLink.source = nodeHash[sourceId];
+            if(typeof newLink.target !== 'object') {
+                var targetId = (tag===null) ? newLink.target : tag + newLink.target;
+            } else {
+                var targetId = newLink.target.id;
+            }
+            newLink.target = nodeHash[targetId];
+
+            if(!newLink.hasOwnProperty('datalink')) {
+                newLink.datalink = false;
+            }
+            linkHash[newLink.id] = newLink;
+            links.push(newLink);
         });
 
         return model;
@@ -86,6 +102,13 @@ function i2gModel(arg) {
         var modNode = (typeof theNode == 'object') ? theNode : nodeHash[theNode];
         for(var p in props) {
             modNode[p] = props[p];
+        }
+    }
+
+    model.modifyLink = function(theLink, props) {
+        var modLink = (typeof theLink == 'object') ? theLink : linkHash[theLink];
+        for(var p in props) {
+            modLink[p] = props[p];
         }
     }
 
@@ -160,6 +183,7 @@ function i2gModel(arg) {
     };
 
     model.nodeHash = nodeHash;
+    model.linkHash = linkHash;
     model.getNodes = function() { return nodes; }
     model.getLinks = function() { return links; }
 

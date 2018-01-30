@@ -29,7 +29,7 @@ define(function(require){
         var dropdownContent = $('<div class = "dropdown-content"/>')
             .appendTo(container);
 
-        dropdownContent.css('min-width', $('.nodePadModal-container').width());
+        dropdownContent.css('min-width', $('.PadModal-container').width());
 
         // dropdown list
         dropdownButtonBox.click(function() {

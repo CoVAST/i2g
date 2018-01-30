@@ -47,6 +47,26 @@ define(function(require) {
             //   .attr("d", logos("info"));
               .attr("d", "M0,-5L10,0L0,5");
 
+        // set up link label gradient
+        var linkLabelGradient = svg.append("svg:defs").append("radialGradient")
+           .attr("id", "svgGradient")
+           .attr("x1", "0%")
+           .attr("x2", "100%")
+           .attr("y1", "0%")
+           .attr("y2", "100%");
+
+        linkLabelGradient.append("stop")
+            .attr('class', 'start')
+            .attr("offset", "0%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 1);
+
+        linkLabelGradient.append("stop")
+            .attr('class', 'end')
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0);
+
         // set up node type color
         var nodeTypeColor = {
             location: colorScheme.area,
@@ -72,6 +92,8 @@ define(function(require) {
             .range([5, 500]);
 
         var nodeHolderRadius = 30; // size + padding for each node structure
+        var linkLabelWidth = 120;
+        var linkLabelHeight = 60; 
 
         // set up a function to determine the width of the link (using d3)
         var linkSize = d3.scalePow()
@@ -101,7 +123,8 @@ define(function(require) {
             nodeStruct.append("circle")
                 .attr("class", "nodeHolder")
                 .attr("fill", "transparent")
-                .attr("r", nodeHolderRadius);
+                .attr("r", nodeHolderRadius)
+                .attr("stroke", "none");
 
             //interaction for dragging and moving a node
             nodeStruct.call(
@@ -111,10 +134,6 @@ define(function(require) {
                     .on("end", drag)
                 );
 
-            var labels = nodeStruct.append("text")
-                .attr("class", "nodeLabels")
-                .attr("dominant-baseline", "central");
-
             var icons = nodeStruct.append("text")
                 .attr("class", "nodeIcons")
                 .attr('font-family', 'FontAwesome')
@@ -122,14 +141,18 @@ define(function(require) {
                 .attr("dominant-baseline", "central")
                 .style("text-anchor", "middle");
 
-            var rectangles = nodeStruct.append("rect")
+            var textBox = nodeStruct.append("rect")
                 .attr("class", "nodeRect")
                 .attr("stroke", "#888")
-                .attr("fill", "transparent")
+                .attr("fill", "white")
                 .attr("width", nodeHolderRadius * 4)
                 .attr("height", nodeHolderRadius * 2)
                 .attr("x", -nodeHolderRadius * 2)
                 .attr("y", -nodeHolderRadius);
+
+            var labels = nodeStruct.append("text")
+                .attr("class", "nodeLabels")
+                .attr("dominant-baseline", "central");
 
 
             //update existing nodes
@@ -159,8 +182,8 @@ define(function(require) {
                     if(label.length > 20) {
                         label = label.slice(0, 17) + "...";
                     }
-                    if(d.type == "default") {
-                        label = label.slice(0, 8) + "...";
+                    if(d.type == "default" && label.length > 10) {
+                        label = label.slice(0, 7) + "...";
                     }
                     if(d.hasOwnProperty("labelPrefix")) {
                         label = d.labelPrefix + label;
@@ -192,22 +215,32 @@ define(function(require) {
 
             linkSize.domain([0, d3.max(links.map((d)=>d.value))]);
 
-            // Add new links to the graph
-            var newLinks = link.enter()
-                .append("path")
-                .merge(link);
-
             var linkStruct = link.enter().append("g")
                 .attr("class", "graphLinks");
 
             var newLinks = linkStruct.append("path");
 
             newLinks.attr("class", "graphLinkLine")
-                .attr("stroke-width", "2")//(d) => linkSize(d.value))
+                .attr("stroke-width", (d) => (linkSize(d.value)))
                 // .attr("stroke", (d)=>linkColor(d.dest))
                 .attr("marker-end", "url(#directionArrow)");
 
-            newLinks.append("title").text((d)=>(d.value));
+            var linkLabels = linkStruct.append("g")
+                .attr("class", "linkLabels");
+            
+            var linkLabelBox = linkLabels.append("ellipse")
+                .attr("class", "linkLabelBox")
+                .attr("rx", linkLabelWidth / 2)
+                .attr("ry", linkLabelHeight / 2)
+                .attr("stroke", "none")
+                .attr("fill", "url(#svgGradient)");
+
+            var linkLabelText = linkLabels.append("text")
+                .attr("class", "linkLabelText")
+                .attr("dominant-baseline", "central")
+                .style("text-anchor", "middle");
+
+            linkStruct.append("title").text((d)=>(d.label));
 
             //update existing links
             var allLinks = linkStruct
@@ -248,6 +281,26 @@ define(function(require) {
                     +((((y1 * height) + y1c) + ((y2 * height) + y2c)) / 2)
                     + "," + ((x2 * width ) + x2c) + "," + ((y2 * height) + y2c);
                 })
+
+            // update link labels
+            allLinks.selectAll('.linkLabels')
+                .attr("transform", function(d) {
+                    var x1 = d.source.x * width,
+                        x2 = d.target.x * width,
+                        y1 = d.source.y * height,
+                        y2 = d.target.y * height;
+                    return "translate(" + ((x1 + x2) / 2) + "," + ((y1 + y2) / 2) + ")";
+                })
+                .style("display", (d) => {
+                    if(d.label == undefined || d.label == "") {
+                        return "none";
+                    } else {
+                        return null;
+                    }
+                });
+
+            allLinks.selectAll('.linkLabelText')
+                .text((d) => d.label);
 
         }
 
@@ -353,10 +406,10 @@ define(function(require) {
         };
 
         //update individual node
-        i2g.updateNode = function(nodeSvgObject, props) {
-            var theNode = d3.select(nodeSvgObject);
+        i2g.updateObject = function(SvgObject, props) {
+            var theObject = d3.select(SvgObject);
             for (var p in props) {
-                theNode.attr(p, props[p]);
+                theObject.attr(p, props[p]);
             }
             return i2g;
         }

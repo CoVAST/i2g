@@ -1,5 +1,6 @@
 define(function(require) {
     var nodePad = require('./ui/nodePad'),
+        linkPad = require('./ui/linkPad'),
         download = require('./downloadFunc');
 
     return function menu(i2g) {
@@ -68,18 +69,9 @@ define(function(require) {
                         var graphData = JSON.parse(reader.result);
 
                         i2g.model
-                            .removeNodes({all: true});
-                        i2g.update();
-                        i2g.model.addNodes(graphData.nodes);
-                        i2g.update();
-
-                        graphData.links.forEach((d) => {
-                            i2g.model.addLinks({
-					            source: d.source.id,
-					            target: d.target.id,
-					            value: d.value
-					        });
-                        });
+                            .removeNodes({all: true})
+                            .addNodes(graphData.nodes)
+                            .addLinks(graphData.links);
 
                         i2g.update();
                     };
@@ -108,7 +100,7 @@ define(function(require) {
                         i2g.update();
                     }
                     nodePad({
-                        container: $("#nodePadModal"),
+                        container: $("#PadModal"),
                         nodeLabel: 'New Node',
                         nodeType: 'default',
                         nodeAnnotation: '',
@@ -173,9 +165,9 @@ define(function(require) {
                     i2g.model.removeNode(thisNodeId);
                     i2g.update();
                 } else if(key == 'modifyNode') {
-                    i2g.updateNode(thisNode, {stroke: 'orange'});
+                    i2g.updateObject(thisNode, {stroke: 'orange'});
                     var saveChanges = function(newNodeLabel, newNodeType, newNodeAnnotation, newNodeVis) {
-                        i2g.updateNode(thisNode, {stroke: 'transparent'});
+                        i2g.updateObject(thisNode, {stroke: 'transparent'});
                         var changes = {
                             label: newNodeLabel,
                             type: newNodeType,
@@ -186,7 +178,7 @@ define(function(require) {
                         i2g.update();
                     }
                     nodePad({
-                        container: $("#nodePadModal"),
+                        container: $("#PadModal"),
                         nodeLabel: thisNode.__data__.label,
                         nodeType: thisNode.__data__.type,
                         nodeAnnotation: thisNode.__data__.annotation,
@@ -203,7 +195,7 @@ define(function(require) {
             },
             items: {
                 addLink: {name: "Add link", icon: "fa-long-arrow-right"},
-                modifyNode: {name: "Modify node", icon: "fa-commenting"},
+                modifyNode: {name: "Modify node", icon: "fa-pencil-square-o"},
                 removeNode: {name: "Remove this node", icon: "fa-times"},
             }
         });
@@ -214,17 +206,39 @@ define(function(require) {
             selector: '.graphLinks',
             callback: function(key, options) {
                 var thisLink = this[0],
-                    thisLinkId = thisLink.__data__.id;
+                    thisLinkId = thisLink.__data__.id,
+                    thisLinkPosition = $(".context-menu-root:eq(2)").position();
+
                 if(key == 'removeLink') {
                     i2g.model.removeLink(thisLinkId);
                     i2g.update();
-                } else if(key == 'annotate') {
-
+                } else if(key == 'modifyLink') {
+                    i2g.updateObject(thisLink, {stroke: 'orange'});
+                    var saveChanges = function(newLinkLabel, newLinkAnnotation, newLinkVis) {
+                        i2g.updateObject(thisLink, {stroke: '#999'});
+                        var changes = {
+                            label: newLinkLabel,
+                            annotation: newLinkAnnotation,
+                            vis: newLinkVis
+                        }
+                        i2g.model.modifyLink(thisLinkId, changes);
+                        i2g.update();
+                    }   
+                    linkPad({
+                        container: $("#PadModal"),
+                        linkLabel: thisLink.__data__.label,
+                        linkAnnotation: thisLink.__data__.annotation,
+                        linkVis: thisLink.__data__.vis,
+                        width: 300,
+                        marginTop: thisLinkPosition.top + 10,
+                        marginLeft: thisLinkPosition.left + 10,
+                        callback: saveChanges
+                    });
                 }
             },
             items: {
+                modifyLink: {name: "Modify link", icon: "fa-pencil-square-o"},
                 removeLink: {name: "Remove this link", icon: "fa-times"},
-                annotate: {name: "Annotate", icon: "fa-commenting"},
             }
         });
     }
