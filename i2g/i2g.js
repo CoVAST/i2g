@@ -154,6 +154,8 @@ define(function(require) {
                 .attr("class", "nodeLabels")
                 .attr("dominant-baseline", "central");
 
+            nodeStruct.append("title").text((d) => d.label);
+
 
             //update existing nodes
             var allNodes = nodeStruct
@@ -411,6 +413,15 @@ define(function(require) {
             for (var p in props) {
                 theObject.attr(p, props[p]);
             }
+            return i2g;
+        }
+
+        i2g.updateScreen = function(newWidth, newHeight) {
+            width = newWidth;
+            height = newHeight;
+            svg.attr("width", width).attr("height", height);
+            renderNodes();
+            renderLinks();
             return i2g;
         }
 
