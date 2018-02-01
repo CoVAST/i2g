@@ -4,6 +4,9 @@ define(function(require){
 	var dropdown = require('./dropdown');
 
 	return function(arg) {
+        "use strict";
+        var nodePad = {};
+
         var option = arg || {},
         	container = option.container,
         	nodeLabel = option.nodeLabel || "New Node",
@@ -21,6 +24,8 @@ define(function(require){
             newNodeAnnotation,
             newNodeSubGraph,
             newNodeVis;
+
+        var dragging = false;
 
         container.empty();
 
@@ -86,7 +91,7 @@ define(function(require){
             .appendTo(nodePadVis);
         var nodePadVisRemoveFile = $('<input type = "button" value = "Remove image">')
             .appendTo(nodePadVis);
-        var nodePadVisUploadFileDemo = $('<img class = "PadVisDemo"/>')
+        var nodePadVisUploadFileDemo = $('<img class = "PadVisDemo" draggable = "false"/>')
             .appendTo(nodePadVis);
 
         var saveSubmitButton = $('<button type = "button" class = "btn btn-success">Save Change</button>')
@@ -174,8 +179,55 @@ define(function(require){
             newNodeVis = nodePadVisUploadFileDemo[0].src;
             newNodeSubGraph = nodeSubGraph;
         	container.hide();
+            $(window).off("mousemove", dragmove);
+            $(window).off("mouseup", dragend);
+            $(window).off("click", remove);
         	callback(newNodeLabel, newNodeType, newNodeAnnotation, newNodeSubGraph, newNodeVis);
         })
-        
+
+
+
+        nodePad.drag = function(dy, dx) {
+            marginTop += dy;
+            marginLeft += dx;
+            nodePadModalContainer.css("margin-top", marginTop);
+            nodePadModalContainer.css("margin-left", marginLeft);
+            return nodePad;
+        }
+
+        nodePadModalContainer.mousedown((e) => {
+            dragging = true;
+        })
+
+        $(window).mousemove(dragmove);
+
+        $(window).mouseup(dragend);
+
+        $(window).click(remove);
+
+        function dragmove() {
+            if(dragging) {
+                var dy = this.event.movementY;
+                var dx = this.event.movementX;
+                nodePad.drag(dy, dx);
+            }
+        }
+
+        function dragend() {
+            dragging = false;
+        }
+
+        function remove() {
+            if(this.event.target == container[0]) {
+                container.empty();
+                container.hide();
+                $(window).off("mousemove", dragmove);
+                $(window).off("mouseup", dragend);
+                $(window).off("click", remove);
+            }
+        };
+
+
+        return nodePad;
     }
 })

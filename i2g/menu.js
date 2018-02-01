@@ -173,9 +173,10 @@ define(function(require) {
                     i2g.model.removeNode(thisNodeId);
                     i2g.update();
                 } else if(key == 'modifyNode') {
-                    i2g.updateObject(thisNode, {stroke: 'orange'});
+                    thisNodeCircle = this.find('.nodeHolder')[0];
+                    i2g.updateObject(thisNodeCircle, {stroke: 'orange'});
                     var saveChanges = function(newNodeLabel, newNodeType, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
-                        i2g.updateObject(thisNode, {stroke: 'transparent'});
+                        i2g.updateObject(thisNodeCircle, {stroke: 'none'});
                         var changes = {
                             label: newNodeLabel,
                             type: newNodeType,
@@ -198,7 +199,6 @@ define(function(require) {
                         marginLeft: thisNodePosition.left + 10,
                         callback: saveChanges
                     });
-
                 } else if(key == 'addLink') {
                     i2g.startAddingLink(thisNodeId);
                 } else if(key == 'showProvenance') {

@@ -52,12 +52,6 @@ define(function(require) {
         	.html("\uf057")
         	.click(function() {
         		callback();
-        	})
-        	.mouseover(function() {
-        		close.css("background-color", "#DDD");
-        	})
-        	.mouseleave(function() {
-        		close.css("background-color", "transparent");
         	});
 
         /*
@@ -95,18 +89,17 @@ define(function(require) {
 
       	visImg[0].src = vis;
 
-
-        myTooltip.remove = function() {
-        	tooltipContainer.remove();
-        	return myTooltip;
-        }
-
         myTooltip.changePosition = function(margin_top, margin_left) {
         	top = margin_top;
         	left = margin_left;
         	tooltipContainer.css("margin-top", margin_top);
         	tooltipContainer.css("margin-left", margin_left);
         	return myTooltip;
+        }
+
+        myTooltip.indicate = function() {
+        	functionRow.show();
+        	tooltipContainer.css("border", "3px solid " + color);
         }
 
         myTooltip.drag = function(dy, dx) {
@@ -117,25 +110,31 @@ define(function(require) {
         	return myTooltip;
         }
 
+        myTooltip.remove = function() {
+        	tooltipContainer.remove();
+        	$(window).off("mousemove", dragmove);
+        	$(window).off("mouseup", dragend);
+        	return myTooltip;
+        }
+
         tooltipContainer.mousedown((e) => {
         	dragging = true;
         })
 
-        $(window).mousemove((e) => {
-        	if(dragging) {
-        		var dy = e.originalEvent.movementY;
-        		var dx = e.originalEvent.movementX;
-        		myTooltip.drag(dy, dx);
-        	}
-        })
+        $(window).mousemove(dragmove);
 
-        $(window).mouseup(function() {
-        	dragging = false;
-        })
+        $(window).mouseup(dragend);
 
-        myTooltip.indicate = function() {
-        	functionRow.show();
-        	tooltipContainer.css("border", "3px solid " + color);
+        function dragmove() {
+            if(dragging) {
+                var dy = this.event.movementY;
+                var dx = this.event.movementX;
+                myTooltip.drag(dy, dx);
+            }
+        }
+
+        function dragend() {
+            dragging = false;
         }
 
 

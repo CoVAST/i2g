@@ -15,7 +15,7 @@ img {
     background: transparent;
 }
 
-input::selection {
+input::selection, textarea::selection {
     background: #BBB;
 }
 
@@ -83,11 +83,13 @@ input::selection {
 }
 
 .myTooltipClose {
+    font-size: 1.1em;
     float: right;
     font-family: FontAwesome;
 }
 
 .myTooltipClose:hover {
+    color: red;
     cursor: pointer;
 }
 
@@ -121,6 +123,8 @@ input::selection {
 
 .myTooltipImg {
     margin-top: 5px;
+    border-top: 1px solid black;
+    padding-top: 5px;
     width: 230px;
 }
 
