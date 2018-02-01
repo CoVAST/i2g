@@ -23,18 +23,18 @@ define(function(require){
         /*						
 		<div class = "PadModal-container"/>
 			<h1>Link Properties</h1>
-			<form>
+			<div>
 				<input type="text" placeholder="' + linkLabel + '">
                 <textarea class = "PadAnnotation"/>
-                <form class = "PadVisBox"/>
+                <div class = "PadVisBox"/>
                     <div>Please input a file</div>
                     <input type = "file" multiple size = "50">
                     <img class = "PadVisDemo"/>
-                </form>
+                </div>
                 <button type="button" class = "btn btn-success">
                     Save Change
                 </button>
-			</form>
+			</div>
 		</div>')
 		*/
 
@@ -42,7 +42,7 @@ define(function(require){
             .appendTo(container);
         var titleText = $('<h1>Link Properties</h1>')
             .appendTo(linkPadModalContainer);
-        var linkPadForm = $('<form/>')
+        var linkPadForm = $('<div/>')
             .appendTo(linkPadModalContainer);
         var linkLabelInput = $('<input type = "text">')
             .appendTo(linkPadForm)
@@ -50,7 +50,7 @@ define(function(require){
         var linkPadAnnotation = $('<textarea class = "PadAnnotation"/>')
             .appendTo(linkPadForm)
             .val(linkAnnotation);
-        var linkPadVis = $('<form class = "PadVisBox"/>')
+        var linkPadVis = $('<div class = "PadVisBox"/>')
             .appendTo(linkPadForm);
         var linkPadVisUploadText = $('<div>Please input a image</div>')
             .appendTo(linkPadVis);
@@ -78,7 +78,7 @@ define(function(require){
         });
 
         linkPadVisRemoveFile.on('click', function() {
-            linkPadVisUploadFileDemo[0].src = "";
+            linkPadVisUploadFileDemo.attr("src", null);
         });
         
 

@@ -16,7 +16,15 @@
     <script src="http://d3js.org/d3.v4.min.js"></script>
   </head>
   <body>
-    <div id = "ontoGraph"></div>
+    <div id = "mainGraph"></div>
+
+    <!--
+    <div id = "subGraph"></div>
+
+    <div id = "provenance">
+        <img id = "provenanceImg">
+    </div>
+    -->
 
     <div id = "PadModal" class = "modal"></div>
 
@@ -24,22 +32,42 @@
 
     <script>
         require(["i2g", "color-scheme"], function(i2g, colorScheme) {
-
-            var igraph = i2g({
-    	        container: "#ontoGraph",
-    	        width: window.innerWidth - 20,
-    	        height: window.innerHeight - 20,
-    	        domain: [0, 1],
-    	        graph: {nodes: [], links: []},
-    	        colorScheme: colorScheme
-    	    });
-
-            $(window).resize((d) => {
-                var width = window.innerWidth - 20,
-                    height = window.innerHeight - 20;
-                igraph.updateScreen(width, height);
+            /*
+            var subGraph = i2g({
+                container: "#subGraph",
+                width: window.innerWidth * 0.4 - 20,
+                height: window.innerHeight * 0.5 - 20,
+                domain: [0, 1],
+                graph: {nodes: [], links: []},
+                colorScheme: colorScheme
+            });
+            */
+            var mainGraph = i2g({
+                container: "#mainGraph",
+                //subI2g: subGraph,
+                width: window.innerWidth - 20,
+                height: window.innerHeight - 20,
+                domain: [0, 1],
+                graph: {nodes: [], links: []},
+                colorScheme: colorScheme
             });
             
+            //$("#provenance").width(window.innerWidth * 0.4 - 20);
+            //$("#provenance").height(window.innerHeight *0.5 - 20);
+            
+            $(window).resize((d) => {
+                var width1 = window.innerWidth - 20,
+                    height1 = window.innerHeight - 20;
+                    //width2 = window.innerWidth * 0.4 - 20,
+                    //height2 = window.innerHeight *0.5 - 20;
+                mainGraph.updateScreen(width1, height1);
+                mainGraph.update();
+                //subGraph.updateScreen(width2, height2);
+                //subGraph.update();
+                //$("#provenance").width(window.innerWidth * 0.4 - 20);
+                //$("#provenance").height(window.innerHeight *0.5 - 20);
+            });
+
         });
     </script>
   </body>

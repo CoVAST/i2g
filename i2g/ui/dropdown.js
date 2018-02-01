@@ -30,6 +30,7 @@ define(function(require){
             .appendTo(container);
 
         dropdownContent.css('min-width', $('.PadModal-container').width());
+        dropdownButtonArrow.css('margin-left', $('.PadModal-container').width() * 0.9 - 6);
 
         // dropdown list
         dropdownButtonBox.click(function() {

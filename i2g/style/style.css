@@ -1,10 +1,14 @@
 body {
-    overflow: hidden;
-    background-color: #fff;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
 }
 
 img {
-  max-width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    vertical-align: middle;
 }
 
 ::selection {
@@ -21,25 +25,34 @@ input::selection {
     outline: 0;
 }
 
-#igraph-svg {
-    border: 3px solid black;
+#mainGraph {
+    float: left;
 }
 
-a.active {
-    border-bottom: 4px solid teal;
+#subGraph {
+    float: left;
+}
+
+#provenance {
+    border: 3px solid black;
+    margin: 5px;
+    float: left;
+    overflow: auto;
+}
+
+#igraph-svg {
+    border: 3px solid black;
+    margin: 5px;
 }
 
 .nodeLabels {
+    font-weight: bold;
     font-family: sans-serif;
-    font-size: 1.5em;
+    font-size: 0.71em;
 }
 /*.selected.item  {
     border: 3px solid teal;
 }*/
-
-.selected.item > div, .selected.item > i {
-    color: #000;
-}
 
 .graphLinks line {
     stroke: #999;
@@ -53,8 +66,64 @@ a.active {
 .linkLabelText {
     font-family: sans-serif;
     stroke: none;
-    font-size: 1.1em;
+    font-size: 0.71em;
 }
+
+
+.myTooltip {
+    width: 230px;
+    position: absolute;
+    z-index: 2;
+    padding: 10px;
+    background-color: #F7F7F7;
+    border-radius: 2px;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+.myTooltipClose {
+    float: right;
+    font-family: FontAwesome;
+}
+
+.myTooltipClose:hover {
+    cursor: pointer;
+}
+
+.myTooltipIndicator {
+    width: 20px;
+    float: left;
+    height: 10px;
+    border: solid 1px black;
+}
+
+.myTooltipRow {
+    width: 230px;
+    float: left;
+    font-family: inherit;
+}
+
+.myTooltipTitle {
+    width: 80px;
+    float: left;
+    font-size: 0.71em;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+.myTooltipText {
+    width: 150px;
+    float: left;
+    font-size: 0.71em;
+    font-family: inherit;
+}
+
+.myTooltipImg {
+    margin-top: 5px;
+    width: 230px;
+}
+
 
 /* The Modal (background) */
 .modal {
@@ -73,7 +142,8 @@ a.active {
 
 /*Login*/
 .PadModal-container {
-    padding: 20px;
+    
+    padding: 10px;
     background-color: #F7F7F7;
     border-radius: 2px;
     box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
@@ -83,17 +153,17 @@ a.active {
 
 .PadModal-container h1 {
     text-align: center;
-    font-size: 1.5em;
+    font-size: 1.1em;
     font-family: inherit;
     margin-top: 0px;
 }
 
 .PadModal-container button[type = button] {
-    width: 150px;
-    height: 35px;
+    width: 100px;
+    height: 25px;
     display: block;
     margin: auto;
-    font-size: 1.3em;
+    font-size: 0.8em;
     border-radius: 5px !important;
     margin-bottom: 0px;
     position: relative;
@@ -101,39 +171,49 @@ a.active {
 }
 
 .PadModal-container input[type = text], input[type = password] {
-    height: 44px;
-    font-size: 20px;
+    height: 30px;
+    font-size: .9em;
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     -webkit-appearance: none;
     background: #fff;
     border: 1px solid #d9d9d9;
     border-top: 1px solid #c0c0c0;
     /* border-radius: 2px; */
-    padding: 0 8px;
+    padding: 0 5px;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     font-family: inherit;
 }
 
 .PadDropdown {
-    height: 35px;
-    font-size: 16px;
+    height: 25px;
+    font-size: 0.9em;
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     font-family: inherit;
 }
 
 .PadAnnotation {
-    height: 80px;
-    font-size: 14px;
-    margin-bottom: 15px;
+    height: 50px;
+    font-size: 0.71em;
+    margin-bottom: 10px;
     font-family: inherit;
 }
 
-.PadVisBox {
-    margin-bottom: 20px;
+.PadSubGraphBox {
+    margin-bottom: 10px;
     font-family: inherit;
+}
+
+.PadSubGraphDemo {
+    margin-top: 10px;
+}
+
+.PadVisBox {
+    margin-bottom: 15px;
+    font-family: inherit;
+    font-size: 0.8em;
 }
 
 .PadVisDemo {
@@ -152,7 +232,6 @@ a.active {
 /* Button part */
 .btn {
     font-weight: 350 !important;
-    font-size: 1.1em !important;
     color: #fff !important;
 }
 
@@ -171,30 +250,28 @@ a.active {
 /*dropdown modal*/
 .dropdownButtonBox {
     width: 100%;
-    height: 35px;
+    height: 25px;
     cursor: pointer;
 }
 
 .dropdownButtonText {
-    font-size: 20px;
     color: #333;
     background-color: #DDD;
     float: left;
     width: 80%;
-    height: 30px;
+    height: 22px;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
     text-align: center;
-    padding-top: 5px;
+    padding-top: 3px;
 }
 
 .dropdownButtonArrowBox {
-    font-size: 20px;
     color: #333;
     background-color: #BBB;
     float: left;
     width: 20%;
-    height: 35px;
+    height: 25px;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
 }
@@ -203,9 +280,8 @@ a.active {
     width: 0px;
     height: 0px;
     position: absolute;
-    margin-left: 263px;
-    margin-top: 15px;
-    border-width: 7px;
+    margin-top: 10px;
+    border-width: 6px;
     border-style: solid;
     border-color: #000 #BBB #BBB;
 }
@@ -221,14 +297,15 @@ a.active {
     background-color: #f9f9f9;
     overflow: auto;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+    margin-top: 5px;
+    border-radius: 5px;
     z-index: 4;
 }
 
 .dropdownItem {
     color: black;
-    padding: 7px 0px;
+    padding: 5px 0px;
     text-align: center;
-    font-size: 20px;
 }
 
 .dropdownItem:hover {

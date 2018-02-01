@@ -1,7 +1,8 @@
 define(function(require) {
     var logos = require("./icons"),
         dataModel = require("./model"),
-        menu = require("./menu");
+        menu = require("./menu")
+        myTooltip = require("./ui/myTooltip");
 
     return function(arg) {
         "use strict";
@@ -9,6 +10,7 @@ define(function(require) {
         // get all the setting from input
         var options = arg || {},
             container = options.container || "body",
+            subI2g = options.subI2g || null,
             domain = options.domain || [0, 1],
             graph = options.graph || options.data || {},
             width = options.width || 600,
@@ -18,6 +20,9 @@ define(function(require) {
             graphName = options.graphName || "",
             scale = options.scale || 1,
             colorScheme = options.colorScheme;
+
+        var tooltipHash = {};
+        var dblclickedHash = {};
 
         var model = dataModel({
             data: graph,
@@ -38,8 +43,8 @@ define(function(require) {
                .attr("markerUnits", "userSpaceOnUse")
               .attr("refX", 5)
               .attr("refY", 0)
-              .attr("markerWidth", 15)
-              .attr("markerHeight", 15)
+              .attr("markerWidth", 10)
+              .attr("markerHeight", 10)
               .attr("orient", "auto")
             .append("svg:path")
               .attr("fill", "#888")
@@ -99,9 +104,9 @@ define(function(require) {
         var linkSize = d3.scalePow()
             .exponent(0.2)
             .domain([0, 3000])
-            .range([1*scale, 6*scale]);
+            .range([1*scale, 2*scale]);
 
-        var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
+        var indicatorColor = d3.scaleOrdinal(d3.schemeCategory20);
 
         var g = svg.append("g"), //append a graph to plot all the links and nodes
             linkSvg = g.append("g"),
@@ -119,25 +124,78 @@ define(function(require) {
             var nodeStruct = node.enter().append("g")
                 .attr("class", "graphNodes")
                 .on("click", i2g.completeAddingLink)
+                .on("mouseover", (d)=> {
+                    if(dblclickedHash[d.id] == null) {
+                        if(!tooltipHash.hasOwnProperty(d.id)) {
+                            var nodeTooltip = myTooltip({
+                                labelName: d.label,
+                                annotation: d.annotation,
+                                vis: d.vis,
+                                color: indicatorColor(parseInt(d.id)),
+                                callback: function() {
+                                    tooltipHash[d.id].remove();
+                                    delete tooltipHash[d.id];
+                                    delete dblclickedHash[d.id];
+                                    circle.attr("stroke", (d) => {
+                                        if(dblclickedHash[d.id]) {
+                                            return indicatorColor(parseInt(d.id));
+                                        } else {
+                                            return "none";
+                                        }
+                                    });
+                                }
+                            });
+                            tooltipHash[d.id] = nodeTooltip;
+                        }
+                        var top = d3.event.pageY + 5;
+                        var left = d3.event.pageX + 5;
+                        tooltipHash[d.id].changePosition(top, left);
+                    }
+                })
+                .on("mousemove", (d) => {
+                    if(dblclickedHash[d.id] == null) {
+                        var top = d3.event.pageY + 5;
+                        var left = d3.event.pageX + 5;
+                        tooltipHash[d.id].changePosition(top, left);
+                    }
+                })
+                .on("mouseleave", (d) => {
+                    if(dblclickedHash[d.id] == null) {
+                        tooltipHash[d.id].remove();
+                        delete tooltipHash[d.id];
+                    }
+                })
+                .on("dblclick", (d) => {
+                    dblclickedHash[d.id] = true;
+                    tooltipHash[d.id].indicate();
+                    circle.attr("stroke", (d) => {
+                        if(dblclickedHash[d.id]) {
+                            return indicatorColor(parseInt(d.id));
+                        } else {
+                            return "none";
+                        }
+                    });
+                });
 
-            nodeStruct.append("circle")
+            var circle = nodeStruct.append("circle")
                 .attr("class", "nodeHolder")
                 .attr("fill", "transparent")
                 .attr("r", nodeHolderRadius)
+                .attr("stroke-width", "3px")
                 .attr("stroke", "none");
 
             //interaction for dragging and moving a node
             nodeStruct.call(
                 d3.drag()
-                    .on("start", drag)
-                    .on("drag", drag)
-                    .on("end", drag)
-                );
+                    .on("start", drag1)
+                    .on("drag", drag2)
+                    .on("end", drag3)
+            );
 
             var icons = nodeStruct.append("text")
                 .attr("class", "nodeIcons")
                 .attr('font-family', 'FontAwesome')
-                .attr('font-size', function(d) { return scale * 3 + 'em'} )
+                .attr('font-size', function(d) { return scale * 1.5 + 'em'} )
                 .attr("dominant-baseline", "central")
                 .style("text-anchor", "middle");
 
@@ -145,17 +203,14 @@ define(function(require) {
                 .attr("class", "nodeRect")
                 .attr("stroke", "#888")
                 .attr("fill", "white")
-                .attr("width", nodeHolderRadius * 4)
-                .attr("height", nodeHolderRadius * 2)
-                .attr("x", -nodeHolderRadius * 2)
-                .attr("y", -nodeHolderRadius);
+                .attr("width", nodeHolderRadius * 2)
+                .attr("height", nodeHolderRadius)
+                .attr("x", -nodeHolderRadius)
+                .attr("y", -nodeHolderRadius / 2);
 
             var labels = nodeStruct.append("text")
                 .attr("class", "nodeLabels")
                 .attr("dominant-baseline", "central");
-
-            nodeStruct.append("title").text((d) => d.label);
-
 
             //update existing nodes
             var allNodes = nodeStruct
@@ -169,7 +224,7 @@ define(function(require) {
                     if(d.type == "default") {
                         return null;
                     } else {
-                        return nodeHolderRadius;
+                        return nodeHolderRadius / 2;
                     }
                 })
                 .style("text-anchor", (d) => {
@@ -257,7 +312,7 @@ define(function(require) {
                         y2 = d.target.y;
 
                     var x1c, x2c, y1c, y2c;
-                    var tline = nodeHolderRadius;
+                    var tline = nodeHolderRadius / 2;
 
                     var dx = (x2 - x1) * width;
                     var dy = (y2 - y1) * height;
@@ -306,10 +361,28 @@ define(function(require) {
 
         }
 
-        function drag(d) {
+        function drag1(d) {
+            if(dblclickedHash[d.id] == null) {
+                $(".myTooltip").hide();
+            }
+        }
+
+        function drag2(d) {
             d.x += d3.event.dx / width;
             d.y += d3.event.dy / height;
             i2g.update();
+            if(dblclickedHash[d.id] == null) {
+                $(".myTooltip").hide();
+            }
+        }
+
+        function drag3(d) {
+            if(dblclickedHash[d.id] == null) {
+                var top = d3.event.sourceEvent.pageY + 5;
+                var left = d3.event.sourceEvent.pageX + 5;
+                tooltipHash[d.id].changePosition(top, left);
+                $(".myTooltip").show();
+            }
         }
 
         /** Add node Icon functions */
@@ -407,7 +480,7 @@ define(function(require) {
             return i2g;
         };
 
-        //update individual node
+        //update individual svg object
         i2g.updateObject = function(SvgObject, props) {
             var theObject = d3.select(SvgObject);
             for (var p in props) {
@@ -420,11 +493,9 @@ define(function(require) {
             width = newWidth;
             height = newHeight;
             svg.attr("width", width).attr("height", height);
-            renderNodes();
-            renderLinks();
-            return i2g;
         }
 
+        i2g.subI2g = subI2g;
         i2g.container = container;
         i2g.svg = svg;
         i2g.model = model;
