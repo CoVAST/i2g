@@ -135,7 +135,7 @@
             "datalink": false,
             "id": "17",
             "tag": "2007-2015",
-            "vis": "./provenance/TTP_and_AL_time.png"
+            "vis": "./provenance/TTP_and_Al_time.png"
         }
     ],
     "links": [
@@ -627,7 +627,7 @@
                 "datalink": false,
                 "id": "17",
                 "tag": "2007-2015",
-                "vis": "./provenance/TTP_and_AL_time.png"
+                "vis": "./provenance/TTP_and_Al_time.png"
             },
             "value": 2,
             "id": 14,
@@ -659,7 +659,7 @@
                 "datalink": false,
                 "id": "17",
                 "tag": "2007-2015",
-                "vis": "./provenance/TTP_and_AL_time.png"
+                "vis": "./provenance/TTP_and_Al_time.png"
             },
             "value": 2,
             "id": 15,

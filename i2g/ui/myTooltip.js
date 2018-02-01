@@ -79,7 +79,7 @@ define(function(require) {
 
         if(annotation != "") {
 	        var annotationRow = $('<div class = "myTooltipRow"/>')
-	        	.appendTo(tooltipContainer)
+	        	.appendTo(tooltipContainer);
 
 	        var annotationTitle = $('<div class = "myTooltipTitle"/>')
 	            .appendTo(annotationRow)
@@ -90,7 +90,7 @@ define(function(require) {
 	        	.html(annotation);
 	    }
 
-        var visImg = $('<img class="myTooltipImg">')
+        var visImg = $('<img class="myTooltipImg" draggable = "false">')
       		.appendTo(tooltipContainer);
 
       	visImg[0].src = vis;
