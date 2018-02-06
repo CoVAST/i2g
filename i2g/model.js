@@ -46,7 +46,7 @@ function i2gModel(arg) {
                 if(nodeHash.hasOwnProperty(newNode.id)) {
                     model.removeNode(newNode.id);
                 }
-                nodeCounter = parseInt(newNode.id) > nodeCounter ? (parseInt(newNode.id) + 1) : nodeCounter;
+                nodeCounter = parseInt(newNode.id) >= nodeCounter ? (parseInt(newNode.id) + 1) : nodeCounter;
             }
             if(!newNode.hasOwnProperty('datalink')) {
                 newNode.datalink = false;
@@ -73,7 +73,7 @@ function i2gModel(arg) {
                 if(linkHash.hasOwnProperty(newLink.id)) {
                     model.removeNode(newLink.id);
                 }
-                linkCounter = parseInt(newLink.id) > linkCounter ? (parseInt(newLink.id) + 1) : linkCounter;
+                linkCounter = parseInt(newLink.id) >= linkCounter ? (parseInt(newLink.id) + 1) : linkCounter;
             }
             if(typeof newLink.source !== 'object') {
                 var sourceId = (tag===null) ? newLink.source : tag + newLink.source;

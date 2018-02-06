@@ -1,6 +1,5 @@
 define(function(require) {
-    var nodePad = require('./ui/nodePad'),
-        linkPad = require('./ui/linkPad'),
+    var widget = require("./ui/widget"),
         download = require('./downloadFunc');
 
     return function menu(i2g) {
@@ -106,12 +105,13 @@ define(function(require) {
                         });
                         i2g.update();
                     }
-                    nodePad({
+                    widget({
                         container: $("#PadModal"),
-                        nodeLabel: 'New Node',
-                        nodeType: 'default',
-                        nodeAnnotation: '',
-                        nodeVis: '',
+                        category: "nodePanel",
+                        label: 'New Node',
+                        type: 'default',
+                        annotation: '',
+                        vis: '',
                         width: 200,
                         marginTop: newNodePosition.top + 10,
                         marginLeft: newNodePosition.left + 10,
@@ -187,13 +187,14 @@ define(function(require) {
                         i2g.model.modifyNode(thisNodeId, changes);
                         i2g.update();
                     }
-                    nodePad({
+                    widget({
                         container: $("#PadModal"),
-                        nodeLabel: thisNode.__data__.label,
-                        nodeType: thisNode.__data__.type,
-                        nodeAnnotation: thisNode.__data__.annotation,
-                        nodeVis: thisNode.__data__.vis,
-                        nodeSubGraph: thisNode.__data__.subGraph,
+                        category: "nodePanel",
+                        label: thisNode.__data__.label,
+                        type: thisNode.__data__.type,
+                        annotation: thisNode.__data__.annotation,
+                        subGraph: thisNode.__data__.subGraph,
+                        vis: thisNode.__data__.vis,
                         width: 200,
                         marginTop: thisNodePosition.top + 10,
                         marginLeft: thisNodePosition.left + 10,
@@ -252,11 +253,12 @@ define(function(require) {
                         i2g.model.modifyLink(thisLinkId, changes);
                         i2g.update();
                     }   
-                    linkPad({
+                    widget({
                         container: $("#PadModal"),
-                        linkLabel: thisLink.__data__.label,
-                        linkAnnotation: thisLink.__data__.annotation,
-                        linkVis: thisLink.__data__.vis,
+                        category: "linkPanel",
+                        label: thisLink.__data__.label,
+                        annotation: thisLink.__data__.annotation,
+                        vis: thisLink.__data__.vis,
                         width: 200,
                         marginTop: thisLinkPosition.top + 10,
                         marginLeft: thisLinkPosition.left + 10,

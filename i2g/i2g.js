@@ -2,7 +2,7 @@ define(function(require) {
     var logos = require("./icons"),
         dataModel = require("./model"),
         menu = require("./menu")
-        myTooltip = require("./ui/myTooltip");
+        widget = require("./ui/widget");
 
     return function(arg) {
         "use strict";
@@ -127,13 +127,14 @@ define(function(require) {
                 .on("mouseover", (d)=> {
                     if(dblclickedHash[d.id] == null) {
                         if(!tooltipHash.hasOwnProperty(d.id)) {
-                            var nodeTooltip = myTooltip({
-                                labelName: d.label,
+                            var nodeTooltip = widget({
+                                category: "tooltip",
+                                label: d.label,
                                 annotation: d.annotation,
                                 vis: d.vis,
                                 color: indicatorColor(parseInt(d.id)),
                                 callback: function() {
-                                    tooltipHash[d.id].remove();
+                                    tooltipHash[d.id].removeWidget();
                                     delete tooltipHash[d.id];
                                     delete dblclickedHash[d.id];
                                     circle.attr("stroke", (d) => {
@@ -161,7 +162,7 @@ define(function(require) {
                 })
                 .on("mouseleave", (d) => {
                     if(dblclickedHash[d.id] == null) {
-                        tooltipHash[d.id].remove();
+                        tooltipHash[d.id].removeWidget();
                         delete tooltipHash[d.id];
                     }
                 })
@@ -363,7 +364,7 @@ define(function(require) {
 
         function drag1(d) {
             if(dblclickedHash[d.id] == null) {
-                $(".myTooltip").hide();
+                $(".widget").hide();
             }
         }
 
@@ -372,7 +373,7 @@ define(function(require) {
             d.y += d3.event.dy / height;
             i2g.update();
             if(dblclickedHash[d.id] == null) {
-                $(".myTooltip").hide();
+                $(".widget").hide();
             }
         }
 
@@ -381,7 +382,7 @@ define(function(require) {
                 var top = d3.event.sourceEvent.pageY + 5;
                 var left = d3.event.sourceEvent.pageX + 5;
                 tooltipHash[d.id].changePosition(top, left);
-                $(".myTooltip").show();
+                $(".widget").show();
             }
         }
 

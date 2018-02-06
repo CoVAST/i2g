@@ -70,7 +70,7 @@ input::selection, textarea::selection {
 }
 
 
-.myTooltip {
+.widget {
     width: 230px;
     position: absolute;
     z-index: 2;
@@ -82,31 +82,31 @@ input::selection, textarea::selection {
     font-family: sans-serif;
 }
 
-.myTooltipClose {
+.widgetClose {
     font-size: 1.1em;
     float: right;
     font-family: FontAwesome;
 }
 
-.myTooltipClose:hover {
+.widgetClose:hover {
     color: red;
     cursor: pointer;
 }
 
-.myTooltipIndicator {
+.widgetIndicator {
     width: 20px;
     float: left;
     height: 10px;
     border: solid 1px black;
 }
 
-.myTooltipRow {
+.widgetRow {
     width: 230px;
     float: left;
     font-family: inherit;
 }
 
-.myTooltipTitle {
+.widgetTitle {
     width: 80px;
     float: left;
     font-size: 0.71em;
@@ -114,14 +114,14 @@ input::selection, textarea::selection {
     font-family: inherit;
 }
 
-.myTooltipText {
+.widgetText {
     width: 150px;
     float: left;
     font-size: 0.71em;
     font-family: inherit;
 }
 
-.myTooltipImg {
+.widgetImg {
     margin-top: 5px;
     border-top: 1px solid black;
     padding-top: 5px;
