@@ -68,10 +68,14 @@ define(function(require) {
 
         // set up a nodeColor function to determine the color of the node based on its type
         var nodeColor = function(d) {
-            if(nodeTypeColor.hasOwnProperty(d.type))
-                return nodeTypeColor[d.type];
-            else
-                return "black";
+            if(d.color == "default") {
+                if(nodeTypeColor.hasOwnProperty(d.type))
+                    return nodeTypeColor[d.type];
+                else
+                    return "black";
+            } else {
+                return d.color;
+            }
         }
 
         // set up a function to determine the size of the node (using d3)
@@ -232,23 +236,11 @@ define(function(require) {
                 })
 
             allNodes.selectAll(".nodeIcons")
-                .text((d) => { return logos(d.icon || d.type); })
-                .attr("fill",  (d) => { 
-                    if(d.color != "default") {
-                        return d.color;
-                    } else {
-                        return nodeColor(d);
-                    }
-                });
+                .text(d => logos(d.icon || d.type))
+                .attr("fill", d => nodeColor(d));
 
             allNodes.selectAll(".nodeRect")
-                .attr("stroke", (d) => {
-                    if(d.color == "default") {
-                        return "#888";
-                    } else {
-                        return d.color;
-                    }
-                })
+                .attr("stroke", d => d.color == "default" ? "#888" : d.color)
                 .style("display", (d) => {
                     if(d.type == "default") {
                         return null;
@@ -350,23 +342,11 @@ define(function(require) {
                     +((((y1 * height) + y1c) + ((y2 * height) + y2c)) / 2)
                     + "," + ((x2 * width ) + x2c) + "," + ((y2 * height) + y2c);
                 })
-                .attr("stroke", (d) => {
-                    if(d.color == "default") {
-                        return "#BBB";
-                    } else {
-                        return d.color;
-                    }
-                });
+                .attr("stroke", d => d.color == "default" ? "#BBB" : d.color);
 
             // update link arrow
             allLinks.selectAll('.directionArrow')
-                .attr("fill", (d) => {
-                    if(d.color == "default") {
-                        return "#BBB";
-                    } else {
-                        return d.color;
-                    }
-                });
+                .attr("fill", d => d.color == "default" ? "#BBB" : d.color);
 
             // update link labels
             allLinks.selectAll('.linkLabels')
@@ -387,7 +367,6 @@ define(function(require) {
 
             allLinks.selectAll('.linkLabelText')
                 .text((d) => d.label);
-
         }
 
         function drag1(d) {

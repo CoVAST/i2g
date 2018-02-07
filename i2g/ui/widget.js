@@ -48,7 +48,7 @@ define(function(require) {
             	});
 
             var labelRow = $('<div class = "widgetRow"/>')
-            	.appendTo(widgetContainer)
+            	.appendTo(widgetContainer);
 
             var labelTitle = $('<div class = "widgetTitle"/>')
                 .appendTo(labelRow)
@@ -71,10 +71,40 @@ define(function(require) {
     	        	.html(annotation);
     	    }
 
-            var visImg = $('<img class="widgetImg" draggable = "false">')
-          		.appendTo(widgetContainer);
+            if(vis != "") {
+                var separateLine = $('<div class = "separeateLine"/>')
+                    .appendTo(widgetContainer);
 
-          	visImg[0].src = vis;
+                var visImgBox = $('<div class="widgetImgBox"/>')
+                    .appendTo(widgetContainer);
+
+                //var bigImgBox;
+                var bigContainer = $('#PadModal');
+
+                var visImg = $('<img draggable = "false">')
+                    .appendTo(visImgBox)
+                    .click((e) => {
+                        bigContainer.show();
+                        // bigImgBox = $('<div class="bigImgBox"/>')
+                        //     .appendTo(bigContainer);
+                        var bigImg = $('<img class="bigImg" draggable = "false">')
+                            .appendTo(bigContainer);
+                        bigImg[0].src = vis;
+
+                        $(window).click(removeBigImg);
+
+                        function removeBigImg() {
+                            if(this.event.target == bigContainer[0]) {
+                                bigContainer.empty();
+                                bigContainer.hide();
+                                $(window).off("click", removeBigImg);
+                            }
+                        }
+                    });
+
+                visImg[0].src = vis;
+
+            }
 
             widget.changePosition = function(margin_top, margin_left) {
             	marginTop = margin_top;
