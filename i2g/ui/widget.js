@@ -232,7 +232,8 @@ define(function(require) {
                     "green",
                     "indigo",
                     "blue",
-                    "purple"
+                    "purple",
+                    "grey"
                     ],
                 callback: colorChange
             });

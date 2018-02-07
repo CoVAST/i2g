@@ -54,7 +54,7 @@
             "tag": "Tehrik-I-Taliban Pakistan",
             "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
             "subGraph": null,
-            "color": "default"
+            "color": "rgb(128, 128, 128)"
         },
         {
             "label": "Explosives/Bombs/...",
@@ -280,7 +280,7 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "default"
+                "color": "rgb(128, 128, 128)"
             },
             "target": {
                 "label": "South Asia",
@@ -317,7 +317,7 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "default"
+                "color": "rgb(128, 128, 128)"
             },
             "target": {
                 "label": "Firearms",
@@ -354,7 +354,7 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "default"
+                "color": "rgb(128, 128, 128)"
             },
             "target": {
                 "label": "Explosives/Bombs/...",
@@ -687,7 +687,7 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "default"
+                "color": "rgb(128, 128, 128)"
             },
             "target": {
                 "label": "2007-2015",

@@ -34,23 +34,7 @@ define(function(require) {
             .append("svg:svg")
                 .attr("id", graphId)
                 .attr("width", width)
-                .attr("height", height);
-
-        // set up the direction arrow
-        svg.append("svg:defs").append("svg:marker")
-              .attr("id","directionArrow")
-              .attr("viewBox", "0 -5 10 10")
-               .attr("markerUnits", "userSpaceOnUse")
-              .attr("refX", 5)
-              .attr("refY", 0)
-              .attr("markerWidth", 10)
-              .attr("markerHeight", 10)
-              .attr("orient", "auto")
-            .append("svg:path")
-              .attr("fill", "#888")
-            //   .attr("transform", "scale(0.05)")
-            //   .attr("d", logos("info"));
-              .attr("d", "M0,-5L10,0L0,5");
+                .attr("height", height);        
 
         // set up link label gradient
         var linkLabelGradient = svg.append("svg:defs").append("radialGradient")
@@ -292,7 +276,23 @@ define(function(require) {
             newLinks.attr("class", "graphLinkLine")
                 .attr("stroke-width", (d) => (linkSize(d.value)))
                 // .attr("stroke", (d)=>linkColor(d.dest))
-                .attr("marker-end", "url(#directionArrow)");
+                .attr("marker-end", (d) => { return "url(#directionArrow_" + d.id + ")"; });
+
+            // set up the direction arrow
+            var linkArrow = linkStruct.append("svg:defs").append("svg:marker")
+                .attr("class", "directionArrow")
+                .attr("id", (d) => { return "directionArrow_" + d.id; })
+                .attr("viewBox", "0 -5 10 10")
+                .attr("markerUnits", "userSpaceOnUse")
+                .attr("refX", 5)
+                .attr("refY", 0)
+                .attr("markerWidth", 10)
+                .attr("markerHeight", 10)
+                .attr("orient", "auto")
+                .append("svg:path")
+                //   .attr("transform", "scale(0.05)")
+                //   .attr("d", logos("info"));
+                .attr("d", "M0,-5L10,0L0,5");
 
             var linkLabels = linkStruct.append("g")
                 .attr("class", "linkLabels");
@@ -351,6 +351,16 @@ define(function(require) {
                     + "," + ((x2 * width ) + x2c) + "," + ((y2 * height) + y2c);
                 })
                 .attr("stroke", (d) => {
+                    if(d.color == "default") {
+                        return "#BBB";
+                    } else {
+                        return d.color;
+                    }
+                });
+
+            // update link arrow
+            allLinks.selectAll('.directionArrow')
+                .attr("fill", (d) => {
                     if(d.color == "default") {
                         return "#BBB";
                     } else {
@@ -479,7 +489,11 @@ define(function(require) {
                     source: tempLink.source,
                     target: tempLink.target,
                     value: 2,
-                    datalink: false
+                    datalink: false,
+                    label: "new relation",
+                    color: tempLink.source.color,
+                    annotation: "",
+                    vis: ""
                 })
                 tempLink.source = tempLink.target = null;
                 tempLink.svg
