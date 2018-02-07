@@ -91,10 +91,11 @@ define(function(require) {
                 } else if(key == 'addNode') {
                     var svgWidth = i2g.svg.attr('width');
                     var svgHeight = i2g.svg.attr('height');
-                    var addNewNode = function(newNodeLabel, newNodeType, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
+                    var addNewNode = function(newNodeLabel, newNodeType, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
                         i2g.model.addNodes({
                             label: newNodeLabel,
                             type: newNodeType,
+                            color: newColor,
                             annotation: newNodeAnnotation,
                             vis: newNodeVis,
                             subGraph: newNodeSubGraph,
@@ -110,6 +111,7 @@ define(function(require) {
                         category: "nodePanel",
                         label: 'New Node',
                         type: 'default',
+                        color: 'default',
                         annotation: '',
                         vis: '',
                         width: 200,
@@ -175,11 +177,12 @@ define(function(require) {
                 } else if(key == 'modifyNode') {
                     thisNodeCircle = this.find('.nodeHolder')[0];
                     i2g.updateObject(thisNodeCircle, {stroke: 'orange'});
-                    var saveChanges = function(newNodeLabel, newNodeType, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
+                    var saveChanges = function(newNodeLabel, newNodeType, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
                         i2g.updateObject(thisNodeCircle, {stroke: 'none'});
                         var changes = {
                             label: newNodeLabel,
                             type: newNodeType,
+                            color: newColor,
                             annotation: newNodeAnnotation,
                             vis: newNodeVis,
                             subGraph: newNodeSubGraph
@@ -192,6 +195,7 @@ define(function(require) {
                         category: "nodePanel",
                         label: thisNode.__data__.label,
                         type: thisNode.__data__.type,
+                        color: thisNode.__data__.color,
                         annotation: thisNode.__data__.annotation,
                         subGraph: thisNode.__data__.subGraph,
                         vis: thisNode.__data__.vis,
@@ -243,10 +247,11 @@ define(function(require) {
                     i2g.update();
                 } else if(key == 'modifyLink') {
                     i2g.updateObject(thisLink, {stroke: 'orange'});
-                    var saveChanges = function(newLinkLabel, newLinkAnnotation, newLinkVis) {
+                    var saveChanges = function(newLinkLabel, newLinkColor, newLinkAnnotation, newLinkVis) {
                         i2g.updateObject(thisLink, {stroke: '#999'});
                         var changes = {
                             label: newLinkLabel,
+                            color: newLinkColor,
                             annotation: newLinkAnnotation,
                             vis: newLinkVis
                         }
@@ -257,6 +262,7 @@ define(function(require) {
                         container: $("#PadModal"),
                         category: "linkPanel",
                         label: thisLink.__data__.label,
+                        color: thisLink.__data__.color,
                         annotation: thisLink.__data__.annotation,
                         vis: thisLink.__data__.vis,
                         width: 200,

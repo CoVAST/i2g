@@ -18,13 +18,14 @@ define(function(require) {
         	width = option.width || 300,
             marginTop = option.marginTop || 0,
             marginLeft = option.marginLeft || 0,
-        	color = option.color || null,
+        	color = option.color || "default",
         	callback = option.callback || {}; 
 
         var dragging = false;
 
         var newLabel,
             newType,
+            newColor,
             newAnnotation,
             newSubGraph,
             newVis;
@@ -87,6 +88,7 @@ define(function(require) {
             	functionRow.show();
             	widgetContainer.css("border", "3px solid " + color);
             }
+
         } else {
             widgetContainer = $('<div class = "PadModal-container"/>')
                 .appendTo(container);
@@ -102,9 +104,12 @@ define(function(require) {
                 .val(label);
 
             if(category == "nodePanel") {
-                var padDropdown = $('<div class = "PadDropdown"/>')
+                var padType = $('<div class = "PadDropdown"/>')
                     .appendTo(padForm);
             }
+
+            var padColor = $('<div class = "PadDropdown"/>')
+                .appendTo(padForm);
 
             var padAnnotation = $('<textarea class = "PadAnnotation"/>')
                 .appendTo(padForm)
@@ -193,12 +198,13 @@ define(function(require) {
 
             // Callback for dropdown
             if(category == "nodePanel") {
-                var dropdownChange = function(dropdownText) {
+                var typeChange = function(dropdownText) {
                     newType = dropdownText; 
                 }
 
                 dropdown({
-                    container: padDropdown,
+                    container: padType,
+                    category: "type",
                     defaultVal: type,
                     list: [
                         "location", 
@@ -207,9 +213,29 @@ define(function(require) {
                         "unknown",
                         "default"
                         ],
-                    callback: dropdownChange
+                    callback: typeChange
                 });
             }
+
+            var colorChange = function(dropdownText) {
+                newColor = dropdownText;
+            }
+
+            dropdown({
+                container: padColor,
+                category: "color",
+                defaultVal: color,
+                list: [
+                    "red",
+                    "orange",
+                    "yellow",
+                    "green",
+                    "indigo",
+                    "blue",
+                    "purple"
+                    ],
+                callback: colorChange
+            });
 
             container.show();
 
@@ -236,9 +262,9 @@ define(function(require) {
                 $(window).off("mouseup", dragend);
                 $(window).off("click", removePanel);
                 if(category == "nodePanel") {
-                    callback(newLabel, newType, newAnnotation, newSubGraph, newVis);
+                    callback(newLabel, newType, newColor, newAnnotation, newSubGraph, newVis);
                 } else if(category == "linkPanel") {
-                    callback(newLabel, newAnnotation, newVis);
+                    callback(newLabel, newColor, newAnnotation, newVis);
                 }
             }
         }        

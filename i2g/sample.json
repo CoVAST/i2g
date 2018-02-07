@@ -11,7 +11,8 @@
             "id": "11",
             "tag": "Firearms",
             "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "rgb(0, 0, 255)"
         },
         {
             "label": "South Asia",
@@ -24,20 +25,22 @@
             "id": "12",
             "tag": "South Asia",
             "vis": "http://localhost:8080/i2g/provenance/southAsia.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "default"
         },
         {
             "label": "Maoists",
             "type": "people",
             "annotation": "Maoists' logo",
-            "x": 0.23355911381328195,
-            "y": 0.28515378389769697,
+            "x": 0.22687908709317509,
+            "y": 0.28893093215076565,
             "value": 0,
             "datalink": false,
             "id": "13",
             "tag": "Maoists",
             "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "rgb(255, 0, 0)"
         },
         {
             "label": "Tehrik-I-Taliban Pakistan (TTP)",
@@ -50,7 +53,8 @@
             "id": "3",
             "tag": "Tehrik-I-Taliban Pakistan",
             "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "default"
         },
         {
             "label": "Explosives/Bombs/...",
@@ -63,7 +67,8 @@
             "id": "4",
             "tag": "Explosives/Bombs/...",
             "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "rgb(0, 0, 255)"
         },
         {
             "label": "Al-Shabaab",
@@ -76,7 +81,8 @@
             "id": "6",
             "tag": "Al-Shabaab",
             "vis": "http://localhost:8080/i2g/provenance/ShababLogo.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "rgb(0, 128, 0)"
         },
         {
             "label": "Boko Haram",
@@ -89,7 +95,8 @@
             "id": "7",
             "tag": "Boko Haram",
             "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_logo_(2002%E2%80%9315).png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "rgb(128, 0, 128)"
         },
         {
             "label": "Sub-Saharan Africa",
@@ -102,7 +109,8 @@
             "id": "14",
             "tag": "Sub-Saharan Africa",
             "vis": "http://localhost:8080/i2g/provenance/africa.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "default"
         },
         {
             "label": "1979-2015",
@@ -114,8 +122,9 @@
             "datalink": false,
             "id": "15",
             "tag": "1979-2015",
-            "vis": "./provenance/Maoists_time.png",
-            "subGraph": null
+            "vis": "http://localhost:8080/i2g/provenance/Maoists_time.png",
+            "subGraph": null,
+            "color": "default"
         },
         {
             "label": "2009-2015",
@@ -128,7 +137,8 @@
             "id": "16",
             "tag": "2009-2015",
             "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_time.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "default"
         },
         {
             "label": "2007-2015",
@@ -141,7 +151,8 @@
             "id": "17",
             "tag": "2007-2015",
             "vis": "http://localhost:8080/i2g/provenance/TTP_and_Al_time.png",
-            "subGraph": null
+            "subGraph": null,
+            "color": "default"
         }
     ],
     "links": [
@@ -150,14 +161,15 @@
                 "label": "Maoists",
                 "type": "people",
                 "annotation": "Maoists' logo",
-                "x": 0.23355911381328195,
-                "y": 0.28515378389769697,
+                "x": 0.22687908709317509,
+                "y": 0.28893093215076565,
                 "value": 0,
                 "datalink": false,
                 "id": "13",
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(255, 0, 0)"
             },
             "target": {
                 "label": "South Asia",
@@ -170,28 +182,31 @@
                 "id": "12",
                 "tag": "South Asia",
                 "vis": "http://localhost:8080/i2g/provenance/southAsia.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 0,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(255, 0, 0)"
         },
         {
             "source": {
                 "label": "Maoists",
                 "type": "people",
                 "annotation": "Maoists' logo",
-                "x": 0.23355911381328195,
-                "y": 0.28515378389769697,
+                "x": 0.22687908709317509,
+                "y": 0.28893093215076565,
                 "value": 0,
                 "datalink": false,
                 "id": "13",
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(255, 0, 0)"
             },
             "target": {
                 "label": "Firearms",
@@ -204,28 +219,31 @@
                 "id": "11",
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 1,
             "datalink": false,
             "label": "mainly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(255, 0, 0)"
         },
         {
             "source": {
                 "label": "Maoists",
                 "type": "people",
                 "annotation": "Maoists' logo",
-                "x": 0.23355911381328195,
-                "y": 0.28515378389769697,
+                "x": 0.22687908709317509,
+                "y": 0.28893093215076565,
                 "value": 0,
                 "datalink": false,
                 "id": "13",
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(255, 0, 0)"
             },
             "target": {
                 "label": "Explosives/Bombs/...",
@@ -238,14 +256,16 @@
                 "id": "4",
                 "tag": "Explosives/Bombs/...",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 2,
             "datalink": false,
             "label": "secondly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(255, 0, 0)"
         },
         {
             "source": {
@@ -259,7 +279,8 @@
                 "id": "3",
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "target": {
                 "label": "South Asia",
@@ -272,14 +293,16 @@
                 "id": "12",
                 "tag": "South Asia",
                 "vis": "http://localhost:8080/i2g/provenance/southAsia.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 3,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "default"
         },
         {
             "source": {
@@ -293,7 +316,8 @@
                 "id": "3",
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "target": {
                 "label": "Firearms",
@@ -306,14 +330,16 @@
                 "id": "11",
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 4,
             "datalink": false,
             "label": "secondly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "default"
         },
         {
             "source": {
@@ -327,7 +353,8 @@
                 "id": "3",
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "target": {
                 "label": "Explosives/Bombs/...",
@@ -340,14 +367,16 @@
                 "id": "4",
                 "tag": "Explosives/Bombs/...",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 5,
             "datalink": false,
             "label": "mainly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "default"
         },
         {
             "source": {
@@ -361,7 +390,8 @@
                 "id": "6",
                 "tag": "Al-Shabaab",
                 "vis": "http://localhost:8080/i2g/provenance/ShababLogo.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 128, 0)"
             },
             "target": {
                 "label": "Firearms",
@@ -374,14 +404,16 @@
                 "id": "11",
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 6,
             "datalink": false,
             "label": "mainly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(0, 128, 0)"
         },
         {
             "source": {
@@ -395,7 +427,8 @@
                 "id": "6",
                 "tag": "Al-Shabaab",
                 "vis": "http://localhost:8080/i2g/provenance/ShababLogo.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 128, 0)"
             },
             "target": {
                 "label": "Explosives/Bombs/...",
@@ -408,14 +441,16 @@
                 "id": "4",
                 "tag": "Explosives/Bombs/...",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 7,
             "datalink": false,
             "label": "secondly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(0, 128, 0)"
         },
         {
             "source": {
@@ -429,7 +464,8 @@
                 "id": "7",
                 "tag": "Boko Haram",
                 "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_logo_(2002%E2%80%9315).png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(128, 0, 128)"
             },
             "target": {
                 "label": "Firearms",
@@ -442,14 +478,16 @@
                 "id": "11",
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 8,
             "datalink": false,
             "label": "mainly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(128, 0, 128)"
         },
         {
             "source": {
@@ -463,7 +501,8 @@
                 "id": "7",
                 "tag": "Boko Haram",
                 "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_logo_(2002%E2%80%9315).png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(128, 0, 128)"
             },
             "target": {
                 "label": "Explosives/Bombs/...",
@@ -476,14 +515,16 @@
                 "id": "4",
                 "tag": "Explosives/Bombs/...",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 0, 255)"
             },
             "value": 2,
             "id": 9,
             "datalink": false,
             "label": "secondly use",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(128, 0, 128)"
         },
         {
             "source": {
@@ -497,7 +538,8 @@
                 "id": "7",
                 "tag": "Boko Haram",
                 "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_logo_(2002%E2%80%9315).png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(128, 0, 128)"
             },
             "target": {
                 "label": "Sub-Saharan Africa",
@@ -510,14 +552,16 @@
                 "id": "14",
                 "tag": "Sub-Saharan Africa",
                 "vis": "http://localhost:8080/i2g/provenance/africa.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 10,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(128, 0, 128)"
         },
         {
             "source": {
@@ -531,7 +575,8 @@
                 "id": "6",
                 "tag": "Al-Shabaab",
                 "vis": "http://localhost:8080/i2g/provenance/ShababLogo.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 128, 0)"
             },
             "target": {
                 "label": "Sub-Saharan Africa",
@@ -544,28 +589,31 @@
                 "id": "14",
                 "tag": "Sub-Saharan Africa",
                 "vis": "http://localhost:8080/i2g/provenance/africa.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 11,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(0, 128, 0)"
         },
         {
             "source": {
                 "label": "Maoists",
                 "type": "people",
                 "annotation": "Maoists' logo",
-                "x": 0.23355911381328195,
-                "y": 0.28515378389769697,
+                "x": 0.22687908709317509,
+                "y": 0.28893093215076565,
                 "value": 0,
                 "datalink": false,
                 "id": "13",
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(255, 0, 0)"
             },
             "target": {
                 "label": "1979-2015",
@@ -577,15 +625,17 @@
                 "datalink": false,
                 "id": "15",
                 "tag": "1979-2015",
-                "vis": "./provenance/Maoists_time.png",
-                "subGraph": null
+                "vis": "http://localhost:8080/i2g/provenance/Maoists_time.png",
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 12,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(255, 0, 0)"
         },
         {
             "source": {
@@ -599,7 +649,8 @@
                 "id": "7",
                 "tag": "Boko Haram",
                 "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_logo_(2002%E2%80%9315).png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(128, 0, 128)"
             },
             "target": {
                 "label": "2009-2015",
@@ -612,14 +663,16 @@
                 "id": "16",
                 "tag": "2009-2015",
                 "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_time.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 13,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(128, 0, 128)"
         },
         {
             "source": {
@@ -633,7 +686,8 @@
                 "id": "3",
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "target": {
                 "label": "2007-2015",
@@ -646,14 +700,16 @@
                 "id": "17",
                 "tag": "2007-2015",
                 "vis": "http://localhost:8080/i2g/provenance/TTP_and_Al_time.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 14,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "default"
         },
         {
             "source": {
@@ -667,7 +723,8 @@
                 "id": "6",
                 "tag": "Al-Shabaab",
                 "vis": "http://localhost:8080/i2g/provenance/ShababLogo.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "rgb(0, 128, 0)"
             },
             "target": {
                 "label": "2007-2015",
@@ -680,14 +737,16 @@
                 "id": "17",
                 "tag": "2007-2015",
                 "vis": "http://localhost:8080/i2g/provenance/TTP_and_Al_time.png",
-                "subGraph": null
+                "subGraph": null,
+                "color": "default"
             },
             "value": 2,
             "id": 15,
             "datalink": false,
             "label": "active in",
             "annotation": "",
-            "vis": ""
+            "vis": "",
+            "color": "rgb(0, 128, 0)"
         }
     ]
 }

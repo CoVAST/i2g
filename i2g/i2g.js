@@ -113,8 +113,6 @@ define(function(require) {
             nodeSvg = g.append("g"),
             linkIconSvg = g.append("g");
 
-        nodeSvg.attr("stroke-width", 2).attr("stroke", "none");
-        linkSvg.attr("stroke", "#BBB");
 
         function renderNodes() {
             var node = nodeSvg.selectAll(".graphNodes").data(model.getNodes(), d => d.id);
@@ -251,9 +249,22 @@ define(function(require) {
 
             allNodes.selectAll(".nodeIcons")
                 .text((d) => { return logos(d.icon || d.type); })
-                .attr("fill",  (d) => { return nodeColor(d); });
+                .attr("fill",  (d) => { 
+                    if(d.color != "default") {
+                        return d.color;
+                    } else {
+                        return nodeColor(d);
+                    }
+                });
 
             allNodes.selectAll(".nodeRect")
+                .attr("stroke", (d) => {
+                    if(d.color == "default") {
+                        return "#888";
+                    } else {
+                        return d.color;
+                    }
+                })
                 .style("display", (d) => {
                     if(d.type == "default") {
                         return null;
@@ -339,6 +350,13 @@ define(function(require) {
                     +((((y1 * height) + y1c) + ((y2 * height) + y2c)) / 2)
                     + "," + ((x2 * width ) + x2c) + "," + ((y2 * height) + y2c);
                 })
+                .attr("stroke", (d) => {
+                    if(d.color == "default") {
+                        return "#BBB";
+                    } else {
+                        return d.color;
+                    }
+                });
 
             // update link labels
             allLinks.selectAll('.linkLabels')
