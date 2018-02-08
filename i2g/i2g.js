@@ -78,21 +78,19 @@ define(function(require) {
             }
         }
 
-        // set up a function to determine the size of the node (using d3)
-        var nodeSize = d3.scalePow()
-            .exponent(0.20)
-            .domain([1, 3000])
-            .range([5, 500]);
-
-        var nodeHolderRadius = 30; // size + padding for each node structure
+        var nodeHolderRadius = 12; // size + padding for each node structure
         var linkLabelWidth = 120;
         var linkLabelHeight = 60; 
 
+        // set up a function to determine the size of the node (using d3)
+        var nodeSize = d3.scalePow()
+            .exponent(1)
+            .range([1*scale, 4*scale]);
+
         // set up a function to determine the width of the link (using d3)
         var linkSize = d3.scalePow()
-            .exponent(0.2)
-            .domain([0, 3000])
-            .range([1*scale, 2*scale]);
+            .exponent(1)
+            .range([1*scale, 4*scale]);
 
         var indicatorColor = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -103,8 +101,11 @@ define(function(require) {
 
 
         function renderNodes() {
-            var node = nodeSvg.selectAll(".graphNodes").data(model.getNodes(), d => d.id);
+            var nodes = model.getNodes();
+            var node = nodeSvg.selectAll(".graphNodes").data(nodes, d => d.id);
             node.exit().remove(); // Remove the previous nodes from the graph
+
+            nodeSize.domain([1, 4]);
 
             // Add updated nodes into the graph
             var nodeStruct = node.enter().append("g")
@@ -167,7 +168,6 @@ define(function(require) {
             var circle = nodeStruct.append("circle")
                 .attr("class", "nodeHolder")
                 .attr("fill", "transparent")
-                .attr("r", nodeHolderRadius)
                 .attr("stroke-width", "3px")
                 .attr("stroke", "none");
 
@@ -182,18 +182,12 @@ define(function(require) {
             var icons = nodeStruct.append("text")
                 .attr("class", "nodeIcons")
                 .attr('font-family', 'FontAwesome')
-                .attr('font-size', function(d) { return scale * 1.5 + 'em'} )
                 .attr("dominant-baseline", "central")
                 .style("text-anchor", "middle");
 
             var textBox = nodeStruct.append("rect")
                 .attr("class", "nodeRect")
-                .attr("stroke", "#888")
-                .attr("fill", "white")
-                .attr("width", nodeHolderRadius * 2)
-                .attr("height", nodeHolderRadius)
-                .attr("x", -nodeHolderRadius)
-                .attr("y", -nodeHolderRadius / 2);
+                .attr("fill", "white");
 
             var labels = nodeStruct.append("text")
                 .attr("class", "nodeLabels")
@@ -206,12 +200,15 @@ define(function(require) {
                     return "translate(" + (d.x * width) + "," + (d.y * height) + ")";
                 });
 
+            allNodes.selectAll(".nodeHolder")
+                .attr("r", (d) => nodeSize(d.size) * nodeHolderRadius + 10);
+
             allNodes.selectAll(".nodeLabels")
                 .attr("dx", (d) => {
                     if(d.type == "default") {
                         return null;
                     } else {
-                        return nodeHolderRadius / 2;
+                        return d.size * nodeHolderRadius + 2;
                     }
                 })
                 .style("text-anchor", (d) => {
@@ -220,6 +217,9 @@ define(function(require) {
                     } else {
                         return "start";
                     }
+                })
+                .style("font-size", (d) => {
+                    return d.size * 0.7 + "em";
                 })
                 .text(function(d){
                     var label = (d.hasOwnProperty("label")) ? d.label : d.id;
@@ -237,10 +237,16 @@ define(function(require) {
 
             allNodes.selectAll(".nodeIcons")
                 .text(d => logos(d.icon || d.type))
-                .attr("fill", d => nodeColor(d));
+                .attr("fill", d => nodeColor(d))                
+                .attr('font-size', (d) => { return d.size * 1.5 + 'em'} );
 
             allNodes.selectAll(".nodeRect")
                 .attr("stroke", d => d.color == "default" ? "#888" : d.color)
+                .attr("stroke-width", d => d.size)
+                .attr("width", d => d.size * nodeHolderRadius * 4)
+                .attr("height", d => d.size * nodeHolderRadius * 2)
+                .attr("x", d => d.size * -nodeHolderRadius * 2)
+                .attr("y", d => d.size * -nodeHolderRadius)
                 .style("display", (d) => {
                     if(d.type == "default") {
                         return null;
@@ -258,16 +264,15 @@ define(function(require) {
 
             link.exit().remove(); // Remove the previous link from the graph
 
-            linkSize.domain([0, d3.max(links.map((d)=>d.value))]);
+            linkSize.domain([1, 4]);
 
             var linkStruct = link.enter().append("g")
                 .attr("class", "graphLinks");
 
             var newLinks = linkStruct.append("path");
 
-            newLinks.attr("class", "graphLinkLine")
-                .attr("stroke-width", (d) => (linkSize(d.value)))
-                // .attr("stroke", (d)=>linkColor(d.dest))
+            newLinks
+                .attr("class", "graphLinkLine")
                 .attr("marker-end", (d) => { return "url(#directionArrow_" + d.id + ")"; });
 
             // set up the direction arrow
@@ -309,38 +314,19 @@ define(function(require) {
 
             //update exiting links
             allLinks.selectAll('.graphLinkLine')
+                .attr("stroke-width", (d) => (linkSize(d.size)))
                 .attr("d", function(d){
-                    var x1 = d.source.x,
-                        x2 = d.target.x,
-                        y1 = d.source.y,
-                        y2 = d.target.y;
-
-                    var x1c, x2c, y1c, y2c;
-                    var tline = nodeHolderRadius / 2;
-
-                    var dx = (x2 - x1) * width;
-                    var dy = (y2 - y1) * height;
                     
-                    if(d.source.type == "default") {
-                        var ratio = Math.min(Math.abs(tline / dy), Math.abs(2 * tline / dx));
-                    } else {
-                        var ratio = tline / Math.sqrt(dx * dx + dy * dy);
-                    }
-                    x1c = dx * ratio;
-                    y1c = dy * ratio;
-                    
-                    if(d.target.type == "default") {
-                        var ratio = Math.min(Math.abs((tline + 5) / dy), Math.abs((2 * tline + 7) / dx));
-                    } else {
-                        var ratio = tline / Math.sqrt(dx * dx + dy * dy);
-                    }
-                    x2c = -dx * ratio;
-                    y2c = -dy * ratio;
+                    var lineInfo = calculateLine(d);
+                    var x1 = lineInfo[0],
+                        y1 = lineInfo[1],
+                        x2 = lineInfo[2],
+                        y2 = lineInfo[3];
 
-                    return "M" + ((x1 * width) + x1c) + "," + ((y1 * height) + y1c)
-                    + " L" + ((((x1 * width ) + x1c) + ((x2 * width ) + x2c)) / 2) + ","
-                    +((((y1 * height) + y1c) + ((y2 * height) + y2c)) / 2)
-                    + "," + ((x2 * width ) + x2c) + "," + ((y2 * height) + y2c);
+                    return "M" + x1 + "," + y1
+                    + " L" + ((x1 + x2) / 2) + ","
+                    +((y1 + y2) / 2)
+                    + "," + x2 + "," + y2;
                 })
                 .attr("stroke", d => d.color == "default" ? "#BBB" : d.color);
 
@@ -351,10 +337,12 @@ define(function(require) {
             // update link labels
             allLinks.selectAll('.linkLabels')
                 .attr("transform", function(d) {
-                    var x1 = d.source.x * width,
-                        x2 = d.target.x * width,
-                        y1 = d.source.y * height,
-                        y2 = d.target.y * height;
+                    var lineInfo = calculateLine(d);
+                    var x1 = lineInfo[0],
+                        y1 = lineInfo[1],
+                        x2 = lineInfo[2],
+                        y2 = lineInfo[3];
+
                     return "translate(" + ((x1 + x2) / 2) + "," + ((y1 + y2) / 2) + ")";
                 })
                 .style("display", (d) => {
@@ -367,6 +355,41 @@ define(function(require) {
 
             allLinks.selectAll('.linkLabelText')
                 .text((d) => d.label);
+        }
+
+        function calculateLine(d) {
+            var x1 = d.source.x,
+                x2 = d.target.x,
+                y1 = d.source.y,
+                y2 = d.target.y;
+
+            var x1c, x2c, y1c, y2c;
+            var tline = nodeHolderRadius;
+            var difference = 5;
+            var sourceSize = d.source.size;
+            var targetSize = d.target.size;
+
+            var dx = (x2 - x1) * width;
+            var dy = (y2 - y1) * height;
+
+            
+            if(d.source.type == "default") {
+                var ratio = Math.min(Math.abs(sourceSize * tline / dy), Math.abs(2 * sourceSize * tline / dx));
+            } else {
+                var ratio = (sourceSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
+            }
+            x1c = dx * ratio;
+            y1c = dy * ratio;
+            
+            if(d.target.type == "default") {
+                var ratio = Math.min(Math.abs((targetSize * tline + 5) / dy), Math.abs((2 * targetSize * tline + 7) / dx));
+            } else {
+                var ratio = (targetSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
+            }
+            x2c = -dx * ratio;
+            y2c = -dy * ratio;
+
+            return [(x1 * width) + x1c, (y1 * height) + y1c, (x2 * width ) + x2c, (y2 * height) + y2c];
         }
 
         function drag1(d) {
@@ -467,7 +490,7 @@ define(function(require) {
                 model.addLinks({
                     source: tempLink.source,
                     target: tempLink.target,
-                    value: 2,
+                    size: 1,
                     datalink: false,
                     label: "new relation",
                     color: tempLink.source.color,

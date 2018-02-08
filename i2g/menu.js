@@ -91,17 +91,17 @@ define(function(require) {
                 } else if(key == 'addNode') {
                     var svgWidth = i2g.svg.attr('width');
                     var svgHeight = i2g.svg.attr('height');
-                    var addNewNode = function(newNodeLabel, newNodeType, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
+                    var addNewNode = function(newNodeLabel, newNodeType, newSize, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
                         i2g.model.addNodes({
                             label: newNodeLabel,
                             type: newNodeType,
+                            size: newSize,
                             color: newColor,
                             annotation: newNodeAnnotation,
                             vis: newNodeVis,
                             subGraph: newNodeSubGraph,
                             x: (newNodePosition.left / svgWidth),
                             y: (newNodePosition.top / svgHeight),
-                            value: 0,
                             datalink: false
                         });
                         i2g.update();
@@ -111,6 +111,7 @@ define(function(require) {
                         category: "nodePanel",
                         label: 'New Node',
                         type: 'default',
+                        size: 1,
                         color: 'default',
                         annotation: '',
                         vis: '',
@@ -177,11 +178,12 @@ define(function(require) {
                 } else if(key == 'modifyNode') {
                     thisNodeCircle = this.find('.nodeHolder')[0];
                     i2g.updateObject(thisNodeCircle, {stroke: 'orange'});
-                    var saveChanges = function(newNodeLabel, newNodeType, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
+                    var saveChanges = function(newNodeLabel, newNodeType, newSize, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
                         i2g.updateObject(thisNodeCircle, {stroke: 'none'});
                         var changes = {
                             label: newNodeLabel,
                             type: newNodeType,
+                            size: newSize,
                             color: newColor,
                             annotation: newNodeAnnotation,
                             vis: newNodeVis,
@@ -195,6 +197,7 @@ define(function(require) {
                         category: "nodePanel",
                         label: thisNode.__data__.label,
                         type: thisNode.__data__.type,
+                        size: thisNode.__data__.size,
                         color: thisNode.__data__.color,
                         annotation: thisNode.__data__.annotation,
                         subGraph: thisNode.__data__.subGraph,
@@ -246,11 +249,15 @@ define(function(require) {
                     i2g.model.removeLink(thisLinkId);
                     i2g.update();
                 } else if(key == 'modifyLink') {
-                    i2g.updateObject(thisLink, {stroke: 'orange'});
-                    var saveChanges = function(newLinkLabel, newLinkColor, newLinkAnnotation, newLinkVis) {
-                        i2g.updateObject(thisLink, {stroke: '#999'});
+                    thisLinkLine = this.find('.graphLinkLine')[0];
+                    thisLinkArrow = this.find('.directionArrow')[0];
+                    originalColor = thisLink.__data__.color;
+                    // i2g.updateObject(thisLinkLine, {stroke: 'orange'});
+                    var saveChanges = function(newLinkLabel, newSize, newLinkColor, newLinkAnnotation, newLinkVis) {
+                        // i2g.updateObject(thisLinkLine, {stroke: '#999'});
                         var changes = {
                             label: newLinkLabel,
+                            size: newSize,
                             color: newLinkColor,
                             annotation: newLinkAnnotation,
                             vis: newLinkVis
@@ -262,6 +269,7 @@ define(function(require) {
                         container: $("#PadModal"),
                         category: "linkPanel",
                         label: thisLink.__data__.label,
+                        size: thisLink.__data__.size,
                         color: thisLink.__data__.color,
                         annotation: thisLink.__data__.annotation,
                         vis: thisLink.__data__.vis,

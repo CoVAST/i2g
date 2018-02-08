@@ -14,7 +14,7 @@ define(function(require){
         var dropdownButtonBox = $('<div class = "dropdownButtonBox"/>')
             .appendTo(container);
         var dropdownButtonText;
-        if(category == "type") {
+        if(category == "type" || category == "size") {
             dropdownButtonText = $('<div class = "dropdownButtonText">' + defaultVal + '</div>')
                 .appendTo(dropdownButtonBox);
         } else if(category == "color") {
@@ -40,7 +40,7 @@ define(function(require){
         dropdownButtonBox.click(function() {
             dropdownContent.show();
             dropdownContent.empty();
-            if(category == "type") {
+            if(category == "type" || category == "size") {
                 list.forEach((d) => {
                     $('<div style = "width: 100%;" class = "dropdownItem">' + d + '</div>')
                         .appendTo(dropdownContent)
@@ -65,6 +65,7 @@ define(function(require){
                     $('<div style = "width: 100%;" class = "dropdownItem"/>')
                         .appendTo(dropdownContent)
                         .css("background-color", d)
+                        .text(d)
                         .on('click', function() {
                             dropdownButtonText.text("");
                             dropdownButtonText.css("background-color", d);
@@ -78,7 +79,7 @@ define(function(require){
             return false;
         });
 
-        if(category == "type") {
+        if(category == "type" || category == "size") {
             callback(dropdownButtonText.text());
         } else if(category == "color") {
             if(defaultVal == "default") {

@@ -12,6 +12,7 @@ define(function(require) {
             category = option.category || "",
         	label = option.label || "",
             type = option.type || "",
+            size = option.size || 0,
             annotation = option.annotation || "",
             subGraph = option.subGraph || null,
             vis = option.vis || "",
@@ -25,6 +26,7 @@ define(function(require) {
 
         var newLabel,
             newType,
+            newSize,
             newColor,
             newAnnotation,
             newSubGraph,
@@ -123,24 +125,44 @@ define(function(require) {
             widgetContainer = $('<div class = "PadModal-container"/>')
                 .appendTo(container);
 
-            var titleText = $('<h1>Node Properties</h1>')
-                .appendTo(widgetContainer);
+            var titleText = $('<h1/>')
+                .appendTo(widgetContainer)
+                .text(function() {
+                    if(category == "nodePanel") {
+                        return "Node Properties";
+                    } else if(category == "linkPanel") {
+                        return "Link Properties";
+                    }
+                });
 
             var padForm = $('<div/>')
                 .appendTo(widgetContainer);
 
+            var labelText = $('<div class = "PadText">Label:</div>')
+                .appendTo(padForm);
             var labelInput = $('<input type = "text">')
                 .appendTo(padForm)
                 .val(label);
 
             if(category == "nodePanel") {
+                var typeText = $('<div class = "PadText">Type:</div>')
+                    .appendTo(padForm);
                 var padType = $('<div class = "PadDropdown"/>')
                     .appendTo(padForm);
             }
 
+            var sizeText = $('<div class = "PadText">Size:</div>')
+                .appendTo(padForm);
+            var padSize = $('<div class = "PadDropdown"/>')
+                .appendTo(padForm);
+
+            var colorText = $('<div class = "PadText">Color:</div>')
+                .appendTo(padForm);
             var padColor = $('<div class = "PadDropdown"/>')
                 .appendTo(padForm);
 
+            var annotationText = $('<div class = "PadText">Annotation:</div>')
+                .appendTo(padForm);
             var padAnnotation = $('<textarea class = "PadAnnotation"/>')
                 .appendTo(padForm)
                 .val(annotation);
@@ -247,6 +269,23 @@ define(function(require) {
                 });
             }
 
+            var sizeChange = function(dropdownText) {
+                newSize = dropdownText; 
+            }
+
+            dropdown({
+                container: padSize,
+                category: "size",
+                defaultVal: size,
+                list: [
+                    1,
+                    2,
+                    3,
+                    4
+                    ],
+                callback: sizeChange
+            });
+
             var colorChange = function(dropdownText) {
                 newColor = dropdownText;
             }
@@ -293,9 +332,9 @@ define(function(require) {
                 $(window).off("mouseup", dragend);
                 $(window).off("click", removePanel);
                 if(category == "nodePanel") {
-                    callback(newLabel, newType, newColor, newAnnotation, newSubGraph, newVis);
+                    callback(newLabel, newType, newSize, newColor, newAnnotation, newSubGraph, newVis);
                 } else if(category == "linkPanel") {
-                    callback(newLabel, newColor, newAnnotation, newVis);
+                    callback(newLabel, newSize, newColor, newAnnotation, newVis);
                 }
             }
         }        

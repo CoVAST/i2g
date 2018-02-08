@@ -48,7 +48,6 @@ input::selection, textarea::selection {
 .nodeLabels {
     font-weight: bold;
     font-family: sans-serif;
-    font-size: 0.71em;
 }
 /*.selected.item  {
     border: 3px solid teal;
@@ -226,6 +225,11 @@ input::selection, textarea::selection {
     font-family: inherit;
 }
 
+.PadText {
+    font-size: 0.8em;
+    font-family: inherit;
+}
+
 .PadDropdown {
     height: 25px;
     font-size: 0.9em;
@@ -298,7 +302,12 @@ input::selection, textarea::selection {
 }
 
 .dropdownButtonText {
-    color: #333;
+    color: #000;
+    /*text-shadow:
+    -1px -1px 0 #000,  
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+     1px 1px 0 #000;*/
     background-color: #DDD;
     float: left;
     width: 80%;
@@ -346,7 +355,12 @@ input::selection, textarea::selection {
 }
 
 .dropdownItem {
-    color: black;
+    color: #000;
+    /*text-shadow:
+    -1px -1px 0 #000,  
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+     1px 1px 0 #000;*/
     padding: 5px 0px;
     text-align: center;
 }
