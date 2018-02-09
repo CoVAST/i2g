@@ -187,10 +187,11 @@ define(function(require) {
 
             var textBox = nodeStruct.append("rect")
                 .attr("class", "nodeRect")
-                .attr("fill", "white");
+                .attr("fill", "none");
 
             var labels = nodeStruct.append("text")
                 .attr("class", "nodeLabels")
+                .attr("id", d => "nodeLabel_" + d.id)
                 .attr("dominant-baseline", "central");
 
             //update existing nodes
@@ -223,13 +224,7 @@ define(function(require) {
                 })
                 .text(function(d){
                     var label = (d.hasOwnProperty("label")) ? d.label : d.id;
-                    if(label.length > 20) {
-                        label = label.slice(0, 17) + "...";
-                    }
-                    if(d.hasOwnProperty("labelPrefix")) {
-                        label = d.labelPrefix + label;
-                    }
-                    return label;
+                    return labelClip(label);
                 })
 
             allNodes.selectAll(".nodeIcons")
@@ -240,10 +235,10 @@ define(function(require) {
             allNodes.selectAll(".nodeRect")
                 .attr("stroke", d => d.color == "default" ? "#888" : d.color)
                 .attr("stroke-width", d => d.size)
-                .attr("width", d => d.size * nodeHolderRadius * Math.min(20, d.label.length) / 2 + 10)
-                .attr("height", d => d.size * nodeHolderRadius * 2)
-                .attr("x", d => d.size * -nodeHolderRadius * Math.min(20, d.label.length) / 4 - 5)
-                .attr("y", d => d.size * -nodeHolderRadius)
+                .attr("width", d => getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[0] + 10)
+                .attr("height", d => getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[1] + 10)
+                .attr("x", d => -getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[0] / 2 - 5)
+                .attr("y", d => -getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[1] / 2 - 5)
                 .style("display", (d) => {
                     if(d.type == "default") {
                         return null;
@@ -251,6 +246,25 @@ define(function(require) {
                         return "none";
                     }
                 });
+        }
+
+        function getTextWidth(label, font) {
+            // re-use div object for better performance
+            var sampleDiv = getTextWidth.sampleDiv || (getTextWidth.sampleDiv = $('<div>').appendTo("body"));
+            sampleDiv.css("position", "absolute");
+            sampleDiv.css("visibility", "hidden");
+            sampleDiv.css("white-space", "nowrap");
+            sampleDiv.css("font", font);
+            label = labelClip(label);
+            sampleDiv.text(label);
+            return [sampleDiv.width(), sampleDiv.height()];
+        }
+
+        function labelClip(label) {
+            if(label.length > 20) {
+                label = label.slice(0, 17) + "...";
+            }
+            return label;
         }
 
         function renderLinks() {
@@ -371,7 +385,8 @@ define(function(require) {
 
             
             if(d.source.type == "default") {
-                var ratio = Math.min(Math.abs(sourceSize * tline / dy), Math.abs((Math.min(20, d.source.label.length) * sourceSize * tline / 4 + 5) / dx));
+                var ratio = Math.min(Math.abs((getTextWidth(d.source.label, "bold " + sourceSize * 0.7 + "em sans-serif")[1] / 2 + 5) / dy), 
+                    Math.abs((getTextWidth(d.source.label, "bold " + sourceSize * 0.7 + "em sans-serif")[0] / 2 + 5) / dx));
             } else {
                 var ratio = (sourceSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
             }
@@ -379,7 +394,8 @@ define(function(require) {
             y1c = dy * ratio;
             
             if(d.target.type == "default") {
-                var ratio = Math.min(Math.abs((targetSize * tline + 5) / dy), Math.abs((Math.min(20, d.target.label.length) * targetSize * tline / 4 + 5 + 7) / dx));
+                var ratio = Math.min(Math.abs((getTextWidth(d.target.label, "bold " + targetSize * 0.7 + "em sans-serif")[1] / 2 + 10) / dy), 
+                    Math.abs((getTextWidth(d.target.label, "bold " + targetSize * 0.7 + "em sans-serif")[0] / 2 + 12) / dx));
             } else {
                 var ratio = (targetSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
             }
