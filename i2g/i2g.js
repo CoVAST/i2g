@@ -226,9 +226,6 @@ define(function(require) {
                     if(label.length > 20) {
                         label = label.slice(0, 17) + "...";
                     }
-                    if(d.type == "default" && label.length > 10) {
-                        label = label.slice(0, 7) + "...";
-                    }
                     if(d.hasOwnProperty("labelPrefix")) {
                         label = d.labelPrefix + label;
                     }
@@ -243,9 +240,9 @@ define(function(require) {
             allNodes.selectAll(".nodeRect")
                 .attr("stroke", d => d.color == "default" ? "#888" : d.color)
                 .attr("stroke-width", d => d.size)
-                .attr("width", d => d.size * nodeHolderRadius * 4)
+                .attr("width", d => d.size * nodeHolderRadius * Math.min(20, d.label.length) / 2 + 10)
                 .attr("height", d => d.size * nodeHolderRadius * 2)
-                .attr("x", d => d.size * -nodeHolderRadius * 2)
+                .attr("x", d => d.size * -nodeHolderRadius * Math.min(20, d.label.length) / 4 - 5)
                 .attr("y", d => d.size * -nodeHolderRadius)
                 .style("display", (d) => {
                     if(d.type == "default") {
@@ -374,7 +371,7 @@ define(function(require) {
 
             
             if(d.source.type == "default") {
-                var ratio = Math.min(Math.abs(sourceSize * tline / dy), Math.abs(2 * sourceSize * tline / dx));
+                var ratio = Math.min(Math.abs(sourceSize * tline / dy), Math.abs((Math.min(20, d.source.label.length) * sourceSize * tline / 4 + 5) / dx));
             } else {
                 var ratio = (sourceSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
             }
@@ -382,7 +379,7 @@ define(function(require) {
             y1c = dy * ratio;
             
             if(d.target.type == "default") {
-                var ratio = Math.min(Math.abs((targetSize * tline + 5) / dy), Math.abs((2 * targetSize * tline + 7) / dx));
+                var ratio = Math.min(Math.abs((targetSize * tline + 5) / dy), Math.abs((Math.min(20, d.target.label.length) * targetSize * tline / 4 + 5 + 7) / dx));
             } else {
                 var ratio = (targetSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
             }

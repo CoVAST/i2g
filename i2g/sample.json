@@ -169,7 +169,8 @@
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
                 "subGraph": null,
-                "color": "rgb(255, 0, 0)"
+                "color": "rgb(255, 0, 0)",
+                "labelLength": 7
             },
             "target": {
                 "label": "South Asia",
@@ -206,7 +207,8 @@
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
                 "subGraph": null,
-                "color": "rgb(255, 0, 0)"
+                "color": "rgb(255, 0, 0)",
+                "labelLength": 7
             },
             "target": {
                 "label": "Firearms",
@@ -220,7 +222,8 @@
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
                 "subGraph": null,
-                "color": "rgb(255, 165, 0)"
+                "color": "rgb(255, 165, 0)",
+                "labelLength": 8
             },
             "size": "4",
             "id": 1,
@@ -243,7 +246,8 @@
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
                 "subGraph": null,
-                "color": "rgb(255, 0, 0)"
+                "color": "rgb(255, 0, 0)",
+                "labelLength": 7
             },
             "target": {
                 "label": "Explosives/Bombs/...",
@@ -280,7 +284,8 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "rgb(128, 128, 128)"
+                "color": "rgb(128, 128, 128)",
+                "labelLength": 31
             },
             "target": {
                 "label": "South Asia",
@@ -317,7 +322,8 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "rgb(128, 128, 128)"
+                "color": "rgb(128, 128, 128)",
+                "labelLength": 31
             },
             "target": {
                 "label": "Firearms",
@@ -331,7 +337,8 @@
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
                 "subGraph": null,
-                "color": "rgb(255, 165, 0)"
+                "color": "rgb(255, 165, 0)",
+                "labelLength": 8
             },
             "size": 2,
             "id": 4,
@@ -354,7 +361,8 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "rgb(128, 128, 128)"
+                "color": "rgb(128, 128, 128)",
+                "labelLength": 31
             },
             "target": {
                 "label": "Explosives/Bombs/...",
@@ -405,7 +413,8 @@
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
                 "subGraph": null,
-                "color": "rgb(255, 165, 0)"
+                "color": "rgb(255, 165, 0)",
+                "labelLength": 8
             },
             "size": "4",
             "id": 6,
@@ -479,7 +488,8 @@
                 "tag": "Firearms",
                 "vis": "http://localhost:8080/i2g/provenance/weapon.png",
                 "subGraph": null,
-                "color": "rgb(255, 165, 0)"
+                "color": "rgb(255, 165, 0)",
+                "labelLength": 8
             },
             "size": "4",
             "id": 8,
@@ -613,7 +623,8 @@
                 "tag": "Maoists",
                 "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
                 "subGraph": null,
-                "color": "rgb(255, 0, 0)"
+                "color": "rgb(255, 0, 0)",
+                "labelLength": 7
             },
             "target": {
                 "label": "1979-2015",
@@ -687,7 +698,8 @@
                 "tag": "Tehrik-I-Taliban Pakistan",
                 "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
                 "subGraph": null,
-                "color": "rgb(128, 128, 128)"
+                "color": "rgb(128, 128, 128)",
+                "labelLength": 31
             },
             "target": {
                 "label": "2007-2015",
