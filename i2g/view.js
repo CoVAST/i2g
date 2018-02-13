@@ -82,13 +82,13 @@ define(function(require) {
             .exponent(1)
             .range([1*scale, 4*scale]);
 
-        var indicatorColor = d3.scaleOrdinal(d3.schemeCategory20);
 
         var g = svg.append("g"), //append a graph to plot all the links and nodes
             linkSvg = g.append("g"),
             nodeSvg = g.append("g"),
             linkIconSvg = g.append("g");
 
+        var nodeStruct, nodeHolder, allNodes;
 
         function renderNodes() {
             var nodes = model.getNodes();
@@ -98,23 +98,25 @@ define(function(require) {
             nodeSize.domain([1, 4]);
 
             // Add updated nodes into the graph
-            var nodeStruct = node.enter().append("g")
+            nodeStruct = node.enter().append("g")
                 .attr("class", "graphNodes")
                 .on("click", view.completeAddingLink);
 
-            if(view.nodeEvents) {
-                Object.keys(view.nodeEvents).forEach(function(evt){
-                    nodeStruct.on(evt, function(d){
-                        view.nodeEvents[evt].call(this, d, d3.event);
-                    });
-                })
-            }
 
-            var circle = nodeStruct.append("circle")
+
+            nodeHolder = nodeStruct.append("circle")
                 .attr("class", "nodeHolder")
                 .attr("fill", "transparent")
                 .attr("stroke-width", "3px")
                 .attr("stroke", "none");
+
+            if(view.nodeEvents) {
+                Object.keys(view.nodeEvents).forEach(function(evt){
+                    nodeStruct.on(evt, function(d){
+                        view.nodeEvents[evt].call(view, d, d3.event);
+                    });
+                })
+            }
 
             //interaction for dragging and moving a node
             nodeStruct.call(
@@ -140,7 +142,7 @@ define(function(require) {
                 .attr("dominant-baseline", "central");
 
             //update existing nodes
-            var allNodes = nodeStruct
+            allNodes = nodeStruct
                 .merge(node)
                 .attr("transform", function(d) {
                     return "translate(" + (d.x * width) + "," + (d.y * height) + ")";
@@ -456,13 +458,18 @@ define(function(require) {
         };
 
         //update individual svg object
-        view.markNode = function(nodeSvgObject, color) {
-            d3.select(nodeSvgObject).attr('stroke', color);
+        view.markNode = function(nodeId, color) {
+
+            allNodes.selectAll('.nodeHolder').attr('stroke', function(d){
+                return (d.id == nodeId) ? color : 'none';
+            });
             return view;
         }
 
-        view.unmarkNode = function(nodeSvgObject) {
-            d3.select(nodeSvgObject).attr('stroke', 'none');
+        view.unmarkNode = function(nodeId) {
+            allNodes.selectAll('.nodeHolder').attr('stroke', function(d){
+                if(d.id == nodeId) return 'none';
+            });
             return view;
         }
 

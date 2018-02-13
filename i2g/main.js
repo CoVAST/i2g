@@ -5,8 +5,8 @@ define(function(require) {
     const events = require('./events');
     const colors = require('./colors');
     const menu = require('./menu');
-    const widget = require('./utils/widget');
-    const tooltipOffset = 5;
+
+
 
     return function(arg) {
         'use strict';
@@ -24,7 +24,7 @@ define(function(require) {
         i2g.model = model({data: graph, tag: graphName});
         i2g.view = view(
             Object.assign(
-                {model: i2g.model, nodeEvents: events.node, colors: colors},
+                {model: i2g.model, nodeEvents: events().node, colors: colors},
                 options
             )
         );

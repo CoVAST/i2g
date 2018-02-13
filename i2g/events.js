@@ -1,5 +1,6 @@
 define(function(require) {
-
+    const tooltipOffset = 5;
+    const widget = require('./utils/widget');
     return function(arg) {
         var events = {};
         var tooltipHash = {};
@@ -8,8 +9,8 @@ define(function(require) {
 
         events.node =  {
             mouseover: function(d, evt) {
+                var view = this;
                 if(dblclickedHash[d.id] == null) {
-                    var nodeSVGObject = $(this).find('.nodeHolder')[0];
                     if(!tooltipHash.hasOwnProperty(d.id)) {
                         var nodeTooltip = widget({
                             category: 'tooltip',
@@ -21,9 +22,9 @@ define(function(require) {
                                 delete tooltipHash[d.id];
                                 delete dblclickedHash[d.id];
                                 if(dblclickedHash[d.id]) {
-                                    i2g.view.markNode(nodeSVGObject, indicatorColor(parseInt(d.id)));
+                                    view.markNode(d.id, indicatorColor(parseInt(d.id)));
                                 } else {
-                                    i2g.view.unmarkNode(nodeSVGObject);
+                                    view.unmarkNode(d.id);
                                 }
                             }
                         });
@@ -56,17 +57,14 @@ define(function(require) {
                 tooltipHash[d.id].changePosition(top, left);
             },
 
-            dblclick: function(d) {
-                var nodeSVGObject = this.getElementByClassName('.nodeHolder')[0];
+            dblclick: function(d, evt, svgObj) {
                 dblclickedHash[d.id] = true;
                 tooltipHash[d.id].indicate();
-
                 if(dblclickedHash[d.id]) {
-                    i2g.view.markNode(nodeSVGObject, indicatorColor(parseInt(d.id)));
+                    this.markNode(d.id, indicatorColor(parseInt(d.id)));
                 } else {
-                    i2g.view.unmarkNode(nodeSVGObject);
+                    this.unmarkNode(d.id);
                 }
-
             }
         }
 
