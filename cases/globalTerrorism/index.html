@@ -8,16 +8,19 @@
 
     <link rel="stylesheet" href="style.css"/>
 
-    <script src="/npm/jquery/dist/jquery.min.js"></script>
-    <link rel="stylesheet" href="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.css"/>
-    <link rel="stylesheet" href="/npm/font-awesome/css/font-awesome.min.css"/>
-    <script src="/npm/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.6.3/jquery.contextMenu.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.6.3/jquery.contextMenu.min.js"></script>
     <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
   </head>
   <body>
     <div id = "mainGraph"></div>
     <div id = "PadModal" class = "modal"></div>
-    <script src="/npm/requirejs/require.js"></script>
+
     <script>
 
         requirejs.config({baseUrl: '/i2g/'});

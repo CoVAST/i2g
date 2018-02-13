@@ -106,7 +106,7 @@
             "id": "7",
             "tag": "Boko Haram",
             "provenance": [{
-                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo_(2002%E2%80%9315).png",
+                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo.png",
                 "annotation": "Boko Haram's logo"
             }],
             "subGraph": null,
@@ -478,7 +478,7 @@
                 "datalink": false,
                 "id": "7",
                 "tag": "Boko Haram",
-                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo_(2002%E2%80%9315).png",
+                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo.png",
                 "subGraph": null,
                 "color": "rgb(128, 0, 128)"
             },
@@ -514,7 +514,7 @@
                 "datalink": false,
                 "id": "7",
                 "tag": "Boko Haram",
-                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo_(2002%E2%80%9315).png",
+                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo.png",
                 "subGraph": null,
                 "color": "rgb(128, 0, 128)"
             },
@@ -549,7 +549,7 @@
                 "datalink": false,
                 "id": "7",
                 "tag": "Boko Haram",
-                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo_(2002%E2%80%9315).png",
+                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo.png",
                 "subGraph": null,
                 "color": "rgb(128, 0, 128)"
             },
@@ -655,7 +655,7 @@
                 "datalink": false,
                 "id": "7",
                 "tag": "Boko Haram",
-                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo_(2002%E2%80%9315).png",
+                "vis": "/cases/globalTerrorism/img/Boko_Haram_logo.png",
                 "subGraph": null,
                 "color": "rgb(128, 0, 128)"
             },
