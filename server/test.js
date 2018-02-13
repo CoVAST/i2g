@@ -17,6 +17,7 @@ var port = process.env.PORT || 8080,
 app.use("/data", express.static('data'));
 app.use("/npm", express.static('node_modules'));
 app.use("/i2g", express.static('i2g'));
+app.use("/cases", express.static('cases'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));

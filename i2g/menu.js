@@ -175,9 +175,9 @@ define(function(require) {
                     i2g.update();
                 } else if(key == 'modifyNode') {
                     thisNodeCircle = this.find('.nodeHolder')[0];
-                    i2g.updateObject(thisNodeCircle, {stroke: 'orange'});
+                    i2g.markNode(thisNodeCircle, 'orange');
                     var saveChanges = function(newNodeLabel, newNodeType, newSize, newColor, newNodeProvenance, newNodeSubGraph) {
-                        i2g.updateObject(thisNodeCircle, {stroke: 'none'});
+                        i2g.unmarkNode(thisNodeCircle);
                         var changes = {
                             label: newNodeLabel,
                             type: newNodeType,
@@ -248,9 +248,7 @@ define(function(require) {
                     thisLinkLine = this.find('.graphLinkLine')[0];
                     thisLinkArrow = this.find('.directionArrow')[0];
                     originalColor = thisLink.__data__.color;
-                    // i2g.updateObject(thisLinkLine, {stroke: 'orange'});
                     var saveChanges = function(newLinkLabel, newSize, newLinkColor, newLinkProvenance) {
-                        // i2g.updateObject(thisLinkLine, {stroke: '#999'});
                         var changes = {
                             label: newLinkLabel,
                             size: newSize,
@@ -259,7 +257,7 @@ define(function(require) {
                         }
                         i2g.model.modifyLink(thisLinkId, changes);
                         i2g.update();
-                    }   
+                    }
                     widget({
                         container: $("#PadModal"),
                         category: "linkPanel",
