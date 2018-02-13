@@ -41,7 +41,7 @@ input::selection, textarea::selection {
 }
 
 #igraph-svg {
-    border: 3px solid black;
+    border: 0px solid black;
     margin: 5px;
 }
 

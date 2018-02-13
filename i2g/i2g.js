@@ -173,9 +173,9 @@ define(function(require) {
             //interaction for dragging and moving a node
             nodeStruct.call(
                 d3.drag()
-                    .on("start", drag1)
-                    .on("drag", drag2)
-                    .on("end", drag3)
+                    .on("start", dragStart)
+                    .on("drag", dragMove)
+                    .on("end", dragEnd)
             );
 
             var icons = nodeStruct.append("text")
@@ -404,13 +404,13 @@ define(function(require) {
             return [(x1 * width) + x1c, (y1 * height) + y1c, (x2 * width ) + x2c, (y2 * height) + y2c];
         }
 
-        function drag1(d) {
+        function dragStart(d) {
             if(dblclickedHash[d.id] == null) {
                 $(".widget").hide();
             }
         }
 
-        function drag2(d) {
+        function dragMove(d) {
             d.x += d3.event.dx / width;
             d.y += d3.event.dy / height;
             i2g.update();
@@ -419,7 +419,7 @@ define(function(require) {
             }
         }
 
-        function drag3(d) {
+        function dragEnd(d) {
             if(dblclickedHash[d.id] == null) {
                 var top = d3.event.sourceEvent.pageY + 5;
                 var left = d3.event.sourceEvent.pageX + 5;
