@@ -1,606 +1,552 @@
 define(function(require) {
-    var logos = require('./icons');
+    var logos = require("./icons"),
+        dataModel = require("./model"),
+        menu = require("./menu")
+        widget = require("./ui/widget");
+
     return function(arg) {
-        'use strict';
+        "use strict";
+        var i2g = {};
+        // get all the setting from input
         var options = arg || {},
             container = options.container || "body",
+            subI2g = options.subI2g || null,
             domain = options.domain || [0, 1],
-            graph = options.graph || {},
+            graph = options.graph || options.data || {},
             width = options.width || 600,
             height = options.height || 600,
-            menu = options.menu || false,
-            notePanel = options.notePanel || null,
             onselect = options.onselect || function() {},
-            graphId = options.graphId || 'igraph-svg',
-            graphName = options.graphName || '',
-            scale = options.scale || 1;
+            graphId = options.graphId || "igraph-svg",
+            graphName = options.graphName || "",
+            scale = options.scale || 1,
+            colorScheme = options.colorScheme;
 
-        var i2g = {},
-            nodes = graph.nodes,
-            links = graph.links;
+        var tooltipHash = {};
+        var dblclickedHash = {};
 
-        var maxLinkValue = 0,
-            nodeCounter = 0;
+        var model = dataModel({
+            data: graph,
+            tag: graphName
+        });
 
-        var svg = d3.select(container).append('svg:svg');
-        svg.attr('id', graphId).attr("width", width).attr("height", height);
+        // set up the svg
+        var svg = d3.select(container)
+            .append("svg:svg")
+                .attr("id", graphId)
+                .attr("width", width)
+                .attr("height", height);        
 
-        svg.append("svg:defs").append("svg:marker")
-              .attr("id",'end')
-              .attr("viewBox", "0 -5 10 10")
-               .attr("markerUnits", "userSpaceOnUse")
-              .attr("refX", 0)
-              .attr("refY", 0)
-              .attr("markerWidth", 15)
-              .attr("markerHeight", 15)
-              .attr("orient", "auto")
-            .append("svg:path")
-            //   .attr("stroke", "red")
-            //   .attr("stroke", "none")
-              .attr("fill", "purple")
-            //   .attr("transform", "scale(0.05)")
-            //   .attr("d", logos('info'));
-              .attr("d", "M0,-5L10,0L0,5");
+        // set up link label gradient
+        var linkLabelGradient = svg.append("svg:defs").append("radialGradient")
+           .attr("id", "svgGradient")
+           .attr("x1", "0%")
+           .attr("x2", "100%")
+           .attr("y1", "0%")
+           .attr("y2", "100%");
 
-        var linkColor = d3.scaleOrdinal(d3.schemeCategory20);
+        linkLabelGradient.append("stop")
+            .attr('class', 'start')
+            .attr("offset", "0%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 1);
 
+        linkLabelGradient.append("stop")
+            .attr('class', 'end')
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0);
+
+        // set up node type color
         var nodeTypeColor = {
-            location: 'steelblue',
-            people: 'green',
-            time:  'orange',
-            date: 'orange',
-            day: 'orange',
-            datetime: 'orange'
+            location: colorScheme.area,
+            people: colorScheme.people,
+            time: colorScheme.time,
+            date: colorScheme.time,
+            day: colorScheme.time,
+            datetime: colorScheme.time
         }
 
+        // set up a nodeColor function to determine the color of the node based on its type
         var nodeColor = function(d) {
-            if(nodeTypeColor.hasOwnProperty(d.type))
-                return nodeTypeColor[d.type];
-            else
-                return 'black';
+            if(d.color == "default") {
+                if(nodeTypeColor.hasOwnProperty(d.type))
+                    return nodeTypeColor[d.type];
+                else
+                    return "black";
+            } else {
+                return d.color;
+            }
         }
 
+        var nodeHolderRadius = 12; // size + padding for each node structure
+        var linkLabelWidth = 120;
+        var linkLabelHeight = 60; 
+
+        // set up a function to determine the size of the node (using d3)
         var nodeSize = d3.scalePow()
-            .exponent(0.20)
-            .domain([1, 3000])
-            .range([5, 500]);
+            .exponent(1)
+            .range([1*scale, 4*scale]);
 
+        // set up a function to determine the width of the link (using d3)
         var linkSize = d3.scalePow()
-            .exponent(0.2)
-            .domain([0, 3000])
-            .range([1*scale, 6*scale]);
+            .exponent(1)
+            .range([1*scale, 4*scale]);
 
-        var simulation = d3.forceSimulation(nodes)
-            .force("charge", d3.forceManyBody().strength(-1000))
-            .force("link", d3.forceLink(links).distance(200).strength(1).iterations(20))
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .on("tick", ticked)
-            // .force("x", d3.forceX())
-            // .force("y", d3.forceY())
-            // .alphaTarget(0.3)
-            .stop();
+        var indicatorColor = d3.scaleOrdinal(d3.schemeCategory20);
 
-        var g = svg.append("g"),
-            link = g.append("g").attr("stroke", "#BBB").selectAll(".link"),
-            node = g.append("g").attr("stroke-width", 2).attr("stroke", "none").selectAll(".node");
+        var g = svg.append("g"), //append a graph to plot all the links and nodes
+            linkSvg = g.append("g"),
+            nodeSvg = g.append("g"),
+            linkIconSvg = g.append("g");
 
-        var linkIcons = [],
-            linkLabels = [];
 
-        var icons = g.append("g"),
-            nodeIcons = {};
+        function renderNodes() {
+            var nodes = model.getNodes();
+            var node = nodeSvg.selectAll(".graphNodes").data(nodes, d => d.id);
+            node.exit().remove(); // Remove the previous nodes from the graph
 
-        var nodeInfo = g.append("g"),
-            nodeLabels = {};
+            nodeSize.domain([1, 4]);
 
-        var nodeHash = {};
-
-        restart();
-
-        var linkSource = null,
-            linkTarget = null,
-            newArrivingNode = null;
-
-        var tempLink = svg.append('g')
-            .append('line')
-            .attr('stroke', '#CCC')
-            .attr('stroke-width', 0)
-            .attr('x1', 0)
-            .attr('y1', 0)
-            .attr('x2', 0)
-            .attr('y2', 0);
-
-        svg.on('mousemove', function(e){
-            if(linkSource !== null){
-                var pos = d3.mouse(this);
-                tempLink.attr('x2', pos[0]-3)
-                    .attr('y2', pos[1]-3);
-            }
-        })
-
-        //=====================================================================
-        // Private Functions
-        //=====================================================================
-        function restart() {
-            // Apply the general update pattern to the nodes.
-            nodes = Object.keys(nodeHash).map(function(k){
-                return nodeHash[k];
-            });
-
-            node = node.data(nodes, function(d) {
-                return d.id;
-            });
-
-            node.exit().remove();
-            node = node.enter()
-                .append("circle")
-                .attr('class', 'nodeHolder')
-                // .attr("fill", function(d) {
-                //     return nodeColor(d.type);
-                // })
-                .attr("fill", "transparent")
-                .attr("r", 40)
-                .merge(node)
-                .on('click', function(d){
-                    // d.fx = d3.mouse(this)[0];
-                    // d.fy = d3.mouse(this)[1];
-                // console.log('clicked on node', d.id);
-                if(linkSource !== null && linkTarget === null) {
-                        linkTarget = d;
-                        // console.log(linkTarget);
-                        i2g.addLinks({
-                            source: linkSource,
-                            target: linkTarget,
-                            value: 2,
-                            datalink: false
-                        })
-
-                        linkSource = linkTarget = null;
-                        tempLink
-                            .attr('stroke-width', 0)
-                            .attr('x1', 0)
-                            .attr('y1', 0)
-                            .attr('x2', 0)
-                            .attr('y2', 0);
-
-                        restart();
+            // Add updated nodes into the graph
+            var nodeStruct = node.enter().append("g")
+                .attr("class", "graphNodes")
+                .on("click", i2g.completeAddingLink)
+                .on("mouseover", (d)=> {
+                    if(dblclickedHash[d.id] == null) {
+                        if(!tooltipHash.hasOwnProperty(d.id)) {
+                            var nodeTooltip = widget({
+                                category: "tooltip",
+                                label: d.label,
+                                provenance: d.provenance,
+                                color: indicatorColor(parseInt(d.id)),
+                                callback: function() {
+                                    tooltipHash[d.id].removeWidget();
+                                    delete tooltipHash[d.id];
+                                    delete dblclickedHash[d.id];
+                                    circle.attr("stroke", (d) => {
+                                        if(dblclickedHash[d.id]) {
+                                            return indicatorColor(parseInt(d.id));
+                                        } else {
+                                            return "none";
+                                        }
+                                    });
+                                }
+                            });
+                            tooltipHash[d.id] = nodeTooltip;
+                        }
+                        var top = d3.event.pageY + 5;
+                        var left = d3.event.pageX + 5;
+                        tooltipHash[d.id].changePosition(top, left);
                     }
                 })
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended))
+                .on("mousemove", (d) => {
+                    if(dblclickedHash[d.id] == null) {
+                        var top = d3.event.pageY + 5;
+                        var left = d3.event.pageX + 5;
+                        tooltipHash[d.id].changePosition(top, left);
+                    }
+                })
+                .on("mouseleave", (d) => {
+                    if(dblclickedHash[d.id] == null) {
+                        tooltipHash[d.id].removeWidget();
+                        delete tooltipHash[d.id];
+                    }
+                })
+                .on("dblclick", (d) => {
+                    dblclickedHash[d.id] = true;
+                    tooltipHash[d.id].indicate();
+                    circle.attr("stroke", (d) => {
+                        if(dblclickedHash[d.id]) {
+                            return indicatorColor(parseInt(d.id));
+                        } else {
+                            return "none";
+                        }
+                    });
+                });
 
-            node
-            .append('title')
-            .text((d)=>{ if(d.detail) return d.detail})
-            // console.log(node);
-            node.data(nodes, function(d){
-                addNodeIcon(d);
-                addNodeLabel(d);
-            });
+            var circle = nodeStruct.append("circle")
+                .attr("class", "nodeHolder")
+                .attr("fill", "transparent")
+                .attr("stroke-width", "3px")
+                .attr("stroke", "none");
 
-            // Apply the general update pattern to the links.
-            links = links.filter(function(li){
-                return nodeHash.hasOwnProperty(li.source.id) &&  nodeHash.hasOwnProperty(li.target.id);
-            });
+            //interaction for dragging and moving a node
+            nodeStruct.call(
+                d3.drag()
+                    .on("start", dragStart)
+                    .on("drag", dragMove)
+                    .on("end", dragEnd)
+            );
 
-            link = link.data(links, function(d) {
+            var icons = nodeStruct.append("text")
+                .attr("class", "nodeIcons")
+                .attr('font-family', 'FontAwesome')
+                .attr("dominant-baseline", "central")
+                .style("text-anchor", "middle");
+
+            var textBox = nodeStruct.append("rect")
+                .attr("class", "nodeRect")
+                .attr("fill", "white");
+
+            var labels = nodeStruct.append("text")
+                .attr("class", "nodeLabels")
+                .attr("id", d => "nodeLabel_" + d.id)
+                .attr("dominant-baseline", "central");
+
+            //update existing nodes
+            var allNodes = nodeStruct
+                .merge(node)
+                .attr("transform", function(d) {
+                    return "translate(" + (d.x * width) + "," + (d.y * height) + ")";
+                });
+
+            allNodes.selectAll(".nodeHolder")
+                .attr("r", (d) => nodeSize(d.size) * nodeHolderRadius + 10);
+
+            allNodes.selectAll(".nodeLabels")
+                .attr("dx", (d) => {
+                    if(d.type == "default") {
+                        return null;
+                    } else {
+                        return d.size * nodeHolderRadius + 2;
+                    }
+                })
+                .style("text-anchor", (d) => {
+                    if(d.type == "default") {
+                        return "middle";
+                    } else {
+                        return "start";
+                    }
+                })
+                .style("font-size", (d) => {
+                    return d.size * 0.7 + "em";
+                })
+                .text(function(d){
+                    var label = (d.hasOwnProperty("label")) ? d.label : d.id;
+                    return labelClip(label);
+                })
+
+            allNodes.selectAll(".nodeIcons")
+                .text(d => logos(d.icon || d.type))
+                .attr("fill", d => nodeColor(d))                
+                .attr('font-size', (d) => { return d.size * 1.5 + 'em'} );
+
+            allNodes.selectAll(".nodeRect")
+                .attr("stroke", d => d.color == "default" ? "#888" : d.color)
+                .attr("stroke-width", d => d.size)
+                .attr("width", d => getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[0] + 10)
+                .attr("height", d => getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[1] + 10)
+                .attr("x", d => -getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[0] / 2 - 5)
+                .attr("y", d => -getTextWidth(d.label, "bold " + d.size * 0.7 + "em sans-serif")[1] / 2 - 5)
+                .style("display", (d) => {
+                    if(d.type == "default") {
+                        return null;
+                    } else {
+                        return "none";
+                    }
+                });
+        }
+
+        function getTextWidth(label, font) {
+            // re-use div object for better performance
+            var sampleDiv = getTextWidth.sampleDiv || (getTextWidth.sampleDiv = $('<div>').appendTo("body"));
+            sampleDiv.css("position", "absolute");
+            sampleDiv.css("visibility", "hidden");
+            sampleDiv.css("white-space", "nowrap");
+            sampleDiv.css("font", font);
+            label = labelClip(label);
+            sampleDiv.text(label);
+            return [sampleDiv.width(), sampleDiv.height()];
+        }
+
+        function labelClip(label) {
+            if(label.length > 20) {
+                label = label.slice(0, 17) + "...";
+            }
+            return label;
+        }
+
+        function renderLinks() {
+            var links = model.getLinks();
+            var link = linkSvg.selectAll(".graphLinks").data(links, function(d) {
                 return d.source.id + "-" + d.target.id;
             });
-            link.exit().remove();
 
-            maxLinkValue = d3.max(links.map((d)=>d.value));
-            linkSize.domain([0, maxLinkValue]);
-            link = link.enter()
-                .append("path")
-                .attr('class', 'graphLinks')
-                .attr("stroke-width", (d)=>linkSize(d.value))
-                // .attr("stroke", (d)=>linkColor(d.dest))
-                .attr("marker-mid", "url(#end)")
+            link.exit().remove(); // Remove the previous link from the graph
+
+            linkSize.domain([1, 4]);
+
+            var linkStruct = link.enter().append("g")
+                .attr("class", "graphLinks");
+
+            var newLinks = linkStruct.append("path");
+
+            newLinks
+                .attr("class", "graphLinkLine")
+                .attr("marker-end", (d) => { return "url(#directionArrow_" + d.id + ")"; });
+
+            // set up the direction arrow
+            var linkArrow = linkStruct.append("svg:defs").append("svg:marker")
+                .attr("class", "directionArrow")
+                .attr("id", (d) => { return "directionArrow_" + d.id; })
+                .attr("viewBox", "0 -5 10 10")
+                .attr("markerUnits", "userSpaceOnUse")
+                .attr("refX", 5)
+                .attr("refY", 0)
+                .attr("markerWidth", 10)
+                .attr("markerHeight", 10)
+                .attr("orient", "auto")
+                .append("svg:path")
+                //   .attr("transform", "scale(0.05)")
+                //   .attr("d", logos("info"));
+                .attr("d", "M0,-5L10,0L0,5");
+
+            var linkLabels = linkStruct.append("g")
+                .attr("class", "linkLabels");
+            
+            var linkLabelBox = linkLabels.append("ellipse")
+                .attr("class", "linkLabelBox")
+                .attr("rx", linkLabelWidth / 2)
+                .attr("ry", linkLabelHeight / 2)
+                .attr("stroke", "none")
+                .attr("fill", "url(#svgGradient)");
+
+            var linkLabelText = linkLabels.append("text")
+                .attr("class", "linkLabelText")
+                .attr("dominant-baseline", "central")
+                .style("text-anchor", "middle");
+
+            linkStruct.append("title").text((d)=>(d.label));
+
+            //update existing links
+            var allLinks = linkStruct
                 .merge(link);
 
-            link.append('title')
-                .text((d)=>(d.value))
+            //update exiting links
+            allLinks.selectAll('.graphLinkLine')
+                .attr("stroke-width", (d) => (linkSize(d.size)))
+                .attr("d", function(d){
+                    
+                    var lineInfo = calculateLine(d);
+                    var x1 = lineInfo[0],
+                        y1 = lineInfo[1],
+                        x2 = lineInfo[2],
+                        y2 = lineInfo[3];
 
-            // link.data(links, function(li){
-            //     if(!li.hasOwnProperty('icon'))
-            //         addLinkIcon(li);
-            // })
-            // Update and restart the simulation.
-            simulation.nodes(nodes);
-            simulation.force("link").links(links).iterations(10);
-            simulation.alphaTarget(0.3).restart();
+                    return "M" + x1 + "," + y1
+                    + " L" + ((x1 + x2) / 2) + ","
+                    +((y1 + y2) / 2)
+                    + "," + x2 + "," + y2;
+                })
+                .attr("stroke", d => d.color == "default" ? "#BBB" : d.color);
+
+            // update link arrow
+            allLinks.selectAll('.directionArrow')
+                .attr("fill", d => d.color == "default" ? "#BBB" : d.color);
+
+            // update link labels
+            allLinks.selectAll('.linkLabels')
+                .attr("transform", function(d) {
+                    var lineInfo = calculateLine(d);
+                    var x1 = lineInfo[0],
+                        y1 = lineInfo[1],
+                        x2 = lineInfo[2],
+                        y2 = lineInfo[3];
+
+                    return "translate(" + ((x1 + x2) / 2) + "," + ((y1 + y2) / 2) + ")";
+                })
+                .style("display", (d) => {
+                    if(d.label == undefined || d.label == "") {
+                        return "none";
+                    } else {
+                        return null;
+                    }
+                });
+
+            allLinks.selectAll('.linkLabelText')
+                .style("font-size", d => (d.size * 0.2 + 0.5) + "em")
+                .text((d) => d.label);
         }
 
-        function ticked() {
-            node.attr("cx", function(d) {return d.x;})
-                .attr("cy", function(d) {return d.y;})
+        function calculateLine(d) {
+            var x1 = d.source.x,
+                x2 = d.target.x,
+                y1 = d.source.y,
+                y2 = d.target.y;
 
-            // link.attr("x1", function(d) {return d.source.x;})
-            //     .attr("y1", function(d) {return d.source.y;})
-            //     .attr("x2", function(d) {return d.target.x;})
-            //     .attr("y2", function(d) {return d.target.y;});
+            var x1c, x2c, y1c, y2c;
+            var tline = nodeHolderRadius;
+            var difference = 5;
+            var sourceSize = d.source.size;
+            var targetSize = d.target.size;
 
-            link.attr("d", function(d){
-                return "M" + d.source.x + "," + d.source.y
-                + " L" + ((d.target.x + d.source.x)/2) + "," +((d.target.y + d.source.y)/2)
-                + "," + d.target.x + "," + d.target.y;
-            })
+            var dx = (x2 - x1) * width;
+            var dy = (y2 - y1) * height;
 
-            var paddingSpace = 50;
-            node.data(nodes, function(d, i){
-                updateNodeLabel(d);
-                updateNodeIcon(d);
+            if(d.source.type == "default") {
+                var ratio = Math.min(Math.abs((getTextWidth(d.source.label, "bold " + sourceSize * 0.7 + "em sans-serif")[1] / 2 + 5) / dy), 
+                    Math.abs((getTextWidth(d.source.label, "bold " + sourceSize * 0.7 + "em sans-serif")[0] / 2 + 5) / dx));
+            } else {
+                var ratio = (sourceSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
+            }
+            x1c = dx * ratio;
+            y1c = dy * ratio;
+            
+            if(d.target.type == "default") {
+                var ratio = Math.min(Math.abs((getTextWidth(d.target.label, "bold " + targetSize * 0.7 + "em sans-serif")[1] / 2 + 10) / dy), 
+                    Math.abs((getTextWidth(d.target.label, "bold " + targetSize * 0.7 + "em sans-serif")[0] / 2 + 12) / dx));
+            } else {
+                var ratio = (targetSize * tline + difference) / Math.sqrt(dx * dx + dy * dy);
+            }
+            x2c = -dx * ratio;
+            y2c = -dy * ratio;
 
-                if(d.x > width - paddingSpace) {
-                    d.fx = width - paddingSpace;
-                } else if(d.x < paddingSpace) {
-                    d.fx = paddingSpace
-                }
-
-                if(d.y > height - paddingSpace) {
-                    d.fy = height -paddingSpace;
-                } else if(d.y < paddingSpace) {
-                    d.fy = paddingSpace;
-                }
-            });
-
-            // link.data(links, function(li, i){
-            //     li.icon.attr("transform", "translate(" +
-            //         (li.source.x + (li.target.x-li.source.x)/2 - 8) + "," +
-            //         (li.source.y + (li.target.y-li.source.y)/2 - 8) + ")")
-            // })
+            return [(x1 * width) + x1c, (y1 * height) + y1c, (x2 * width ) + x2c, (y2 * height) + y2c];
         }
 
-        function dragstarted(d) {
-            // if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        function dragged(d) {
-            d.fx = d3.event.x;
-            d.fy = d3.event.y;
-            nodeLabels[d.id].attr("x", d.fx);
-            nodeLabels[d.id].attr("y", d.fy);
-        }
-
-        function dragended(d) {
-            // if (!d3.event.active) simulation.alphaTarget(0);
-            //   this.style.fill = selectionColor(d.id);
-            onselect.call(this, d);
-            //   d.fx = null;
-            //   d.fy = null;
-        }
-
-        function addNodeLabel(d) {
-            if (!nodeLabels.hasOwnProperty(d.id)) {
-
-                nodeLabels[d.id] = nodeInfo.append("text")
-                    .attr("class", "nodeLabels")
-                    .attr("dx", 20)
-                    // .attr("dy", ".35em")
-                    .attr("x", d.x)
-                    .attr("y", d.y);
-                labelNode(d);
+        function dragStart(d) {
+            if(dblclickedHash[d.id] == null) {
+                $(".widget").hide();
             }
         }
 
-        function labelNode(d) {
-            var label = (d.hasOwnProperty('label')) ? d.label : d.id;
-            if(label.length > 20)
-                label = label.slice(0, 7) + '...';
-            if(d.hasOwnProperty('labelPrefix'))
-                label = d.labelPrefix + label;
-            nodeLabels[d.id].text(label);
-        }
-
-        function updateNodeLabel(d) {
-            if (nodeLabels.hasOwnProperty(d.id)) {
-                nodeLabels[d.id].attr("x", d.x);
-                nodeLabels[d.id].attr("y", d.y);
+        function dragMove(d) {
+            d.x += d3.event.dx / width;
+            d.y += d3.event.dy / height;
+            i2g.update();
+            if(dblclickedHash[d.id] == null) {
+                $(".widget").hide();
             }
         }
 
-        function addNodeIcon(d) {
-            if(!nodeIcons.hasOwnProperty(d.id) || nodeIcons[d.id] === null){
-                nodeIcons[d.id] = icons.append("g")
-                    .attr("pointer-events", "none");
-
-                nodeIcons[d.id]._icon = nodeIcons[d.id].append("path")
-                    .attr("transform", "scale(" + scale * 0.1 + ")")
-                    .attr("d", logos(d.icon || d.type))
-                    .attr("fill", nodeColor(d))
+        function dragEnd(d) {
+            if(dblclickedHash[d.id] == null) {
+                var top = d3.event.sourceEvent.pageY + 5;
+                var left = d3.event.sourceEvent.pageX + 5;
+                tooltipHash[d.id].changePosition(top, left);
+                $(".widget").show();
             }
         }
 
+        /** Add node Icon functions */
+        var linkIcons = [];
         function addLinkIcon(d) {
-            links[d.id].icon = icons.append("g")
+            linkIcons[d.id] = linkIconSvg.append("g")
                 .attr("pointer-events", "none");
-            links[d.id].icon.attr("transform", "translate(" +
+
+            linkIcons[d.id].attr("transform", "translate(" +
                 (d.source.x + (d.target.x-d.source.x)/2 - 8) + "," +
                 (d.source.y + (d.target.y-d.source.y)/2 - 8) + ")")
 
-            links[d.id].icon.append("path")
+            linkIcons[d.id].append("path")
                 .attr("transform", "scale(0.05)")
-                .attr("d", logos('info'))
-                .attr("fill", 'red');
+                .attr("d", logos("info"))
+                .attr("fill", "red");
         }
 
-
-        function updateNodeIcon(d) {
-            nodeIcons[d.id]
-            .attr("transform", "translate(" + (d.x-20) + "," + (d.y-20) + ")")
-        }
-
-        function nodeMenu() {
-            $.contextMenu({
-                selector: '.nodeHolder',
-                callback: function(key, options) {
-                    var thisNode = this[0],
-                        thisNodeId = thisNode.__data__.id;
-                    if(key == 'removeNode') {
-                        d3.select(thisNode).remove();
-                        nodeLabels[thisNodeId].remove();
-                        nodeIcons[thisNodeId].remove();
-                        delete nodeLabels[thisNodeId];
-                        delete nodeHash[thisNodeId];
-                        restart();
-                    } else if(key == 'annotate') {
-                        d3.select(thisNode).attr('stroke', 'orange');
-                        // console.log(nodeHash[thisNodeId]);
-                        notePanel.setNote({
-                            label: nodeHash[thisNodeId].labelPrefix+nodeHash[thisNodeId].label,
-                            detail: nodeHash[thisNodeId].detail
-                        })
-                        notePanel.show();
-                        notePanel.onsave = function() {
-                            var info = notePanel.getNote();
-                            info.labelPrefix = '';
-                            i2g.modifyNode(thisNodeId, info);
-                            d3.select(thisNode).attr('stroke', 'transparent');
-                        }
-                        notePanel.oncancel = function() {
-                            d3.select(thisNode).attr('stroke', 'transparent');
-                        }
-                    } else if(key == 'addLink'){
-                        linkSource = nodeHash[thisNodeId];
-                        linkTarget = null;
-                        tempLink
-                            .attr('x1', linkSource.x)
-                            .attr('y1', linkSource.y)
-                            .attr('x2', linkSource.x)
-                            .attr('y2', linkSource.y)
-                            .attr('stroke-width', 4);
-                    }
-                },
-                items: {
-                    removeNode: {name: "Remove this node", icon: "fa-times"},
-                    addLink: {name: "Add link", icon: "fa-long-arrow-right"},
-                    annotate: {name: "Annotate", icon: "fa-commenting"},
-                }
-            });
-        }
-
-        function linkMenu() {
-            $.contextMenu({
-                selector: '.graphLinks',
-                callback: function(key, options) {
-                    var thisLink = this[0],
-                        thisLinkId = thisLink.__data__.id;
-                    if(key == 'removeLink') {
-                        d3.select(thisLink).remove();
-                        removeLink(thisLinkId);
-                    } else if(key == 'annotate') {
-
-                    }
-                },
-                items: {
-                    removeLink: {name: "Remove this link", icon: "fa-times"},
-                    annotate: {name: "Annotate", icon: "fa-commenting"},
-                }
-            });
-        }
-        //=====================================================================
-        //End of Private Functions
-        //=====================================================================
-
-        nodeMenu();
-        linkMenu();
-
-
-        //=====================================================================
-        // Public Functions
-        //=====================================================================
-        i2g.addNodes = function(newNodes) {
-            var newNodes = (Array.isArray(newNodes)) ? newNodes : [newNodes];
-            newNodes.forEach(function(newNode){
-                var pos = newNode.pos || [width/2, height/2];
-                if(!newNode.hasOwnProperty('id'))
-                    newNode.id = nodeCounter++;
-                if(!newNode.hasOwnProperty('datalink'))
-                    newNode.datalink = false;
-                newNode.tag = newNode.label;
-                newNode.x = pos[0];
-                newNode.y = pos[1];
-                if(graphName!==null)
-                    newNode.id = graphName + newNode.id;
-                nodeHash[newNode.id] = newNode;
-
-                addNodeIcon(newNode);
-                addNodeLabel(newNode);
-
-            })
-            return i2g;
-        }
-
-        i2g.addLinks = function(newLinks){
-            var newLinks = (Array.isArray(newLinks)) ? newLinks : [newLinks];
-            newLinks.forEach(function(li){
-                li.id = links.length;
-                if(typeof li.source !== 'object') {
-                    var sourceId = (graphName===null) ? li.source : graphName + li.source;
-                    li.source = nodeHash[sourceId];
-                }
-                if(typeof li.target !== 'object') {
-                    var targetId = (graphName===null) ? li.target : graphName + li.target;
-                    li.target = nodeHash[targetId];
-                }
-
-                if(!li.hasOwnProperty('datalink')) li.datalink = false;
-                links.push(li);
-
-            })
-            return i2g;
+        //Use a temporary link for indication when adding a new link from a node
+        var tempLink = {
+            source: null,
+            targe: null,
+            svg: null
         };
 
+        tempLink.svg = svg.append("g")
+            .append("line")
+            .attr("id", "tempLink")
+            .attr("stroke", "#CCC")
+            .attr("stroke-width", 0)
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", 0)
+            .style("stroke-dasharray", ("3, 3"));
 
-        i2g.modifyNode = function(d, props) {
-            var theNode = (typeof d == 'object') ? d : nodeHash[d];
-
-            for(var p in props) {
-                theNode[p] = props[p];
+        // change the destination of the temp link when move the mouse
+        svg.on("mousemove", function(e){
+            if(tempLink.source !== null){
+                var pos = d3.mouse(this);
+                tempLink.svg
+                    .attr("x2", pos[0]-3)
+                    .attr("y2", pos[1]-3);
             }
+        });
 
-            if(props.hasOwnProperty('label')) {
-                labelNode(theNode);
+        // modify the templink
+        svg.on("click", function(d){
+            if(tempLink.source !== null) {
+                tempLink.source = null;
+                tempLink.svg
+                    .attr("stroke-width", 0)
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", 0)
+                    .attr("y2", 0);
             }
-        }
+        });
 
-        function removeNode(nodeId) {
-            nodeIcons[nodeId]._icon.remove();
-            nodeIcons[nodeId].remove();
-            nodeLabels[nodeId].remove();
-            delete nodeIcons[nodeId];
-            delete nodeLabels[nodeId];
-            delete nodeHash[nodeId];
-            nodes = nodes.filter(function(d){
-                d.id != nodeId;
-            })
-        }
+        i2g.startAddingLink = function(thisNodeId) {
+            tempLink.source = model.nodeHash[thisNodeId];
+            tempLink.target = null;
+            tempLink.svg
+                .attr("x1", tempLink.source.x * width)
+                .attr("y1", tempLink.source.y * height)
+                .attr("x2", tempLink.source.x * width)
+                .attr("y2", tempLink.source.y * height)
+                .attr("stroke-width", 4);
+        };
 
-        function removeLink(linkId) {
-            var removedLink = links.splice(linkId,1)[0];
-            if(removeLink.hasOwnProperty('icon'))
-            removedLink.icon.remove();
-        }
-
-        i2g.removeNodes = function(query) {
-            var nodeIds,
-                query = query ||  {};
-
-            if(query.all) {
-                nodes.forEach(function(n) {
-                    removeNode(n.id);
+        i2g.completeAddingLink = function(destNode) {
+            if(tempLink.source !== null && tempLink.target === null) {
+                tempLink.target = destNode;
+                model.addLinks({
+                    source: tempLink.source,
+                    target: tempLink.target,
+                    size: 1,
+                    datalink: false,
+                    label: "new relation",
+                    color: tempLink.source.color,
+                    annotation: "",
+                    vis: ""
                 })
-            } else {
-                if(query.id) {
-                    nodeIds = query.id;
-                } else if(query.type) {
-                    nodeIds = nodes.filter(function(n){
-                        return n.type !== query.type;
-                    })
-                    .map(function(n){ return n.id });
-                } else if(query.datalink) {
-                    nodeIds = nodes.filter(function(n){
-                        return n.datalink !== query.datalink;
-                    })
-                    .map(function(n){ return n.id });
-                }
-
-                nodeIds.forEach(function(nid){
-                    removeNode(nid);
-                });
-            }
-            return i2g;
-        }
-
-        i2g.removeLinks = function(query) {
-            var linkIds,
-                query = query ||  {};
-
-            if(query.all) {
-                links = [];
-            } else {
-                if(query.id) {
-                    linkIds = query.id;
-                } else if(query.type) {
-                    linkIds = links.filter(function(li){
-                        return li.type !== query.type;
-                    })
-                    .map(function(n){ return li.id });
-                } else if(query.datalink) {
-                    linkIds = links.filter(function(li){
-                        return li.datalink !== query.datalink;
-                    })
-                    .map(function(li){ return li.id });
-                }
-                linkIds.forEach(function(lid){
-                    removeLink(lid);
-                });
-            }
-
-            return i2g;
-        }
-
-        i2g.update = function(subgraph) {
-            var subgraph = subgraph || {nodes: null, links: null},
-                newNodes = subgraph.nodes || [],
-                newLinks = subgraph.links || [];
-
-            if(newNodes.length) i2g.addNodes(newNodes);
-            if(newLinks.length) i2g.addLinks(newLinks);
-
-            restart();
-            return i2g;
-        };
-
-        i2g.append = function(subgraph) {
-            i2g.addNodes(subgraph.nodes);
-            i2g.addLinks(subgraph.links);
-            restart();
-            return i2g;
-        }
-
-        i2g.remake = function(graph) {
-            // nodes = graph.nodes;
-            // nodeHash = {};
-
-            graph.nodes.forEach(function(n){
-                n.fx = null;
-                n.fy = null;
-            })
-            i2g.addNodes(graph.nodes);
-            restart();
-
-            var newLinks = graph.links.map(function(sl){
-                return {
-                    source: nodeHash[sl.source.id],
-                    target: nodeHash[sl.target.id],
-                    value: sl.value,
-                };
-            });
-            i2g.addLinks(newLinks);
-
-            restart();
-            return i2g;
-        }
-
-        i2g.getNodes = function(query) {
-            if(typeof query === 'undefined')
-                return nodes;
-            else {
-                return [];
+                tempLink.source = tempLink.target = null;
+                tempLink.svg
+                    .attr("stroke-width", 0)
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", 0)
+                    .attr("y2", 0);
+                renderLinks(); // draw the link just added
             }
         };
 
-        i2g.findNode = function(query) {
-            return i2g.getNodes(query)[0];
+        //update the whole graph
+        i2g.update = function() {
+            renderNodes();
+            renderLinks();
+            return i2g;
+        };
+
+        //update individual svg object
+        i2g.updateObject = function(SvgObject, props) {
+            var theObject = d3.select(SvgObject);
+            for (var p in props) {
+                theObject.attr(p, props[p]);
+            }
+            return i2g;
         }
 
-        i2g.getLinks = function() { return links;};
+        i2g.updateScreen = function(newWidth, newHeight) {
+            width = newWidth;
+            height = newHeight;
+            svg.attr("width", width).attr("height", height);
+        }
 
-        return i2g;
+        i2g.subI2g = subI2g;
+        i2g.container = container;
+        i2g.svg = svg;
+        i2g.model = model;
+        menu(i2g);
+        return i2g.update();
     }
 })
