@@ -2,7 +2,7 @@
 
 define(function(require) {
     var dropdown = require('./dropdown');
-    var provenance_panel = require('./provenance-panel');
+    var provenance_panel = require('./panel');
 
 	return function(arg) {
         "use strict";
@@ -20,7 +20,7 @@ define(function(require) {
             marginTop = option.marginTop || 0,
             marginLeft = option.marginLeft || 0,
         	color = option.color || "default",
-        	callback = option.callback || {}; 
+        	callback = option.callback || {};
 
         var dragging = false;
 
@@ -59,7 +59,7 @@ define(function(require) {
                 var vis = d.vis,
                     annotation = d.annotation;
 
-                
+
                 var separateLine = $('<div class = "separeateLine"/>')
                     .appendTo(widgetContainer);
 
@@ -154,7 +154,7 @@ define(function(require) {
                     .appendTo(padForm);
 
                 var typeChange = function(dropdownText) {
-                    newType = dropdownText; 
+                    newType = dropdownText;
                 }
 
                 dropdown({
@@ -162,8 +162,8 @@ define(function(require) {
                     category: "type",
                     defaultVal: type,
                     list: [
-                        "location", 
-                        "people", 
+                        "location",
+                        "people",
                         "time",
                         "unknown",
                         "default"
@@ -180,7 +180,7 @@ define(function(require) {
                 .appendTo(padForm);
 
             var sizeChange = function(dropdownText) {
-                newSize = dropdownText; 
+                newSize = dropdownText;
             }
 
             dropdown({
@@ -292,7 +292,7 @@ define(function(require) {
                 reader.onload = function() {
                     var graphData = JSON.parse(reader.result);
                     nodeSubGraph = {
-                        nodes: graphData.nodes, 
+                        nodes: graphData.nodes,
                         links: graphData.links
                     };
                     nodePadSubGraphUploadFileDemo.html("Node: " + nodeSubGraph.nodes.length + ", Link: " + nodeSubGraph.links.length);
@@ -376,26 +376,7 @@ define(function(require) {
             $(window).off("mouseup", dragend);
         }
 
-        
+
         return widget;
 	}
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

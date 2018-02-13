@@ -1,6 +1,6 @@
 define(function(require) {
-    var widget = require("./ui/widget"),
-        download = require('./downloadFunc');
+    var widget = require("./utils/widget"),
+        download = require('./utils/download');
 
     return function menu(i2g) {
         svgMenu(i2g);

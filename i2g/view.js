@@ -15,7 +15,7 @@ define(function(require) {
             model = options.model || null,
             scale = options.scale || 1,
             nodeEvents = options.nodeEvents,
-            colorScheme = options.colorScheme;
+            colors = options.colors;
 
         if(model === null) throw Error('No data model is supplied for I2G.')
 
@@ -48,12 +48,12 @@ define(function(require) {
 
         // set up node type color
         var nodeTypeColor = {
-            location: colorScheme.area,
-            people: colorScheme.people,
-            time: colorScheme.time,
-            date: colorScheme.time,
-            day: colorScheme.time,
-            datetime: colorScheme.time
+            location: colors.area,
+            people: colors.people,
+            time: colors.time,
+            date: colors.time,
+            day: colors.time,
+            datetime: colors.time
         }
 
         // set up a nodeColor function to determine the color of the node based on its type
@@ -466,7 +466,7 @@ define(function(require) {
             return view;
         }
 
-        view.updateScreen = function(newWidth, newHeight) {
+        view.resizeSVG = function(newWidth, newHeight) {
             width = newWidth;
             height = newHeight;
             svg.attr("width", width).attr("height", height);

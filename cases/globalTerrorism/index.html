@@ -16,29 +16,19 @@
   </head>
   <body>
     <div id = "mainGraph"></div>
-
     <div id = "PadModal" class = "modal"></div>
-
     <script src="/npm/requirejs/require.js"></script>
-
     <script>
 
-        requirejs.config({
-            baseUrl: '/i2g/'
-        })
-
-
-        require(["main", "color-scheme"], function(i2g, colorScheme) {
-
+        requirejs.config({baseUrl: '/i2g/'});
+        require(["main"], function(i2g) {
             var mainGraph = i2g({
                 container: "#mainGraph",
                 width: window.innerWidth - 20,
                 height: window.innerHeight - 20,
                 domain: [0, 1],
                 data: {nodes: [], links: []},
-                colorScheme: colorScheme
             });
-
 
             $(window).on('hashchange', function() {
                 var dataset = window.location.hash;
@@ -60,14 +50,10 @@
                 var width1 = window.innerWidth - 20,
                     height1 = window.innerHeight - 20;
 
-                mainGraph.updateScreen(width1, height1);
-                mainGraph.update();
-
+                mainGraph.view.resizeSVG(width1, height1);
+                mainGraph.view.update();
             });
-
         })
-
-
     </script>
   </body>
 </html>
