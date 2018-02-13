@@ -91,14 +91,13 @@ define(function(require) {
                 } else if(key == 'addNode') {
                     var svgWidth = i2g.svg.attr('width');
                     var svgHeight = i2g.svg.attr('height');
-                    var addNewNode = function(newNodeLabel, newNodeType, newSize, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
+                    var addNewNode = function(newNodeLabel, newNodeType, newSize, newColor, newNodeProvenance, newNodeSubGraph) {
                         i2g.model.addNodes({
                             label: newNodeLabel,
                             type: newNodeType,
                             size: newSize,
                             color: newColor,
-                            annotation: newNodeAnnotation,
-                            vis: newNodeVis,
+                            provenance: newNodeProvenance,
                             subGraph: newNodeSubGraph,
                             x: (newNodePosition.left / svgWidth),
                             y: (newNodePosition.top / svgHeight),
@@ -113,8 +112,7 @@ define(function(require) {
                         type: 'default',
                         size: 1,
                         color: 'default',
-                        annotation: '',
-                        vis: '',
+                        provenance: [],
                         width: 200,
                         marginTop: newNodePosition.top + 10,
                         marginLeft: newNodePosition.left + 10,
@@ -178,15 +176,14 @@ define(function(require) {
                 } else if(key == 'modifyNode') {
                     thisNodeCircle = this.find('.nodeHolder')[0];
                     i2g.updateObject(thisNodeCircle, {stroke: 'orange'});
-                    var saveChanges = function(newNodeLabel, newNodeType, newSize, newColor, newNodeAnnotation, newNodeSubGraph, newNodeVis) {
+                    var saveChanges = function(newNodeLabel, newNodeType, newSize, newColor, newNodeProvenance, newNodeSubGraph) {
                         i2g.updateObject(thisNodeCircle, {stroke: 'none'});
                         var changes = {
                             label: newNodeLabel,
                             type: newNodeType,
                             size: newSize,
                             color: newColor,
-                            annotation: newNodeAnnotation,
-                            vis: newNodeVis,
+                            provenance: newNodeProvenance,
                             subGraph: newNodeSubGraph
                         }
                         i2g.model.modifyNode(thisNodeId, changes);
@@ -199,9 +196,8 @@ define(function(require) {
                         type: thisNode.__data__.type,
                         size: thisNode.__data__.size,
                         color: thisNode.__data__.color,
-                        annotation: thisNode.__data__.annotation,
+                        provenance: thisNode.__data__.provenance,
                         subGraph: thisNode.__data__.subGraph,
-                        vis: thisNode.__data__.vis,
                         width: 200,
                         marginTop: thisNodePosition.top + 10,
                         marginLeft: thisNodePosition.left + 10,
@@ -253,14 +249,13 @@ define(function(require) {
                     thisLinkArrow = this.find('.directionArrow')[0];
                     originalColor = thisLink.__data__.color;
                     // i2g.updateObject(thisLinkLine, {stroke: 'orange'});
-                    var saveChanges = function(newLinkLabel, newSize, newLinkColor, newLinkAnnotation, newLinkVis) {
+                    var saveChanges = function(newLinkLabel, newSize, newLinkColor, newLinkProvenance) {
                         // i2g.updateObject(thisLinkLine, {stroke: '#999'});
                         var changes = {
                             label: newLinkLabel,
                             size: newSize,
                             color: newLinkColor,
-                            annotation: newLinkAnnotation,
-                            vis: newLinkVis
+                            provenance: newLinkProvenance
                         }
                         i2g.model.modifyLink(thisLinkId, changes);
                         i2g.update();
@@ -271,8 +266,7 @@ define(function(require) {
                         label: thisLink.__data__.label,
                         size: thisLink.__data__.size,
                         color: thisLink.__data__.color,
-                        annotation: thisLink.__data__.annotation,
-                        vis: thisLink.__data__.vis,
+                        provenance: thisLink.__data__.provenance,
                         width: 200,
                         marginTop: thisLinkPosition.top + 10,
                         marginLeft: thisLinkPosition.left + 10,

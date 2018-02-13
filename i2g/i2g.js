@@ -117,8 +117,7 @@ define(function(require) {
                             var nodeTooltip = widget({
                                 category: "tooltip",
                                 label: d.label,
-                                annotation: d.annotation,
-                                vis: d.vis,
+                                provenance: d.provenance,
                                 color: indicatorColor(parseInt(d.id)),
                                 callback: function() {
                                     tooltipHash[d.id].removeWidget();
@@ -187,7 +186,7 @@ define(function(require) {
 
             var textBox = nodeStruct.append("rect")
                 .attr("class", "nodeRect")
-                .attr("fill", "none");
+                .attr("fill", "white");
 
             var labels = nodeStruct.append("text")
                 .attr("class", "nodeLabels")
@@ -365,6 +364,7 @@ define(function(require) {
                 });
 
             allLinks.selectAll('.linkLabelText')
+                .style("font-size", d => (d.size * 0.2 + 0.5) + "em")
                 .text((d) => d.label);
         }
 
@@ -383,7 +383,6 @@ define(function(require) {
             var dx = (x2 - x1) * width;
             var dy = (y2 - y1) * height;
 
-            
             if(d.source.type == "default") {
                 var ratio = Math.min(Math.abs((getTextWidth(d.source.label, "bold " + sourceSize * 0.7 + "em sans-serif")[1] / 2 + 5) / dy), 
                     Math.abs((getTextWidth(d.source.label, "bold " + sourceSize * 0.7 + "em sans-serif")[0] / 2 + 5) / dx));

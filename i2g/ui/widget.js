@@ -2,6 +2,7 @@
 
 define(function(require) {
     var dropdown = require('./dropdown');
+    var provenance_panel = require('./provenance-panel');
 
 	return function(arg) {
         "use strict";
@@ -13,9 +14,8 @@ define(function(require) {
         	label = option.label || "",
             type = option.type || "",
             size = option.size || 0,
-            annotation = option.annotation || "",
+            provenance = option.provenance || [],
             subGraph = option.subGraph || null,
-            vis = option.vis || "",
         	width = option.width || 300,
             marginTop = option.marginTop || 0,
             marginLeft = option.marginLeft || 0,
@@ -28,9 +28,8 @@ define(function(require) {
             newType,
             newSize,
             newColor,
-            newAnnotation,
-            newSubGraph,
-            newVis;
+            newProvenance = [],
+            newSubGraph;
 
         var widgetContainer;
 
@@ -52,61 +51,61 @@ define(function(require) {
             var labelRow = $('<div class = "widgetRow"/>')
             	.appendTo(widgetContainer);
 
-            var labelTitle = $('<div class = "widgetTitle"/>')
-                .appendTo(labelRow)
-                .html("Label:");
-
-            var labelText = $('<div class = "widgetText"/>')
+            var labelText = $('<div class = "widgetLabelText"/>')
             	.appendTo(labelRow)
             	.html(label);
 
-            if(annotation != "") {
-    	        var annotationRow = $('<div class = "widgetRow"/>')
-    	        	.appendTo(widgetContainer);
+            provenance.forEach((d) => {
+                var vis = d.vis,
+                    annotation = d.annotation;
 
-    	        var annotationTitle = $('<div class = "widgetTitle"/>')
-    	            .appendTo(annotationRow)
-    	            .html("Annotation:");
-
-    	        var annotationText = $('<div class = "widgetText"/>')
-    	        	.appendTo(annotationRow)
-    	        	.html(annotation);
-    	    }
-
-            if(vis != "") {
+                
                 var separateLine = $('<div class = "separeateLine"/>')
                     .appendTo(widgetContainer);
 
-                var visImgBox = $('<div class="widgetImgBox"/>')
-                    .appendTo(widgetContainer);
+                if(vis != "") {
+                    var visImgBox = $('<div class="widgetImgBox"/>')
+                        .appendTo(widgetContainer);
 
-                //var bigImgBox;
-                var bigContainer = $('#PadModal');
+                    //var bigImgBox;
+                    var bigContainer = $('#PadModal');
 
-                var visImg = $('<img draggable = "false">')
-                    .appendTo(visImgBox)
-                    .click((e) => {
-                        bigContainer.show();
-                        // bigImgBox = $('<div class="bigImgBox"/>')
-                        //     .appendTo(bigContainer);
-                        var bigImg = $('<img class="bigImg" draggable = "false">')
-                            .appendTo(bigContainer);
-                        bigImg[0].src = vis;
+                    var visImg = $('<img draggable = "false">')
+                        .appendTo(visImgBox)
+                        .click((e) => {
+                            bigContainer.show();
+                            // bigImgBox = $('<div class="bigImgBox"/>')
+                            //     .appendTo(bigContainer);
+                            var bigImg = $('<img class="bigImg" draggable = "false">')
+                                .appendTo(bigContainer);
+                            bigImg[0].src = vis;
 
-                        $(window).click(removeBigImg);
+                            $(window).click(removeBigImg);
 
-                        function removeBigImg() {
-                            if(this.event.target == bigContainer[0]) {
-                                bigContainer.empty();
-                                bigContainer.hide();
-                                $(window).off("click", removeBigImg);
+                            function removeBigImg() {
+                                if(this.event.target == bigContainer[0]) {
+                                    bigContainer.empty();
+                                    bigContainer.hide();
+                                    $(window).off("click", removeBigImg);
+                                }
                             }
-                        }
-                    });
+                        });
 
-                visImg[0].src = vis;
+                    visImg[0].src = vis;
 
-            }
+                }
+
+                if(annotation != "") {
+                    var annotationRow = $('<div class = "widgetRow" style = "margin-top: 5px;"/>')
+                        .appendTo(widgetContainer);
+
+                    var annotationText = $('<div class = "widgetAnnotationText"/>')
+                        .appendTo(annotationRow)
+                        .html(annotation);
+                }
+            })
+
+
 
             widget.changePosition = function(margin_top, margin_left) {
             	marginTop = margin_top;
@@ -124,6 +123,10 @@ define(function(require) {
         } else {
             widgetContainer = $('<div class = "PadModal-container"/>')
                 .appendTo(container);
+
+            widgetContainer.width(width);
+            widgetContainer.css('margin-top', marginTop);
+            widgetContainer.css('margin-left', marginLeft);
 
             var titleText = $('<h1/>')
                 .appendTo(widgetContainer)
@@ -149,23 +152,76 @@ define(function(require) {
                     .appendTo(padForm);
                 var padType = $('<div class = "PadDropdown"/>')
                     .appendTo(padForm);
+
+                var typeChange = function(dropdownText) {
+                    newType = dropdownText; 
+                }
+
+                dropdown({
+                    container: padType,
+                    category: "type",
+                    defaultVal: type,
+                    list: [
+                        "location", 
+                        "people", 
+                        "time",
+                        "unknown",
+                        "default"
+                        ],
+                    callback: typeChange
+                })
             }
+
+
 
             var sizeText = $('<div class = "PadText">Size:</div>')
                 .appendTo(padForm);
             var padSize = $('<div class = "PadDropdown"/>')
                 .appendTo(padForm);
 
+            var sizeChange = function(dropdownText) {
+                newSize = dropdownText; 
+            }
+
+            dropdown({
+                container: padSize,
+                category: "size",
+                defaultVal: size,
+                list: [
+                    1,
+                    2,
+                    3,
+                    4
+                    ],
+                callback: sizeChange
+            })
+
             var colorText = $('<div class = "PadText">Color:</div>')
                 .appendTo(padForm);
             var padColor = $('<div class = "PadDropdown"/>')
                 .appendTo(padForm);
 
-            var annotationText = $('<div class = "PadText">Annotation:</div>')
-                .appendTo(padForm);
-            var padAnnotation = $('<textarea class = "PadAnnotation"/>')
-                .appendTo(padForm)
-                .val(annotation);
+            var colorChange = function(dropdownText) {
+                newColor = dropdownText;
+            }
+
+            dropdown({
+                container: padColor,
+                category: "color",
+                defaultVal: color,
+                list: [
+                    "red",
+                    "orange",
+                    "yellow",
+                    "green",
+                    "indigo",
+                    "blue",
+                    "purple",
+                    "grey"
+                    ],
+                callback: colorChange
+            })
+
             /*
             var nodePadSubGraph = $('<div class = "PadSubGraphBox"/>')
                 .appendTo(padForm);
@@ -178,19 +234,51 @@ define(function(require) {
             var nodePadSubGraphUploadFileDemo = $('<div class = "PadSubGraphDemo"/>')
                 .appendTo(nodePadSubGraph);
             */
-            var padVis = $('<div class = "PadVisBox"/>')
+
+            var countProvenance = provenance.length;
+            var provenanceHash = {};
+
+            var provenanceText = $('<div class = "PadText">Provenance:</div>')
                 .appendTo(padForm);
-            var padVisUploadText = $('<div>Please input a image</div>')
-                .appendTo(padVis);
-            var padVisUploadFile = $('<input type = "file" multiple size = "50"><br>')
-                .appendTo(padVis);
-            var padVisRemoveFile = $('<input type = "button" value = "Remove image">')
-                .appendTo(padVis);
-            var padVisUploadFileDemo = $('<img class = "PadVisDemo" draggable = "false"/>')
-                .appendTo(padVis);
+            var padProvenanceBox = $('<div class = "padProvenanceBox"/>')
+                .appendTo(padForm);
+            var padProvenance = $('<div/>')
+                .appendTo(padProvenanceBox);
+            var addNewProvenance = $('<div class = "addNewProvenance">+</div>')
+                .appendTo(padProvenanceBox);
+
+            provenance.forEach((d, i) => {
+                var newProvenanceElement = $('<div class = "newProvenanceElement"/>')
+                    .appendTo(padProvenance);
+                provenanceHash[i] = provenance_panel({
+                    container: newProvenanceElement,
+                    vis: d.vis,
+                    annotation: d.annotation,
+                    width: width - 10
+                })
+            })
+
+            addNewProvenance.click(function() {
+                var newProvenanceElement = $('<div class = "newProvenanceElement"/>')
+                    .appendTo(padProvenance);
+                provenanceHash[countProvenance++] = provenance_panel({
+                    container: newProvenanceElement,
+                    width: width - 10
+                })
+                padProvenanceBox.animate({
+                    scrollTop: padProvenance.height()
+                })
+            })
+
+
+
 
             var saveSubmitButton = $('<button type = "button" class = "btn btn-success">Save Change</button>')
                 .appendTo(padForm);
+
+            saveSubmitButton.click(function() {
+                saveStatus();
+            })
 
             // Preview the sub graph
             /*
@@ -218,100 +306,8 @@ define(function(require) {
             });
             */
 
-            // Preview the vis
-            if(vis != "") {
-                padVisUploadFileDemo[0].src = vis;
-            }
-
-            padVisUploadFile.on('change', function() {
-                var x = padVisUploadFile[0].files[0];
-                console.log(x);
-                var reader = new FileReader();
-                reader.onload = function() {
-                    padVisUploadFileDemo[0].src = reader.result;
-                };
-                reader.readAsDataURL(x);
-            });
-
-            padVisRemoveFile.on('click', function() {
-                padVisUploadFileDemo.attr("src", null);
-            });
-            
-
-
-            widgetContainer.width(width);
-            widgetContainer.css('margin-top', marginTop);
-            widgetContainer.css('margin-left', marginLeft);
-            padAnnotation.width(width - 6);
-            padVisUploadFile.css('margin-top', '3px');
-            padVisRemoveFile.css('margin-top', '3px');
-
-
-
-            // Callback for dropdown
-            if(category == "nodePanel") {
-                var typeChange = function(dropdownText) {
-                    newType = dropdownText; 
-                }
-
-                dropdown({
-                    container: padType,
-                    category: "type",
-                    defaultVal: type,
-                    list: [
-                        "location", 
-                        "people", 
-                        "time",
-                        "unknown",
-                        "default"
-                        ],
-                    callback: typeChange
-                });
-            }
-
-            var sizeChange = function(dropdownText) {
-                newSize = dropdownText; 
-            }
-
-            dropdown({
-                container: padSize,
-                category: "size",
-                defaultVal: size,
-                list: [
-                    1,
-                    2,
-                    3,
-                    4
-                    ],
-                callback: sizeChange
-            });
-
-            var colorChange = function(dropdownText) {
-                newColor = dropdownText;
-            }
-
-            dropdown({
-                container: padColor,
-                category: "color",
-                defaultVal: color,
-                list: [
-                    "red",
-                    "orange",
-                    "yellow",
-                    "green",
-                    "indigo",
-                    "blue",
-                    "purple",
-                    "grey"
-                    ],
-                callback: colorChange
-            });
 
             container.show();
-
-            saveSubmitButton.click(function() {
-                saveStatus();
-            })
 
             $(window).click(removePanel);
 
@@ -323,28 +319,29 @@ define(function(require) {
 
             function saveStatus() {
                 newLabel = labelInput.val();
-                newAnnotation = padAnnotation.val();
-                newVis = padVisUploadFileDemo[0].src;
                 newSubGraph = subGraph;
+                Object.keys(provenanceHash).forEach((d) => {
+                    var newElement = provenanceHash[d].save();
+                    if(newElement != null) {
+                        newProvenance.push(newElement);
+                    }
+                })
                 container.empty();
                 container.hide();
                 $(window).off("mousemove", dragmove);
                 $(window).off("mouseup", dragend);
                 $(window).off("click", removePanel);
                 if(category == "nodePanel") {
-                    callback(newLabel, newType, newSize, newColor, newAnnotation, newSubGraph, newVis);
+                    callback(newLabel, newType, newSize, newColor, newProvenance, newSubGraph);
                 } else if(category == "linkPanel") {
-                    callback(newLabel, newSize, newColor, newAnnotation, newVis);
+                    callback(newLabel, newSize, newColor, newProvenance);
                 }
             }
-        }        
-
+        }
 
         widgetContainer.mousedown((e) => {
         	dragging = true;
         })
-
-
 
         $(window).mousemove(dragmove);
 

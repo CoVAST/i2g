@@ -3,154 +3,176 @@
         {
             "label": "Firearms",
             "type": "default",
-            "annotation": "The distribution of weapon usage for all the terrorist groups. Clearly, firearms (blue) and explosive weapons (orange) are mostly used.",
             "x": 0.4083056660315989,
             "y": 0.34246560598945175,
             "size": "2",
             "datalink": false,
             "id": "11",
             "tag": "Firearms",
-            "vis": "http://localhost:8080/i2g/provenance/weapon.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/weapon.png",
+                "annotation": "The distribution of weapon usage for all the terrorist groups. Clearly, firearms (blue) and explosive weapons (orange) are mostly used."
+            }],
             "subGraph": null,
             "color": "rgb(255, 165, 0)"
         },
         {
             "label": "South Asia",
             "type": "location",
-            "annotation": "The distribution of Maoists' attack location and TTP's attack location.",
             "x": 0.40689251338805466,
             "y": 0.20716334803816536,
             "size": "1",
             "datalink": false,
             "id": "12",
             "tag": "South Asia",
-            "vis": "http://localhost:8080/i2g/provenance/southAsia.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/southAsia.png",
+                "annotation": "The distribution of Maoists' attack location and TTP's attack location."
+            }],
             "subGraph": null,
             "color": "default"
         },
         {
             "label": "Maoists",
             "type": "people",
-            "annotation": "Maoists' logo",
             "x": 0.2027909934937257,
             "y": 0.2849626781825117,
             "size": "2",
             "datalink": false,
             "id": "13",
             "tag": "Maoists",
-            "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/Maoists.png",
+                "annotation": "Maoists' logo"
+            }],
             "subGraph": null,
             "color": "rgb(255, 0, 0)"
         },
         {
             "label": "Tehrik-I-Taliban Pakistan (TTP)",
             "type": "people",
-            "annotation": "TTP's logo",
             "x": 0.6013069527341088,
             "y": 0.2740915826327466,
             "size": "2",
             "datalink": false,
             "id": "3",
             "tag": "Tehrik-I-Taliban Pakistan",
-            "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/Flag_of_Tehrik-i-Taliban.png",
+                "annotation": "TTP's logo"
+            }],
             "subGraph": null,
             "color": "rgb(128, 128, 128)"
         },
         {
             "label": "Explosives/Bombs/...",
             "type": "default",
-            "annotation": "The distribution of weapon usage for all the terrorist groups. Clearly, firearms (blue) and explosive weapons (orange) are mostly used.",
             "x": 0.40821142090445317,
             "y": 0.49105687268612996,
             "size": "2",
             "datalink": false,
             "id": "4",
             "tag": "Explosives/Bombs/...",
-            "vis": "http://localhost:8080/i2g/provenance/weapon.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/weapon.png",
+                "annotation": "The distribution of weapon usage for all the terrorist groups. Clearly, firearms (blue) and explosive weapons (orange) are mostly used."
+            }],
             "subGraph": null,
             "color": "rgb(255, 165, 0)"
         },
         {
             "label": "Al-Shabaab",
             "type": "people",
-            "annotation": "Al-Shabaab's logo",
             "x": 0.6033399451749067,
             "y": 0.6234174208484957,
             "size": "2",
             "datalink": false,
             "id": "6",
             "tag": "Al-Shabaab",
-            "vis": "http://localhost:8080/i2g/provenance/ShababLogo.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/ShababLogo.png",
+                "annotation": "Al-Shabaab's logo"
+            }],
             "subGraph": null,
             "color": "rgb(0, 128, 0)"
         },
         {
             "label": "Boko Haram",
             "type": "people",
-            "annotation": "Boko Haram's logo",
             "x": 0.16231939401013662,
             "y": 0.6036125969749639,
             "size": "2",
             "datalink": false,
             "id": "7",
             "tag": "Boko Haram",
-            "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_logo_(2002%E2%80%9315).png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_logo_(2002%E2%80%9315).png",
+                "annotation": "Boko Haram's logo"
+            }],
             "subGraph": null,
             "color": "rgb(128, 0, 128)"
         },
         {
             "label": "Sub-Saharan Africa",
             "type": "location",
-            "annotation": "The distribution of Boko Haram's attack location and Al-Shabaab's attack location.",
             "x": 0.4068136350327281,
             "y": 0.645110294609865,
             "size": "1",
             "datalink": false,
             "id": "14",
             "tag": "Sub-Saharan Africa",
-            "vis": "http://localhost:8080/i2g/provenance/africa.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/africa.png",
+                "annotation": "The distribution of Boko Haram's attack location and Al-Shabaab's attack location."
+            }],
             "subGraph": null,
             "color": "default"
         },
         {
             "label": "1979-2015",
             "type": "time",
-            "annotation": "Maoists' attack vs. year",
             "x": 0.2049373722978271,
             "y": 0.1414698482369087,
             "size": "1",
             "datalink": false,
             "id": "15",
             "tag": "1979-2015",
-            "vis": "http://localhost:8080/i2g/provenance/Maoists_time.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/Maoists_time.png",
+                "annotation": "Maoists' attack vs. year"
+            }],
             "subGraph": null,
             "color": "default"
         },
         {
             "label": "2009-2015",
             "type": "time",
-            "annotation": "Boko Haram's attack vs. year",
             "x": 0.13473788543642173,
             "y": 0.4463000667227863,
             "size": "1",
             "datalink": false,
             "id": "16",
             "tag": "2009-2015",
-            "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_time.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/Boko_Haram_time.png",
+                "annotation": "Boko Haram's attack vs. year"
+            }],
             "subGraph": null,
             "color": "default"
         },
         {
             "label": "2007-2015",
             "type": "time",
-            "annotation": "TTP's attack and Al-Shabaab's attack vs year",
             "x": 0.6823803000620327,
             "y": 0.45444842866570445,
             "size": "1",
             "datalink": false,
             "id": "17",
             "tag": "2007-2015",
-            "vis": "http://localhost:8080/i2g/provenance/TTP_and_Al_time.png",
+            "provenance": [{
+                "vis": "http://localhost:8080/i2g/provenance/TTP_and_Al_time.png",
+                "annotation": "TTP's attack and Al-Shabaab's attack vs year"
+            }],
             "subGraph": null,
             "color": "default"
         }
@@ -190,8 +212,6 @@
             "id": 0,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(255, 0, 0)"
         },
         {
@@ -229,8 +249,6 @@
             "id": 1,
             "datalink": false,
             "label": "mainly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(255, 0, 0)"
         },
         {
@@ -267,8 +285,6 @@
             "id": 2,
             "datalink": false,
             "label": "secondly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(255, 0, 0)"
         },
         {
@@ -305,8 +321,6 @@
             "id": 3,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 128, 128)"
         },
         {
@@ -344,8 +358,6 @@
             "id": 4,
             "datalink": false,
             "label": "secondly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 128, 128)"
         },
         {
@@ -382,8 +394,6 @@
             "id": 5,
             "datalink": false,
             "label": "mainly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 128, 128)"
         },
         {
@@ -420,8 +430,6 @@
             "id": 6,
             "datalink": false,
             "label": "mainly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(0, 128, 0)"
         },
         {
@@ -457,8 +465,6 @@
             "id": 7,
             "datalink": false,
             "label": "secondly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(0, 128, 0)"
         },
         {
@@ -495,8 +501,6 @@
             "id": 8,
             "datalink": false,
             "label": "mainly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 0, 128)"
         },
         {
@@ -532,8 +536,6 @@
             "id": 9,
             "datalink": false,
             "label": "secondly use",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 0, 128)"
         },
         {
@@ -569,8 +571,6 @@
             "id": 10,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 0, 128)"
         },
         {
@@ -606,8 +606,6 @@
             "id": 11,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(0, 128, 0)"
         },
         {
@@ -644,8 +642,6 @@
             "id": 12,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(255, 0, 0)"
         },
         {
@@ -681,8 +677,6 @@
             "id": 13,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 0, 128)"
         },
         {
@@ -719,8 +713,6 @@
             "id": 14,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(128, 128, 128)"
         },
         {
@@ -756,8 +748,6 @@
             "id": 15,
             "datalink": false,
             "label": "active in",
-            "annotation": "",
-            "vis": "",
             "color": "rgb(0, 128, 0)"
         }
     ]

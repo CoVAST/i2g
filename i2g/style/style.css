@@ -65,7 +65,6 @@ input::selection, textarea::selection {
 .linkLabelText {
     font-family: sans-serif;
     stroke: none;
-    font-size: 0.71em;
 }
 
 
@@ -104,16 +103,14 @@ input::selection, textarea::selection {
     font-family: inherit;
 }
 
-.widgetTitle {
-    width: 80px;
+.widgetLabelText {
     float: left;
-    font-size: 0.71em;
+    font-size: 0.9em;
     font-weight: bold;
     font-family: inherit;
 }
 
-.widgetText {
-    width: 150px;
+.widgetAnnotationText {
     float: left;
     font-size: 0.71em;
     font-family: inherit;
@@ -238,10 +235,46 @@ input::selection, textarea::selection {
     font-family: inherit;
 }
 
+.padProvenanceBox {
+    width: 100%;
+    max-height: 300px;
+    margin-bottom: 10px;
+    font-family: inherit;
+    border: 1px solid #DDD;
+    overflow: auto;
+}
+
+.addNewProvenance {
+    cursor: pointer;
+    width: 80%;
+    margin: auto;
+    font-family: inherit;
+    font-size: 1.0em;
+    font-weight: bold;
+    color: #AAA;
+    text-align: center;
+    padding: 4px;
+}
+
+.newProvenanceElement {
+    border-bottom: 1px solid #AAA;
+    padding: 5px;
+}
+
+.removeProvenanceElement {
+    font-size: 1.1em;
+    float: right;
+    font-family: FontAwesome;
+}
+
+.removeProvenanceElement:hover {
+    color: red;
+    cursor: pointer;
+}
+
 .PadAnnotation {
     height: 50px;
     font-size: 0.71em;
-    margin-bottom: 10px;
     font-family: inherit;
 }
 
@@ -255,14 +288,13 @@ input::selection, textarea::selection {
 }
 
 .PadVisBox {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     font-family: inherit;
     font-size: 0.8em;
 }
 
 .PadVisDemo {
     display: block;
-    margin-top: 10px;
     margin-left: auto;
     margin-right: auto;
 }
