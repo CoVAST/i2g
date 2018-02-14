@@ -102,14 +102,6 @@ define(function(require) {
                 .attr("class", "graphNodes")
                 .on("click", view.completeAddingLink);
 
-
-
-            nodeHolder = nodeStruct.append("circle")
-                .attr("class", "nodeHolder")
-                .attr("fill", "transparent")
-                .attr("stroke-width", "3px")
-                .attr("stroke", "none");
-
             if(view.nodeEvents) {
                 Object.keys(view.nodeEvents).forEach(function(evt){
                     nodeStruct.on(evt, function(d){
@@ -117,6 +109,12 @@ define(function(require) {
                     });
                 })
             }
+
+            nodeHolder = nodeStruct.append("circle")
+                .attr("class", "nodeHolder")
+                .attr("fill", "transparent")
+                .attr("stroke-width", "3px")
+                .attr("stroke", "none");
 
             //interaction for dragging and moving a node
             nodeStruct.call(
@@ -461,14 +459,25 @@ define(function(require) {
         view.markNode = function(nodeId, color) {
 
             allNodes.selectAll('.nodeHolder').attr('stroke', function(d){
-                return (d.id == nodeId) ? color : 'none';
+                if(d.id == nodeId) {
+                    d.markColor = color;
+                    return  color;
+                } else {
+                    return (d.hasOwnProperty('markColor')) ? d.markColor : 'none';
+                }
             });
             return view;
         }
 
         view.unmarkNode = function(nodeId) {
             allNodes.selectAll('.nodeHolder').attr('stroke', function(d){
-                if(d.id == nodeId) return 'none';
+                if(d.id == nodeId) {
+                    delete d.markColor;
+                    return 'none';
+                } else {
+                    return (d.hasOwnProperty('markColor')) ? d.markColor : 'none';
+
+                }
             });
             return view;
         }
