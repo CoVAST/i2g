@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Collaborative Analysis of Spatiotemporal Data</title>
+
+    <link rel="stylesheet" href="/cases/globalTerrorism/style.css"/>
+
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.6.3/jquery.contextMenu.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.6.3/jquery.contextMenu.min.js"></script>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
+  </head>
+  <body>
+    <div id = "mainGraph"></div>
+    <div id = "PadModal" class = "modal"></div>
+
+    <script>
+
+        requirejs.config({baseUrl: '/i2g/'});
+        require(["main"], function(i2g) {
+            var mainGraph = i2g({
+                container: "#mainGraph",
+                width: window.innerWidth - 20,
+                height: window.innerHeight - 20,
+                domain: [0, 1],
+                data: {nodes: [], links: []},
+            });
+
+            $(window).on('hashchange', function() {
+                var dataset = window.location.hash.slice(1),
+                    dataURL = '/cases/globalTerrorism/';
+
+                if(['terrorists', 'maoists', 'example'].indexOf(dataset) === -1) {
+                    dataset = 'example';
+                }
+
+                $.getJSON( dataURL + dataset + '.json', function(data){
+                    mainGraph.model.removeNodes({all: true});
+                    mainGraph.view.update();
+                    mainGraph.model.addNodes(data.nodes);
+                    mainGraph.view.update();
+                    mainGraph.model.addLinks(data.links);
+                    mainGraph.view.update();
+                });
+
+            })
+
+            $(window).trigger('hashchange');
+
+            $(window).resize((d) => {
+                var width1 = window.innerWidth - 20,
+                    height1 = window.innerHeight - 20;
+
+                mainGraph.view.resizeSVG(width1, height1);
+                mainGraph.view.update();
+            });
+        })
+    </script>
+  </body>
+</html>
