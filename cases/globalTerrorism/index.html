@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Collaborative Analysis of Spatiotemporal Data</title>
 
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="/cases/globalTerrorism/style.css"/>
 
     <script src="http://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -34,9 +34,10 @@
             });
 
             $(window).on('hashchange', function() {
-                var dataset = window.location.hash;
+                var dataset = window.location.hash,
+                    dataURL = '/cases/globalTerrorism/'
                 if(dataset) {
-                    $.getJSON( dataset.slice(1) + '.json', function(data){
+                    $.getJSON( dataURL + dataset.slice(1) + '.json', function(data){
                         mainGraph.model.removeNodes({all: true});
                         mainGraph.view.update();
                         mainGraph.model.addNodes(data.nodes);
