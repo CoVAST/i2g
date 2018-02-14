@@ -35,7 +35,7 @@
 
             $(window).on('hashchange', function() {
                 var dataset = window.location.hash.slice(1),
-                    dataURL = '/cases/globalTerrorism/';
+                    dataURL = 'cases/globalTerrorism/';
 
                 if(['terrorists', 'maoists', 'example'].indexOf(dataset) === -1) {
                     dataset = 'example';
