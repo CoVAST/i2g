@@ -3,8 +3,12 @@
         {
             "label": "Maoists",
             "type": "people",
-            "annotation": "Maoists' logo",
-            "vis": "/cases/globalTerrorism/img/Maoists.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists.png",
+                    "annotation": "Maoists' logo"
+                }
+            ],
             "subGraph": null,
             "x": 0.4733098874598073,
             "y": 0.05164025821596242,
@@ -16,8 +20,12 @@
         {
             "label": "Apr.",
             "type": "time",
-            "annotation": "",
-            "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                    "annotation": ""
+                }
+            ],
             "subGraph": null,
             "x": 0.3699202932506864,
             "y": 0.4263943382517336,
@@ -29,8 +37,12 @@
         {
             "label": "South Asia",
             "type": "location",
-            "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place.",
-            "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+                    "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place."
+                }
+            ],
             "subGraph": null,
             "x": 0.4733098874598062,
             "y": 0.2197153755868544,
@@ -42,8 +54,12 @@
         {
             "label": "Bombing/Explosion",
             "type": "default",
-            "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type.",
-            "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                    "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type."
+                }
+            ],
             "subGraph": null,
             "x": 0.4874577974276535,
             "y": 0.6610299295774638,
@@ -55,8 +71,12 @@
         {
             "label": "India",
             "type": "location",
-            "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target.",
-            "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                    "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target."
+                }
+            ],
             "subGraph": null,
             "x": 0.28719888084968853,
             "y": 0.28510493516655644,
@@ -68,8 +88,12 @@
         {
             "label": "Nepal",
             "type": "location",
-            "annotation": "",
-            "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                    "annotation": ""
+                }
+            ],
             "subGraph": null,
             "x": 0.6940913729328163,
             "y": 0.28618642410015666,
@@ -81,8 +105,12 @@
         {
             "label": "Nov.",
             "type": "time",
-            "annotation": "",
-            "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                    "annotation": ""
+                }
+            ],
             "subGraph": null,
             "x": 0.17363143086816638,
             "y": 0.4206543427230049,
@@ -94,8 +122,12 @@
         {
             "label": "Feb.",
             "type": "time",
-            "annotation": "",
-            "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                    "annotation": ""
+                }
+            ],
             "subGraph": null,
             "x": 0.7774899517684866,
             "y": 0.43661678403755877,
@@ -107,8 +139,12 @@
         {
             "label": "Armed Assult",
             "type": "default",
-            "annotation": "",
-            "vis": "/cases/globalTerrorism/img/Maoists_Napel_2_a.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_Napel_2_a.png",
+                    "annotation": ""
+                }
+            ],
             "subGraph": null,
             "x": 0.7588404340836017,
             "y": 0.6281660798122055,
@@ -120,8 +156,12 @@
         {
             "label": "Apr.",
             "type": "time",
-            "annotation": "",
-            "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                    "annotation": ""
+                }
+            ],
             "subGraph": null,
             "x": 0.6032134244372992,
             "y": 0.41126467136150285,
@@ -133,8 +173,12 @@
         {
             "label": "Facility/infrastructure Attack",
             "type": "default",
-            "annotation": "",
-            "vis": "/cases/globalTerrorism/img/Maoists_India_Apr_f.png",
+            "provenance": [
+                {
+                    "vis": "/cases/globalTerrorism/img/Maoists_India_Apr_f.png",
+                    "annotation": ""
+                }
+            ],
             "subGraph": null,
             "x": 0.19099477491961403,
             "y": 0.6478843896713632,
@@ -149,8 +193,12 @@
             "source": {
                 "label": "Maoists",
                 "type": "people",
-                "annotation": "Maoists' logo",
-                "vis": "/cases/globalTerrorism/img/Maoists.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists.png",
+                        "annotation": "Maoists' logo"
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4733098874598073,
                 "y": 0.05164025821596242,
@@ -162,8 +210,12 @@
             "target": {
                 "label": "South Asia",
                 "type": "location",
-                "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place.",
-                "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+                        "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4733098874598062,
                 "y": 0.2197153755868544,
@@ -184,8 +236,12 @@
             "source": {
                 "label": "South Asia",
                 "type": "location",
-                "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place.",
-                "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+                        "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4733098874598062,
                 "y": 0.2197153755868544,
@@ -197,8 +253,12 @@
             "target": {
                 "label": "India",
                 "type": "location",
-                "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target.",
-                "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                        "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.28719888084968853,
                 "y": 0.28510493516655644,
@@ -219,8 +279,12 @@
             "source": {
                 "label": "India",
                 "type": "location",
-                "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target.",
-                "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                        "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.28719888084968853,
                 "y": 0.28510493516655644,
@@ -232,8 +296,12 @@
             "target": {
                 "label": "Apr.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.3699202932506864,
                 "y": 0.4263943382517336,
@@ -254,8 +322,12 @@
             "source": {
                 "label": "South Asia",
                 "type": "location",
-                "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place.",
-                "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_south_Asia.png",
+                        "annotation": "This graph shows the distribution of Maoists' attack location. Clearly, South Asia is their main active place."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4733098874598062,
                 "y": 0.2197153755868544,
@@ -267,8 +339,12 @@
             "target": {
                 "label": "Nepal",
                 "type": "location",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.6940913729328163,
                 "y": 0.28618642410015666,
@@ -289,8 +365,12 @@
             "source": {
                 "label": "India",
                 "type": "location",
-                "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target.",
-                "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                        "annotation": "This graph is the distribution of Maoists' attack countries. India is their main target."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.28719888084968853,
                 "y": 0.28510493516655644,
@@ -302,8 +382,12 @@
             "target": {
                 "label": "Nov.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.17363143086816638,
                 "y": 0.4206543427230049,
@@ -324,8 +408,12 @@
             "source": {
                 "label": "Nepal",
                 "type": "location",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.6940913729328163,
                 "y": 0.28618642410015666,
@@ -337,8 +425,12 @@
             "target": {
                 "label": "Feb.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.7774899517684866,
                 "y": 0.43661678403755877,
@@ -359,8 +451,12 @@
             "source": {
                 "label": "Apr.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.3699202932506864,
                 "y": 0.4263943382517336,
@@ -372,8 +468,12 @@
             "target": {
                 "label": "Bombing/Explosion",
                 "type": "default",
-                "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type.",
-                "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                        "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4874577974276535,
                 "y": 0.6610299295774638,
@@ -394,8 +494,12 @@
             "source": {
                 "label": "Nov.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.17363143086816638,
                 "y": 0.4206543427230049,
@@ -407,8 +511,12 @@
             "target": {
                 "label": "Bombing/Explosion",
                 "type": "default",
-                "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type.",
-                "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                        "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4874577974276535,
                 "y": 0.6610299295774638,
@@ -429,8 +537,12 @@
             "source": {
                 "label": "Feb.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.7774899517684866,
                 "y": 0.43661678403755877,
@@ -442,8 +554,12 @@
             "target": {
                 "label": "Bombing/Explosion",
                 "type": "default",
-                "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type.",
-                "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                        "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4874577974276535,
                 "y": 0.6610299295774638,
@@ -464,8 +580,12 @@
             "source": {
                 "label": "Feb.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.7774899517684866,
                 "y": 0.43661678403755877,
@@ -477,8 +597,12 @@
             "target": {
                 "label": "Armed Assult",
                 "type": "default",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_Napel_2_a.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_Napel_2_a.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.7588404340836017,
                 "y": 0.6281660798122055,
@@ -499,8 +623,12 @@
             "source": {
                 "label": "Nepal",
                 "type": "location",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_country.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.6940913729328163,
                 "y": 0.28618642410015666,
@@ -512,8 +640,12 @@
             "target": {
                 "label": "Apr.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.6032134244372992,
                 "y": 0.41126467136150285,
@@ -534,8 +666,12 @@
             "source": {
                 "label": "Apr.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_Nepal_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.6032134244372992,
                 "y": 0.41126467136150285,
@@ -547,8 +683,12 @@
             "target": {
                 "label": "Bombing/Explosion",
                 "type": "default",
-                "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type.",
-                "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_attacktype.png",
+                        "annotation": "This is the distribution of Maoists' attack type. Clearly, bombing/explosion is their favorite attack type."
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.4874577974276535,
                 "y": 0.6610299295774638,
@@ -569,8 +709,12 @@
             "source": {
                 "label": "Apr.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.3699202932506864,
                 "y": 0.4263943382517336,
@@ -582,8 +726,12 @@
             "target": {
                 "label": "Facility/infrastructure Attack",
                 "type": "default",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_India_Apr_f.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_India_Apr_f.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.19099477491961403,
                 "y": 0.6478843896713632,
@@ -604,8 +752,12 @@
             "source": {
                 "label": "Nov.",
                 "type": "time",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_India_month.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.17363143086816638,
                 "y": 0.4206543427230049,
@@ -617,8 +769,12 @@
             "target": {
                 "label": "Armed Assult",
                 "type": "default",
-                "annotation": "",
-                "vis": "/cases/globalTerrorism/img/Maoists_Napel_2_a.png",
+                "provenance": [
+                    {
+                        "vis": "/cases/globalTerrorism/img/Maoists_Napel_2_a.png",
+                        "annotation": ""
+                    }
+                ],
                 "subGraph": null,
                 "x": 0.7588404340836017,
                 "y": 0.6281660798122055,

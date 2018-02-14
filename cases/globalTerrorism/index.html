@@ -34,18 +34,22 @@
             });
 
             $(window).on('hashchange', function() {
-                var dataset = window.location.hash,
-                    dataURL = '/cases/globalTerrorism/'
-                if(dataset) {
-                    $.getJSON( dataURL + dataset.slice(1) + '.json', function(data){
-                        mainGraph.model.removeNodes({all: true});
-                        mainGraph.view.update();
-                        mainGraph.model.addNodes(data.nodes);
-                        mainGraph.view.update();
-                        mainGraph.model.addLinks(data.links);
-                        mainGraph.view.update();
-                    });
+                var dataset = window.location.hash.slice(1),
+                    dataURL = '/cases/globalTerrorism/';
+
+                if(['case1', 'case2', 'example'].indexOf(dataset) === -1) {
+                    dataset = 'example';
                 }
+
+                $.getJSON( dataURL + dataset + '.json', function(data){
+                    mainGraph.model.removeNodes({all: true});
+                    mainGraph.view.update();
+                    mainGraph.model.addNodes(data.nodes);
+                    mainGraph.view.update();
+                    mainGraph.model.addLinks(data.links);
+                    mainGraph.view.update();
+                });
+
             })
 
             $(window).trigger('hashchange');

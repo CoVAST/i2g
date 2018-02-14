@@ -1,0 +1,166 @@
+{
+    "nodes": [
+        {
+            "label": "People",
+            "type": "people",
+            "size": "3",
+            "color": "default",
+            "provenance": [],
+            "subGraph": null,
+            "x": 0.5228735475671751,
+            "y": 0.17024964920486443,
+            "datalink": false,
+            "id": "0"
+        },
+        {
+            "label": "Time",
+            "type": "time",
+            "size": "2",
+            "color": "default",
+            "provenance": [],
+            "subGraph": null,
+            "x": 0.4669548838053739,
+            "y": 0.3582758419083255,
+            "datalink": false,
+            "id": "1"
+        },
+        {
+            "label": "Location",
+            "type": "location",
+            "size": "3",
+            "color": "default",
+            "provenance": [],
+            "subGraph": null,
+            "x": 0.655771151053014,
+            "y": 0.42749941534144087,
+            "datalink": false,
+            "id": "2"
+        },
+        {
+            "label": "Event",
+            "type": "default",
+            "size": "3",
+            "color": "default",
+            "provenance": [
+                {
+                    "vis": "",
+                    "annotation": "Something good and something bad."
+                }
+            ],
+            "subGraph": null,
+            "x": 0.5083492193173568,
+            "y": 0.6295574134705333,
+            "datalink": false,
+            "id": "3"
+        }
+    ],
+    "links": [
+        {
+            "source": {
+                "label": "People",
+                "type": "people",
+                "size": "3",
+                "color": "default",
+                "provenance": [],
+                "subGraph": null,
+                "x": 0.5228735475671751,
+                "y": 0.17024964920486443,
+                "datalink": false,
+                "id": "0"
+            },
+            "target": {
+                "label": "Time",
+                "type": "time",
+                "size": "2",
+                "color": "default",
+                "provenance": [],
+                "subGraph": null,
+                "x": 0.4669548838053739,
+                "y": 0.3582758419083255,
+                "datalink": false,
+                "id": "1"
+            },
+            "size": "1",
+            "datalink": false,
+            "label": "During",
+            "color": "default",
+            "annotation": "",
+            "vis": "",
+            "id": 0,
+            "provenance": []
+        },
+        {
+            "source": {
+                "label": "Time",
+                "type": "time",
+                "size": "2",
+                "color": "default",
+                "provenance": [],
+                "subGraph": null,
+                "x": 0.4669548838053739,
+                "y": 0.3582758419083255,
+                "datalink": false,
+                "id": "1"
+            },
+            "target": {
+                "label": "Location",
+                "type": "location",
+                "size": "3",
+                "color": "default",
+                "provenance": [],
+                "subGraph": null,
+                "x": 0.655771151053014,
+                "y": 0.42749941534144087,
+                "datalink": false,
+                "id": "2"
+            },
+            "size": "1",
+            "datalink": false,
+            "label": "Went to",
+            "color": "default",
+            "annotation": "",
+            "vis": "",
+            "id": 1,
+            "provenance": []
+        },
+        {
+            "source": {
+                "label": "Location",
+                "type": "location",
+                "size": "3",
+                "color": "default",
+                "provenance": [],
+                "subGraph": null,
+                "x": 0.655771151053014,
+                "y": 0.42749941534144087,
+                "datalink": false,
+                "id": "2"
+            },
+            "target": {
+                "label": "Event",
+                "type": "default",
+                "size": "3",
+                "color": "default",
+                "provenance": [
+                    {
+                        "vis": "",
+                        "annotation": "Something good and something bad."
+                    }
+                ],
+                "subGraph": null,
+                "x": 0.5083492193173568,
+                "y": 0.6295574134705333,
+                "datalink": false,
+                "id": "3"
+            },
+            "size": "1",
+            "datalink": false,
+            "label": "Joined",
+            "color": "default",
+            "annotation": "",
+            "vis": "",
+            "id": 2,
+            "provenance": []
+        }
+    ]
+}
