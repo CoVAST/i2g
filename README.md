@@ -1,17 +1,11 @@
 # Collaborative Visual Analytics
 
-Install: 
+## I2G: Interactive Insight Graph
 
-```
-git submodule init
-git submodule update
-npm install
-cd vastui; npm install
-cd ..
-```
+Install Node.js (version > 6.0)
 
-Start server: 
-
+Start demo: 
 ```
-node server.js
+node server/demo.js
+
 ```
